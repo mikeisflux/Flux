@@ -120,7 +120,10 @@ Worth noting as product strategy; not load-bearing for the build.
 
 ## Still unseen
 
-- `Settings` — presumably where model choice, if any, would live.
+- ~~`Settings`~~ — captured, see `08-settings.md`. Notably it contains **no
+  model picker** and no agent-behavior tuning.
 - The `Extensions ›` submenu.
 - `Billing & Credits` — pricing tiers, credit costs per run, budget controls.
-- Whether profiles are bound to task runs in any way.
+- Whether profiles are bound to task runs in any way. (Settings confirms
+  profiles are explicitly "isolated" and can each open their own window, but
+  still shows no link between a profile and a task run.)
