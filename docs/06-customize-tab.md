@@ -299,12 +299,79 @@ context" so later runs load it automatically.
 
 ---
 
+## 3b. The `Add to my skills` modal — adoption & authoring form
+
+Triggered by `+ Add to my skills`. Modal ~600px wide, centered, radius ~16px,
+`×` close top-right.
+
+> **Add to my skills**
+> Polar will use this automatically when it's relevant. Edit anything before
+> saving.
+
+Three editable fields, then `Cancel` (text) / `Add skill` (black filled).
+
+| Field | Control | Captured value |
+|---|---|---|
+| **Command** | single-line input | `dashboard-building` |
+| **Description** | single-line input | `Turn a sheet or query results into a clean dashboard with the right ch…` |
+| **Instructions** | scrollable textarea, resize handle | the full body as **raw markdown** |
+
+### What this settles
+
+**1. Skills have a slash command.** This is the field nothing else exposed.
+`dashboard-building` is a kebab-case handle, and notably it is *not* a
+mechanical slug of the name — "Dashboard design & building" would slugify to
+`dashboard-design-building`. It is a curated short handle, and it is
+**user-editable at adoption time**.
+
+Combined with the Workflows empty state (*"trigger it anytime with
+`/command`"*), there is a **single unified command namespace** covering both
+workflows and skills:
+
+```
+/dashboard-building        → invoke an adopted skill
+/<workflow-name>           → run a saved workflow
+```
+
+That is a significant piece of architecture that neither screen states on its
+own. It also implies collision handling the UI never shows — nothing validates
+uniqueness in the captured form.
+
+**2. The body is stored as raw markdown, not structured fields.** The textarea
+shows literal `# Build a Dashboard`, `## When to use`, `## Approach`, `1.`,
+`## Heuristics`, `- `, `## Gotchas`. This confirms the corrected schema: freeform
+markdown with a required `When to use` section, not typed sub-fields.
+
+**3. Adoption is fork-on-copy.** "Edit anything before saving" — the user gets
+a mutable copy, not a reference to the catalog original. That is what "Add a
+skill to make it yours" means literally. Implication: catalog updates do
+**not** propagate to adopted skills, and there is no visible "upstream has
+changed" affordance.
+
+**4. Role chips, `Works with`, and `Related skills` are absent from the form.**
+They appear in the read-only detail modal but are not editable here. So they
+are **catalog metadata**, not user-authored fields — which means a user's own
+skill (via `New ⌄`) presumably has no roles and no related links, and would
+never surface under the `For <role>` facet.
+
+**[FLUX]** Three fixes here:
+- Validate command uniqueness at entry, and show the namespace the command
+  lands in (skill vs workflow).
+- Keep a `forkedFrom` pointer with the catalog version, so an adopted skill can
+  show "the original changed" and offer a diff. Fork-and-forget silently rots.
+- Let user-authored skills declare roles and connectors too, or they are
+  second-class citizens in their own library.
+
+---
+
 ## 4. Derived schema for Flux
 
 ```ts
 interface Skill {
   id: string
   name: string                    // "Dashboard design & building"
+  command: string                 // "dashboard-building" — kebab handle, user-editable,
+                                  // shares one namespace with workflow commands
   description: string             // one line, shown on the card
   icon: string
   categories: Category[]          // Sales | Recruiting | ... (tag set, not single parent)
@@ -319,6 +386,7 @@ interface Skill {
   }
   related: SkillId[]
   source: 'builtin' | 'imported' | 'user'   // Import / New ⌄ / catalog
+  forkedFrom?: { skillId: string; version: string }  // [FLUX] adoption copies; track origin
 }
 ```
 
@@ -333,7 +401,10 @@ interface Skill {
 
 ## 5. Still unseen
 
-- What `New ⌄` and `Import` actually accept (file format for a skill package).
+- What `New ⌄` and `Import` actually accept (file format for a skill package)
+  — though the `Add to my skills` form implies the payload is just
+  `{ command, description, instructions-markdown }`.
+- Whether command collisions between skills and workflows are validated.
 - `See more →` under Suggested.
 - The ⓘ tooltip next to `Skills`.
 - A populated `Your skills` list, and how an adopted skill is edited.
