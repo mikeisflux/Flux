@@ -23,7 +23,6 @@ ffmpeg_branding = "Chrome"
 enable_widevine = false
 
 # --- Trim --------------------------------------------------------------------
-enable_nacl = false          # deprecated upstream, large build cost
 enable_reporting = false     # no telemetry endpoint of our own yet
 
 is_debug = false
