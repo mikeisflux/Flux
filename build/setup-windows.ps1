@@ -68,12 +68,21 @@ else {
 Write-Host "`nToolchain" -ForegroundColor Cyan
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 if (Test-Path $vswhere) {
-  $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json | ConvertFrom-Json
+  $vs = & $vswhere -latest -products * -all -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json | ConvertFrom-Json
   if ($vs) {
     Ok "Visual Studio $($vs.catalog.productDisplayVersion) with C++ tools"
-    # ATL is required by some Chromium targets and is not in the default C++ workload.
-    $atl = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.ATL -property installationPath
-    if ($atl) { Ok "C++ ATL present" } else { Bad "C++ ATL missing - add via VS Installer > Modify > Individual components > 'C++ ATL for latest v143 build tools'" }
+    Ok "Edition: $($vs.displayName)"
+    # -products * is required or vswhere silently ignores Build Tools installs,
+    # which report as a different product than Community/Pro/Enterprise.
+    # -all also covers prerelease and incomplete instances.
+    $atl = & $vswhere -latest -products * -all `
+             -requires Microsoft.VisualStudio.Component.VC.ATL `
+             -property installationPath
+    if ($atl) {
+      Ok "C++ ATL present ($atl)"
+    } else {
+      Bad "C++ ATL missing - VS Installer > Modify > Individual components > 'C++ ATL for latest v143 build tools (x86 & x64)'"
+    }
   } else { Bad "Visual Studio 2022 with 'Desktop development with C++' not found" }
 } else { Bad "Visual Studio not installed. Need VS 2022 (Community is fine) + 'Desktop development with C++'" }
 
