@@ -319,10 +319,37 @@ Three editable fields, then `Cancel` (text) / `Add skill` (black filled).
 ### What this settles
 
 **1. Skills have a slash command.** This is the field nothing else exposed.
-`dashboard-building` is a kebab-case handle, and notably it is *not* a
-mechanical slug of the name — "Dashboard design & building" would slugify to
-`dashboard-design-building`. It is a curated short handle, and it is
-**user-editable at adoption time**.
+Two samples captured:
+
+| Skill name | Command | Description field |
+|---|---|---|
+| Dashboard design & building | `dashboard-building` | Turn a sheet or query results into a clean dashboard with the right ch… |
+| Chart creation from data | `data-create-chart` | Turn query results, a table, or pasted data into a clear, honest chart |
+
+Neither is a mechanical slug. "Dashboard design & building" would slugify to
+`dashboard-design-building`; "Chart creation from data" would slugify to
+`chart-creation-from-data`. Instead both are **hand-authored semantic
+handles** — and `data-create-chart` even reorders the words into
+`<domain>-<verb>-<object>` form.
+
+**The two samples do not follow the same convention.** `data-create-chart`
+is domain-prefixed; `dashboard-building` is not, despite both skills living in
+the **Data** category — under a `<domain>-<verb>-<object>` rule it would be
+something like `data-build-dashboard`. With 117 skills sharing one command
+namespace, an inconsistent naming scheme makes commands unguessable, which
+defeats the point of having them.
+
+The handle is **user-editable at adoption time**, so inconsistency is partly
+self-correcting per user — but the shipped defaults set the pattern.
+
+**[FLUX]** Pick one convention and generate to it (`<category>-<verb>-<object>`),
+show the resulting command live as the user types the name, and check it for
+collisions across both the skill and workflow namespaces before saving.
+
+**1b. `Description` carries over from the catalog unchanged** — the Chart
+skill's field is verbatim the card description. So the catalog `description`
+*is* the retrieval description; there is no separate trigger text besides the
+`When to use` section in the body.
 
 Combined with the Workflows empty state (*"trigger it anytime with
 `/command`"*), there is a **single unified command namespace** covering both
@@ -341,6 +368,10 @@ uniqueness in the captured form.
 shows literal `# Build a Dashboard`, `## When to use`, `## Approach`, `1.`,
 `## Heuristics`, `- `, `## Gotchas`. This confirms the corrected schema: freeform
 markdown with a required `When to use` section, not typed sub-fields.
+
+**2b. The H1 title is confirmed optional.** The Dashboard body opens with
+`# Build a Dashboard`; the Chart body opens directly with `## When to use` and
+has no H1 at all. `title?` in the schema is verified, not assumed.
 
 **3. Adoption is fork-on-copy.** "Edit anything before saving" — the user gets
 a mutable copy, not a reference to the catalog original. That is what "Add a
