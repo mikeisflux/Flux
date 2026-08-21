@@ -380,6 +380,15 @@
       "description": "Design and review Cloudflare One Zero Trust/SASE: Access, Gateway, Tunnel, posture"
     },
     {
+      "file": "how-to.md",
+      "name": "How to do anything",
+      "command": "how-to",
+      "category": "Docs, Personal, Research",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A researched, current, step-by-step plan for whatever you are trying to do"
+    },
+    {
       "file": "market-comparable-campaigns.md",
       "name": "Study campaigns like mine and pull the playbook",
       "command": "market-comparable-campaigns",
