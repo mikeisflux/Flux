@@ -1,0 +1,67 @@
+{
+  "id": "facebook_pages",
+  "name": "Facebook Pages",
+  "description": "Publish and schedule posts, read insights and comments on Pages you manage",
+  "transport": "api",
+  "badge": "Pages only - personal profiles have no API",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://www.facebook.com/v21.0/dialog/oauth",
+    "token_url": "https://graph.facebook.com/v21.0/oauth/access_token",
+    "scopes": [
+      "pages_show_list",
+      "pages_manage_posts",
+      "pages_read_engagement"
+    ],
+    "notes": [
+      "Requires a Meta app in Live mode; Development mode only reaches app admins.",
+      "Exchange the short-lived user token for a long-lived one, then derive a",
+      "Page token from it - Page tokens derived this way do not expire.",
+      "pages_manage_posts requires App Review unless you are a Page admin."
+    ]
+  },
+  "operations": {
+    "publish": {
+      "method": "POST",
+      "path": "/{page_id}/feed",
+      "params": { "message": "string", "link": "string?" },
+      "write_scope": "send"
+    },
+    "schedule": {
+      "method": "POST",
+      "path": "/{page_id}/feed",
+      "params": {
+        "message": "string",
+        "published": false,
+        "scheduled_publish_time": "unix_seconds"
+      },
+      "write_scope": "send",
+      "notes": "Native scheduling - between 10 minutes and 6 months out. A recurring workflow can queue posts here and skip the browser entirely."
+    },
+    "list_posts": {
+      "method": "GET",
+      "path": "/{page_id}/posts",
+      "write_scope": "readonly"
+    },
+    "read_comments": {
+      "method": "GET",
+      "path": "/{post_id}/comments",
+      "write_scope": "readonly"
+    },
+    "insights": {
+      "method": "GET",
+      "path": "/{page_id}/insights",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "posts_per_day": 50,
+    "note": "Meta throttles rather than bans. A 429 means back off, not that the account is at risk - the opposite of the browser path."
+  },
+  "why_prefer_this": [
+    "Sanctioned: no ToS exposure and no account-restriction risk.",
+    "Stable: survives site redesigns that break DOM-driven posting.",
+    "Native scheduling: no machine needs to be awake at post time.",
+    "Structured errors instead of guessing from a page that may have silently discarded the post."
+  ]
+}

@@ -38,6 +38,8 @@ user. Those are what account bans are for.
 ## Choose the transport first
 
 This decides everything downstream, so resolve it before doing anything else.
+**Default to the API path.** Only fall through to the browser when the target
+is a personal profile, which genuinely has no API.
 
 **If the target is a Page → use the Graph API.** It is supported, documented,
 rate-limited rather than ban-triggering, and does not break when Facebook
@@ -49,6 +51,12 @@ POST https://graph.facebook.com/v21.0/{page-id}/feed
   link=<optional url>
   access_token=<page token>
 ```
+
+**Anything schedulable belongs on the API path.** The Graph API schedules
+natively (10 minutes to 6 months out), so a recurring "post weekly" workflow
+never needs a browser open, never needs this machine awake at post time, and
+never accrues detection risk. If the user asks to schedule profile posts,
+propose moving that content to a Page rather than running a browser job.
 
 **If the target is a personal profile → browser only.** Facebook removed
 `publish_actions` for personal profiles in 2018; there is no API. Driving the
