@@ -57,7 +57,12 @@ class AgentRunner {
  private:
   void Step();                                   // one turn of the loop
   void OnCompletion(CompletionResponse response);
+
+  // Runs calls from one assistant turn in order, pausing for approval where
+  // the scope requires it. Remaining calls are held in `pending_calls_`.
   void ExecuteToolCalls(std::vector<ToolCall> calls);
+  void DispatchTool(ToolCall call);
+  void RecordAction(const std::string& tool_name, const ToolResult& result);
   void OnToolFinished(ToolResult result);
   void Finish(mojom::RunState state, const std::string& summary);
 
@@ -83,6 +88,13 @@ class AgentRunner {
   std::vector<Message> history_;
   std::vector<mojom::ActionRecordPtr> actions_;
   std::unique_ptr<PageContext> page_;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
+
+  // Remaining calls from the current assistant turn, and the one held while
+  // an approval prompt is open.
+  std::vector<ToolCall> pending_calls_;
+  std::optional<ToolCall> pending_call_;
+  bool approved_last_call_ = false;
 
   mojom::RunState state_ = mojom::RunState::kQueued;
   uint32_t consecutive_failures_ = 0;

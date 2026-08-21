@@ -107,6 +107,15 @@ class PageContext {
                     ActionCallback callback);
 
   void SubmitForm(int32_t node_id, ActionCallback callback);
+
+  // True when `node_id` is a control whose activation submits or transmits -
+  // a submit input, a button inside a form, or one whose accessible name
+  // reads as a commit action ("Send", "Post", "Pay", "Place order").
+  //
+  // Scope-by-tool-name alone has an obvious hole: clicking is read-only, so
+  // "click the Send button" would otherwise pass a read-only task unchecked.
+  // AgentRunner::RequiresApproval consults this to escalate those clicks.
+  bool IsSubmitLike(int32_t node_id) const;
   void ScrollToNode(int32_t node_id, ActionCallback callback);
 
   // Resolves once `text` appears, or `timeout` elapses. Preferable to a fixed
