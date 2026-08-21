@@ -111,35 +111,50 @@ internally scrollable, dimmed backdrop.
 
 ### The skill body format
 
-The `Instructions` card follows a fixed four-part structure. Every one of the
-117 skills is almost certainly authored to this template:
+Three skill bodies have now been captured, and they **do not share a fixed
+section template**. Only one heading is constant:
 
-```markdown
-# <Imperative title>
+| Skill | Sections after the header |
+|---|---|
+| Dashboard design & building | `When to use` · `Approach` · `Heuristics` · `Gotchas` |
+| Chart creation from data | `When to use` · `Get the data` · `Pick the chart type` · `Build and design` · `Deliver` |
+| Data warehouse context | `When to use` · `Discover` · `Interview for tribal knowledge` · `Capture and maintain` |
 
-## When to use
-<One paragraph: the triggering situation.>
+**`When to use` is the only required section.** It is the retrieval trigger —
+what makes "drawn on automatically when it's relevant" work. Everything after
+it is freeform prose authored to match how that particular job is actually
+done: a charting skill gets a decision table, a context-building skill gets an
+interview script, a design skill gets heuristics.
 
-## Approach
-1. <Ordered steps — the actual method.>
+That is the right call, and worth copying deliberately. A rigid
+`Approach / Heuristics / Gotchas` template would flatten every skill into the
+same shape and force filler into sections that don't apply. The schema should
+therefore store the body as **markdown with one required `whenToUse` field**,
+not as a fixed set of typed fields.
 
-## Heuristics
-- <Bulleted rules of thumb / taste.>
+Other structural notes from these three:
 
-## Gotchas
-<One paragraph: what goes wrong, what to verify.>
-```
+- **`Works with` is optional.** `Chart creation from data` and `Data warehouse
+  context` have no connector row at all — role chips go straight to
+  `Instructions`.
+- **Role chip order varies** between skills (`analysts, founders, marketing`
+  vs `analysts, marketing, founders`), suggesting relevance ranking rather
+  than a fixed order.
+- **`Related skills` looks computed, not curated.** All three list *Budget vs
+  actual variance analysis* and *Dataset profiling (EDA)*, and each links the
+  other two. Consistent with similarity within the Data category rather than
+  hand-authored links.
+- Roles observed so far: `analysts`, `founders`, `marketing`, `engineering`.
 
-`When to use` is what makes "drawn on automatically when it's relevant"
-work — it is the retrieval/trigger description, exactly analogous to a skill
-description used for automatic invocation.
+### Verbatim bodies
 
-### Verbatim example — `Dashboard design & building`
+The three captured skill bodies, reproduced exactly, as the authoring
+reference for Flux's own library.
 
-The only complete skill body captured. Reproduced exactly, as the authoring
-reference for Flux's own skills.
+---
 
-> **Name:** Dashboard design & building
+#### 1. `Dashboard design & building`
+
 > **Description:** Turn a sheet or query results into a clean dashboard with the right chart types
 > **Roles:** For analysts · For founders · For marketing
 > **Works with:** Google Docs, Google Sheets
@@ -180,10 +195,107 @@ Make refresh and data source obvious, and verify the totals tie to the source
 before anyone trusts it.
 ```
 
-Note the quality of this content: it is genuine domain taste ("a number without
-a comparison is trivia"), not restated prompt boilerplate. **The skill library
-is the actual moat** — 117 of these, hand-written, is a large content
-investment that no amount of model capability substitutes for.
+---
+
+#### 2. `Chart creation from data`
+
+> **Description:** Turn query results, a table, or pasted data into a clear, honest chart
+> **Roles:** For analysts · For marketing · For founders
+> **Works with:** *(none)*
+> **Related:** Budget vs actual variance analysis · Dataset profiling (EDA) · Dashboard design & building
+
+```markdown
+## When to use
+
+Turning query results, a dashboard table, pasted data, or a CSV into a
+publication-quality chart.
+
+## Get the data
+
+Read numbers off a web dashboard in the browser, paste them in, or load a CSV.
+If a warehouse is connected, query it; otherwise work from what's on screen.
+Clean types and nulls first.
+
+## Pick the chart type
+
+- Trend over time -> line. Comparison across categories -> bar (horizontal if many).
+- Part-to-whole -> stacked bar or area (avoid pie unless under 6 slices).
+  Distribution -> histogram or box plot.
+- Correlation -> scatter. Ranking -> horizontal bar. Matrix -> heatmap.
+  Flow -> Sankey. Explain the choice briefly if the user didn't specify one.
+
+## Build and design
+
+Use matplotlib/seaborn for static charts, plotly for interactive. Always
+include a title that states the insight ("Revenue grew 23% YoY", not "Revenue
+by Month"), labeled axes with units, formatted numbers ($1.2M, 45%, 2.3K), a
+colorblind-safe palette, and no chart junk. Bars start at zero; sort by value
+unless there's a natural order.
+
+## Deliver
+
+Show the chart, share the code so it can be tweaked, and suggest variations
+(different type, grouping, or time range).
+```
+
+Note `Get the data` explicitly names the browser fallback — *"Read numbers off
+a web dashboard in the browser... If a warehouse is connected, query it;
+otherwise work from what's on screen."* The connector-as-optimization
+philosophy from the Connectors tab is written directly into skill content.
+
+---
+
+#### 3. `Data warehouse context`
+
+> **Description:** Build a reusable reference of your tables, metrics, terminology, and gotchas
+> **Roles:** For analysts · For engineering
+> **Works with:** *(none)*
+> **Related:** Budget vs actual variance analysis · Dataset profiling (EDA) · Dashboard design & building
+
+```markdown
+## When to use
+
+So future analyses understand your company's tables, terminology, metric
+definitions, and quirks instead of re-deriving them every time.
+
+## Discover
+
+Identify the warehouse (BigQuery, Snowflake, Postgres/Redshift, Databricks)
+and explore its schemas. Ask which 3-5 tables analysts query most, and pull
+their columns, keys, and refresh cadence.
+
+## Interview for tribal knowledge
+
+- Entities: when people say "user" or "customer", what exactly do they mean,
+  and which IDs link them?
+- Metrics: the 2-3 most-asked metrics, their exact formulas
+  (e.g. ARR = monthly_revenue x 12), and time conventions.
+- Hygiene: what must ALWAYS be filtered out (test, internal, fraud, deleted)?
+- Gotchas: timezones, NULL handling, historical vs current-state tables,
+  confusing column names.
+
+## Capture and maintain
+
+Write a reference doc: entity definitions and relationships; metric formulas
+with source tables and caveats; per-domain table notes with sample queries;
+and standard exclusions. Update it as new domains come up.
+```
+
+**This one is architecturally interesting.** Its *output is durable context for
+future runs* — a reference doc that later analyses read instead of re-deriving.
+Combined with the Instructions buffer's "Polar also saves useful things it
+learns here", there are two distinct memory mechanisms:
+
+| Mechanism | Scope | Written by | Visible where |
+|---|---|---|---|
+| Instructions buffer | Global, every task | Agent + user | Customize › Instructions |
+| Context-building skills | Domain-specific | A skill run, on demand | An artifact (doc/sheet) |
+
+The second is arguably the better pattern — the knowledge lands in a real
+document the user already knows how to read, edit, and share, rather than in
+app-private state. **[FLUX]** Adopt both, and make context artifacts
+first-class: a run should be able to declare "this doc is my warehouse
+context" so later runs load it automatically.
 
 ---
 
@@ -197,13 +309,13 @@ interface Skill {
   icon: string
   categories: Category[]          // Sales | Recruiting | ... (tag set, not single parent)
   roles: Role[]                   // drives the "For <role>" facet
-  worksWith: ConnectorId[]        // declared, not derived
+  worksWith?: ConnectorId[]       // declared, not derived; optional
   body: {
-    title: string                 // "Build a Dashboard"
-    whenToUse: string             // retrieval trigger — used for auto-invocation
-    approach: string[]            // ordered
-    heuristics: string[]          // unordered
-    gotchas: string
+    title?: string                // optional H1, e.g. "Build a Dashboard"
+    whenToUse: string             // REQUIRED — the retrieval trigger for auto-invocation
+    sections: MarkdownSection[]   // freeform; NOT a fixed template. Authored to
+                                  // fit the job: decision tables, interview
+                                  // scripts, heuristics, step lists.
   }
   related: SkillId[]
   source: 'builtin' | 'imported' | 'user'   // Import / New ⌄ / catalog
