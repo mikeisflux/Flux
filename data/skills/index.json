@@ -1134,6 +1134,42 @@
       "writeScope": "send",
       "bodyStatus": "authored",
       "description": "Publish a post to your Facebook profile from your logged-in session"
+    },
+    {
+      "file": "travel-book-staged.md",
+      "name": "Book this trip and stop before payment",
+      "command": "travel-book-staged",
+      "category": "Personal",
+      "writeScope": "purchase",
+      "bodyStatus": "authored",
+      "description": "Your flight or hotel selected, filled in, and staged on the payment page for your final click"
+    },
+    {
+      "file": "travel-compensation-claim.md",
+      "name": "Claim compensation for my delayed or cancelled flight",
+      "command": "travel-compensation-claim",
+      "category": "Personal",
+      "writeScope": "draft",
+      "bodyStatus": "authored",
+      "description": "A filed claim with the airline, backed by the regulation that applies and evidence of the delay"
+    },
+    {
+      "file": "travel-entry-requirements.md",
+      "name": "Check I can actually enter the countries on my trip",
+      "command": "travel-entry-requirements",
+      "category": "Personal, Research",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A per-country check of visas, passport validity, and transit rules against your actual itinerary"
+    },
+    {
+      "file": "travel-rate-rebooking.md",
+      "name": "Watch my hotel rate and rebook when it drops",
+      "command": "travel-rate-rebooking",
+      "category": "Personal, Monitoring",
+      "writeScope": "purchase",
+      "bodyStatus": "authored",
+      "description": "Your booking automatically moved to a lower rate whenever one appears, with the old one cancelled"
     }
   ]
 }
