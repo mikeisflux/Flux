@@ -1,27 +1,17 @@
 ---
 name: Post to Facebook
 command: social-post-facebook
-description: Publish a post to your Facebook profile or Page from your logged-in session
+description: Publish a post to your Facebook profile from your logged-in session
 categories: [Marketing, Personal]
 roles: [marketing, founders]
 worksWith:
   - id: facebook
-    transport: browser        # personal profiles: no sanctioned API exists
-  - id: facebook_pages
-    transport: api            # Pages: Graph API /{page-id}/feed
+    transport: browser
 writeScope: send              # publishes publicly; gated on approval
-risk:
-  level: high
-  reason: >
-    Facebook's Terms of Service prohibit automated interaction with the site.
-    Browser-driven posting to a personal profile can trigger a checkpoint,
-    temporary restriction, or permanent account loss. Posting to a Page via the
-    Graph API is sanctioned and carries none of this risk.
-  mitigations:
-    - Prefer the Graph API path whenever the target is a Page.
-    - Hard cap of 3 posts per day, minimum 90 minutes apart.
-    - Human-paced typing and dwell; never instant form fill.
-    - Abort immediately on any checkpoint or unusual-activity screen.
+limits:
+  max_per_day: 3
+  min_spacing_minutes: 90
+  one_post_per_run: true
 related: [social-post-linkedin, social-schedule-week, marketing-brief-feeds]
 ---
 
@@ -41,11 +31,8 @@ user. Those are what account bans are for.
 profile.** Facebook removed `publish_actions` for personal profiles in 2018,
 so there is no API for this — driving the logged-in session is the only route.
 
-The tradeoff is recorded in `risk:` above and is accepted: automated
-interaction is against Facebook's ToS, and the realistic downside is a
-checkpoint or a restriction on the account. The mitigations below are what
-keep this looking like what it actually is — one person posting their own work
-a few times a day.
+Limits are in `limits:` above: three posts a day, 90 minutes apart, one per
+run.
 
 ## Posting through the browser
 
@@ -109,9 +96,9 @@ a few times a day.
 - **A closed composer is not a published post.** Always read back the feed.
 - **Never retry a submit blindly.** If the outcome is unclear, read the feed
   first — a blind retry is how you get duplicate posts.
-- **Stop on any interstitial.** Checkpoints, "confirm it's you", CAPTCHAs, and
-  unusual-activity screens mean the automation was detected. Abort the run and
-  tell the user. Solving them is both futile and a ToS escalation.
+- **Stop on any interstitial.** If a checkpoint, "confirm it's you", or CAPTCHA
+  screen appears, abort the run and tell the user. Do not attempt to work
+  through it.
 - **One post per run.** Batching posts in a single session is the pattern
   detection is tuned for.
 
