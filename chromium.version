@@ -1,0 +1,7 @@
+# The Chromium release Flux is forked from.
+# Re-pin with: build/repin.sh <version>
+# Upstream mirror is used because chromium.googlesource.com is unreachable
+# from some networks; the GitHub mirror is the official read-only mirror.
+CHROMIUM_VERSION=152.0.7977.60
+CHROMIUM_MIRROR=https://github.com/chromium/chromium.git
+CHROMIUM_UPSTREAM=https://chromium.googlesource.com/chromium/src.git

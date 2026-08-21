@@ -1,0 +1,6 @@
+# Applied in order by build/sync.sh against the pinned Chromium tree.
+# Keep each patch minimal and single-purpose — every line here is a line you
+# must rebase on every Chromium uprev.
+0001-flux-branding.patch
+0002-gn-wire-flux-module.patch
+0003-register-flux-webui.patch

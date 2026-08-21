@@ -1,0 +1,15 @@
+Subject: [flux] Build //chrome/browser/flux into the browser
+
+Adds the Flux agent layer as a dependency of the browser target so it is
+linked into chrome. The module itself lives outside the Chromium tree and is
+symlinked in by build/sync.sh.
+
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -2,6 +2,7 @@ static_library("browser") {
+   deps = [
++    "//chrome/browser/flux",
+     "//chrome/browser/profiles",
+     "//chrome/browser/ui",
+   ]

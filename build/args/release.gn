@@ -1,0 +1,21 @@
+import("//flux/build/args/common.gni")
+
+is_debug = false
+is_official_build = true      # enables full optimization + LTO
+is_component_build = false    # single binary; required for shipping
+
+# Symbols: level 1 keeps stack traces usable for crash triage without the
+# ~40GB and long link times of level 2.
+symbol_level = 1
+blink_symbol_level = 0
+
+# ThinLTO + PGO are the difference between "as fast as Chrome" and
+# noticeably slower. PGO profiles come from the checkout (checkout_pgo_profiles).
+use_thin_lto = true
+chrome_pgo_phase = 2
+
+# dcheck in release costs ~5% and catches real bugs in a young fork.
+# Turn off once the agent layer stabilises.
+dcheck_always_on = true
+
+target_cpu = "x64"

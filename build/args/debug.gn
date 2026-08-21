@@ -1,0 +1,15 @@
+import("//flux/build/args/common.gni")
+
+is_debug = true
+is_component_build = true     # fast incremental links while iterating
+symbol_level = 2
+blink_symbol_level = 1
+
+is_official_build = false
+use_thin_lto = false
+chrome_pgo_phase = 0
+dcheck_always_on = true
+
+# Fast rebuilds while working on the agent layer.
+use_remoteexec = false
+target_cpu = "x64"

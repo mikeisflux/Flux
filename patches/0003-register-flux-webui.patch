@@ -1,0 +1,19 @@
+Subject: [flux] Register chrome://flux WebUI
+
+Routes the Flux console (sidebar, templates, workflows, run view) through
+Chromium's WebUI infrastructure so it runs in a privileged renderer with Mojo
+access to the agent service.
+
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+--- a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
+@@ -60,6 +60,7 @@
+ #include "chrome/browser/ui/webui/about/about_ui.h"
++#include "chrome/browser/flux/webui/flux_ui.h"
+ #include "chrome/common/url_constants.h"
+ 
+@@ -420,6 +421,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
++  if (url.host_piece() == chrome::kChromeUIFluxHost)
++    return &NewWebUI<FluxUI>;
+   if (url.host_piece() == chrome::kChromeUIHistoryHost)
+     return &NewWebUI<HistoryUI>;
