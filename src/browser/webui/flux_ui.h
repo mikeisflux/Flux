@@ -7,12 +7,27 @@
 
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "chrome/browser/flux/webui/flux_page_handler.h"
+#include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/webui_config.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace flux {
+
+class FluxUI;
+
+// Chromium routes WebUI through a config registry rather than a host-matching
+// chain, so serving chrome://flux means registering this in
+// RegisterChromeWebUIConfigs.
+class FluxUIConfig : public content::DefaultWebUIConfig<FluxUI> {
+ public:
+  FluxUIConfig()
+      : DefaultWebUIConfig(content::kChromeUIScheme,
+                           chrome::kChromeUIFluxHost) {}
+};
 
 // Serves chrome://flux - the agent console (sidebar, templates, workflows,
 // connectors, customize, and the run view).

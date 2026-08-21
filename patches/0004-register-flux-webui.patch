@@ -1,19 +1,24 @@
-Subject: [flux] Register chrome://flux WebUI
+Subject: [flux] Register the chrome://flux WebUIConfig
 
-Routes the Flux console (sidebar, templates, workflows, run view) through
-Chromium's WebUI infrastructure so it runs in a privileged renderer with Mojo
-access to the agent service.
+Modern Chromium routes WebUI through a config registry rather than the
+host-comparison chain in chrome_web_ui_controller_factory.cc, which now
+handles only DevTools. Registration therefore goes in
+RegisterChromeWebUIConfigs alongside every other browser WebUI.
 
-diff --git a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
---- a/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
-+++ b/chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc
-@@ -60,6 +60,7 @@
- #include "chrome/browser/ui/webui/about/about_ui.h"
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+--- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+@@ -103,6 +103,7 @@
+ #include "chrome/browser/ui/webui/drive_picker_host/drive_picker_host_ui.h"
+ #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 +#include "chrome/browser/flux/webui/flux_ui.h"
- #include "chrome/common/url_constants.h"
- 
-@@ -420,6 +421,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
-+  if (url.host_piece() == chrome::kChromeUIFluxHost)
-+    return &NewWebUI<FluxUI>;
-   if (url.host_piece() == chrome::kChromeUIHistoryHost)
-     return &NewWebUI<HistoryUI>;
+ #include "chrome/browser/ui/webui/history/history_ui.h"
+ #include "chrome/browser/ui/webui/infobar_internals/infobar_internals_ui.h"
+ #include "chrome/browser/ui/webui/inspect/inspect_ui.h"
+@@ -354,6 +355,7 @@ void RegisterChromeWebUIConfigs() {
+   map.AddWebUIConfig(std::make_unique<glic::GlicExperimentalOptInUIConfig>());
+   map.AddWebUIConfig(std::make_unique<FeedbackUIConfig>());
++  map.AddWebUIConfig(std::make_unique<flux::FluxUIConfig>());
+   map.AddWebUIConfig(std::make_unique<HistoryUIConfig>());
+   map.AddWebUIConfig(std::make_unique<HistorySidePanelUIConfig>());
+   map.AddWebUIConfig(std::make_unique<HistoryClustersSidePanelUIConfig>());

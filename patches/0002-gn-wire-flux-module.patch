@@ -1,15 +1,17 @@
-Subject: [flux] Build //chrome/browser/flux into the browser
+Subject: [flux] Build //chrome/browser/flux into the WebUI configs target
 
-Adds the Flux agent layer as a dependency of the browser target so it is
-linked into chrome. The module itself lives outside the Chromium tree and is
-symlinked in by build/sync.sh.
+chrome_web_ui_configs.cc references FluxUIConfig, so the source_set that owns
+it needs the dependency. This is deliberately NOT a dep of the monolithic
+chrome/browser target - that target no longer exists as such, and the configs
+target is the minimal correct place.
 
-diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
---- a/chrome/browser/BUILD.gn
-+++ b/chrome/browser/BUILD.gn
-@@ -2,6 +2,7 @@ static_library("browser") {
-   deps = [
+diff --git a/chrome/browser/ui/webui/BUILD.gn b/chrome/browser/ui/webui/BUILD.gn
+--- a/chrome/browser/ui/webui/BUILD.gn
++++ b/chrome/browser/ui/webui/BUILD.gn
+@@ -54,6 +54,7 @@ source_set("configs") {
+     ":webui",
+     "//chrome/browser/actor/ui:actor_overlay",
+     "//chrome/browser/contextual_tasks:ui",
 +    "//chrome/browser/flux",
-     "//chrome/browser/profiles",
-     "//chrome/browser/ui",
-   ]
+     "//chrome/browser/glic",
+     "//chrome/browser/glic:impl",
