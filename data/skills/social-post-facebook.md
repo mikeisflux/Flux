@@ -63,6 +63,67 @@ propose moving that content to a Page rather than running a browser job.
 logged-in session is the only route, and it is the risky one. Say so to the
 user before the first run, not after.
 
+## Quickstart: a small business posting a few times a day
+
+This is the common case — one person promoting their own work, a handful of
+posts a day, images doing most of the selling. **It runs entirely on the API
+path.** No browser automation, no ToS exposure, no detection question, and the
+machine does not need to be awake when the posts go out.
+
+Setup is one-time, maybe twenty minutes:
+
+1. **Post as a Page, not a personal profile.** For a business this is correct
+   on every axis, independent of automation: Insights and reach data, native
+   scheduling, no 5,000-friend ceiling, no risk of a personal account
+   restriction taking the business offline with it. Personal profiles have no
+   API at all, so posting to one is the *only* reason to touch the browser.
+
+2. **Create a Meta app** at developers.facebook.com, add the *Facebook Login*
+   product, and request `pages_show_list`, `pages_manage_posts`, and
+   `pages_read_engagement`. As the Page admin you do not need App Review for
+   your own Page.
+
+3. **Get a non-expiring Page token.** Exchange the short-lived user token for a
+   long-lived one, then derive the Page token from it — Page tokens obtained
+   this way do not expire, so this is genuinely a one-time step:
+   ```
+   GET /oauth/access_token?grant_type=fb_exchange_token&fb_exchange_token=<short>
+   GET /me/accounts        # returns the Page token
+   ```
+
+4. **Queue the day's posts.** Schedule between 10 minutes and 6 months ahead:
+   ```
+   POST /{page-id}/photos
+     url=<image url>            (or source=<upload>)
+     caption=<text>
+     published=false
+     scheduled_publish_time=<unix seconds>
+   ```
+   Use `/photos` rather than `/feed` for image posts — for visual work the
+   image is the post, and `/feed` with a `link` produces a link preview card
+   instead of a full-bleed image.
+
+5. **Let the workflow batch it.** A scheduled Flux workflow that runs once each
+   morning, picks the day's three images and captions, and queues them all via
+   the API is strictly better than three separate runs: one execution, three
+   posts, delivered by Facebook whether or not your machine is on.
+
+### What this costs
+
+Three scheduled API posts a day is one short agent run each morning — a few
+thousand tokens to select and caption, then three HTTP calls. Well under a
+cent a day at current model pricing. The browser path would cost more in
+tokens (page snapshots on every step) *and* carry the account risk, for a
+worse result.
+
+### When you would still need the browser
+
+- Posting to a personal profile rather than a Page.
+- Reading or replying to comments beyond what the API exposes.
+- Anything in Groups — the Groups API was substantially closed in 2024.
+
+For a business promoting its own work, none of those are on the critical path.
+
 ## Posting through the browser
 
 1. **Confirm the session.** Navigate to `https://www.facebook.com/` and
