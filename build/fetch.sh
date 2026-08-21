@@ -38,17 +38,13 @@ GCLIENT
 fi
 
 if [ ! -d src ]; then
-  log "Fetching Chromium (this takes 1-3 hours)"
-  # --no-history keeps the checkout to ~50GB instead of ~90GB. A fork that
-  # needs to bisect upstream should drop this flag.
-  git clone --no-checkout "$CHROMIUM_MIRROR" src
+  log "Fetching Chromium $CHROMIUM_VERSION (30-60 min)"
+  # Shallow-clone the pinned tag directly: ~30GB instead of ~70GB with history.
+  # A fork that needs to bisect upstream should drop --depth and fetch tags.
+  git clone --depth 1 --branch "$CHROMIUM_VERSION" "$CHROMIUM_MIRROR" src
 fi
 
 cd src
-log "Checking out $CHROMIUM_VERSION"
-git fetch --depth 1 origin "refs/tags/$CHROMIUM_VERSION:refs/tags/$CHROMIUM_VERSION" || \
-  git fetch origin "refs/tags/$CHROMIUM_VERSION:refs/tags/$CHROMIUM_VERSION"
-git checkout "tags/$CHROMIUM_VERSION"
 
 log "Running gclient sync (pulls third_party DEPS; 1-2 hours)"
 gclient sync --with_branch_heads --with_tags -D --nohooks
