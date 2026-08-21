@@ -55,7 +55,7 @@ in the sidebar — worth noting since the sidebar is otherwise Arc-shaped.
 ### 1.3 Titlebar, right cluster
 | Element | Notes |
 |---|---|
-| Avatar | 28px circle, magenta/pink fill, white initials `MW` |
+| Avatar | 28px circle, magenta/pink fill, white initials — opens the account menu (see `07-account-menu.md`; all browser surface — bookmarks, history, downloads, passwords, extensions — lives there) |
 | Minimize | Windows-style `—` |
 | Maximize | Windows-style `▢` |
 | Close | Windows-style `×` |
