@@ -38,9 +38,13 @@ else {
   else { Bad "Filesystem is $($vol.FileSystemType). Chromium REQUIRES NTFS - exFAT/FAT32 will fail the build. Reformat as NTFS." }
 
   $freeGB = [math]::Round($vol.SizeRemaining / 1GB, 1)
-  if ($freeGB -ge 250) { Ok "$freeGB GB free" }
-  elseif ($freeGB -ge 150) { Warn "$freeGB GB free - enough for checkout + one dev build, but tight" }
-  else { Bad "$freeGB GB free - need 150 GB minimum" }
+  $isSystem = ($letter -eq $env:SystemDrive.TrimEnd(':'))
+  # Building on the system drive needs ~50GB extra for pagefile, temp and updates.
+  $floor = if ($isSystem) { 200 } else { 150 }
+  if ($isSystem) { Write-Host "  [note] Building on the system drive - keeping 50GB reserved for Windows" -ForegroundColor DarkGray }
+  if ($freeGB -ge ($floor + 100)) { Ok "$freeGB GB free" }
+  elseif ($freeGB -ge $floor) { Warn "$freeGB GB free - enough for checkout + one dev build. Do not also build 'release' without freeing space." }
+  else { Bad "$freeGB GB free - need $floor GB minimum on this drive" }
 
   # Media type: SD cards and spinning disks are the difference between a 3h
   # build and a 20h one. Chromium's ~400k files make this IOPS-bound.
@@ -106,11 +110,15 @@ else {
 # --- Defender --------------------------------------------------------------
 # Real-time scanning of a 400k-file build can double total build time.
 Write-Host "`nDefender" -ForegroundColor Cyan
-$target = "$CheckoutDrive\chromium"
+$target = "$CheckoutDrive\flux-build"   # matches fetch.ps1 layout
 $excl = (Get-MpPreference -ErrorAction SilentlyContinue).ExclusionPath
 if ($excl -and ($excl -contains $target)) { Ok "Checkout path excluded from real-time scanning" }
 else {
-  if ($Fix -and $admin) { Add-MpPreference -ExclusionPath $target; Ok "Excluded $target from Defender" }
+  if ($Fix -and $admin) {
+    New-Item -ItemType Directory -Force -Path $target | Out-Null
+    Add-MpPreference -ExclusionPath $target
+    Ok "Excluded $target from Defender"
+  }
   else { Warn "Add a Defender exclusion for $target - worth up to 2x build time. Add-MpPreference -ExclusionPath '$target'" }
 }
 
