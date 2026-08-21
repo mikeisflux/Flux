@@ -26,6 +26,52 @@ If you're under 150 GB free, stop here — it will fail three hours in.
 
 ---
 
+## 1b. Reference machine profile
+
+A concrete example, for calibration — Ryzen 9 9955HX (16C/32T), 64 GB
+DDR5-5600, 1.82 TB NVMe:
+
+| Resource | Status |
+|---|---|
+| Cores | 16C/32T — **well above** the comfortable tier |
+| RAM | 64 GB — full parallelism, no `-j` capping needed |
+| Disk | **~280 GB free of 1.82 TB — the one to watch** |
+
+Expected on this class of machine:
+
+| Build | WSL2 / Linux | Native Windows |
+|---|---|---|
+| `dev`, first build | 1.5–2.5 h | 2.5–3.5 h |
+| `release`, first build | 5–7 h | 7–9 h |
+| Incremental (agent layer) | seconds–1 min | 1–2 min |
+
+At 64 GB, `build/build.sh` will not cap link jobs — 32 threads × ~1.5 GB is
+~48 GB peak, which fits.
+
+### Budgeting ~280 GB of free space
+
+| Item | Size |
+|---|---|
+| Chromium checkout (`--no-history`, no Android/iOS) | ~100 GB |
+| `out/Dev` | ~35 GB |
+| `out/Release` (only if you build it) | ~60 GB |
+| ccache (optional, `CCACHE_MAXSIZE`) | 20–50 GB |
+| **Leave free for Windows** (pagefile, temp, updates) | **≥50 GB** |
+
+A checkout plus a `dev` build is ~135 GB, leaving ~145 GB of headroom.
+Comfortable. Two things to avoid:
+
+- **Don't keep `out/Dev` and `out/Release` around simultaneously** unless you
+  need to. That's ~95 GB of build output against a 280 GB budget.
+- **Don't run both a native Windows and a WSL2 checkout.** That's two ~100 GB
+  trees. Pick one route (below) and commit to it.
+
+If it gets tight: `gclient sync -D` prunes stale deps, and
+`ninja -C out/Dev -t clean` reclaims build output without touching the
+checkout.
+
+---
+
 ## 2. Realistic build times
 
 For the **`dev`** config (`build/build.sh dev`), which is what you want for
@@ -109,6 +155,18 @@ Two WSL2 rules that matter more than anything else:
   swap=16GB
   ```
   Swap matters — it's what saves a 16 GB machine from OOMing during link.
+
+  On a 64 GB / 16-core machine, give it most of the box and skip swap
+  entirely — there is nothing to protect against:
+  ```ini
+  [wsl2]
+  memory=48GB
+  processors=16
+  swap=0
+  ```
+  Leave ~16 GB for Windows itself. Note `processors=16` means 16 *logical*
+  processors by default; set it to 32 to hand WSL2 all threads on a 16C/32T
+  part.
 
 **Recommendation:** start with WSL2 to get the agent layer working, and set up
 the native Windows toolchain later, when you actually need a distributable
