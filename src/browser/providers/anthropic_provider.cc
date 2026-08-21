@@ -26,10 +26,11 @@ constexpr char kApiVersion[] = "2023-06-01";
 // the request is dispatched rather than discovering an overrun afterwards.
 struct Pricing { const char* model; double input; double output; };
 constexpr Pricing kPricing[] = {
-    {"claude-opus-5",             15.00, 75.00},
-    {"claude-sonnet-5",            3.00, 15.00},
-    {"claude-fable-5",             3.00, 15.00},
-    {"claude-haiku-4-5-20251001",  1.00,  5.00},
+    {"claude-fable-5",   10.00, 50.00},
+    {"claude-opus-5",     5.00, 25.00},
+    {"claude-opus-4-8",   5.00, 25.00},
+    {"claude-sonnet-5",   3.00, 15.00},
+    {"claude-haiku-4-5",  1.00,  5.00},
 };
 
 double LookupPrice(const std::string& model, bool output) {
@@ -39,7 +40,7 @@ double LookupPrice(const std::string& model, bool output) {
   }
   // Unknown model: assume the most expensive tier so a budget is never
   // silently under-charged.
-  return output ? 75.00 : 15.00;
+  return output ? 50.00 : 10.00;
 }
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
