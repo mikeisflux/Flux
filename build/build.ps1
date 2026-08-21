@@ -56,9 +56,48 @@ if ($freeGB -lt $need) {
 Set-Location $Src
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
 
-# GN reads args.gn from the output dir. Our configs import a shared .gni via
-# //flux/, which requires the junction created by sync.ps1.
+# GN reads args.gn out of the output directory, so the config is copied in
+# rather than referenced. Each args file is self-contained - GN's // resolves
+# against the Chromium root, not this repo, so there is nothing to import.
 Copy-Item "$FluxRoot\build\args\$Config.gn" "$Out\args.gn" -Force
+
+# Point Chromium at the local Visual Studio.
+#
+# With DEPOT_TOOLS_WIN_TOOLCHAIN=0, build/vs_toolchain.py locates VS by testing
+# a hardcoded list of paths (_GenerateCandidatePaths). That list expects VS 2022
+# under %ProgramFiles% - but the Build Tools installer's default is
+# %ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools, which is not on
+# the list. A perfectly good toolchain then reports as
+# "No supported Visual Studio can be found."
+#
+# The list is consulted after $env:vs<year>_install, so setting that resolves
+# it. Note GYP_MSVS_OVERRIDE_PATH does NOT: GetToolchainDir calls
+# GetVisualStudioVersion separately, and that only reads the candidate paths.
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+if (Test-Path $vswhere) {
+  # -products * includes Build Tools SKUs, which the default query omits.
+  $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  try {
+    $vs = & $vswhere -products * -all -latest `
+                     -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+                     -format json | ConvertFrom-Json | Select-Object -First 1
+  } finally { $ErrorActionPreference = $prev }
+  if ($vs) {
+    $year = switch ([int]$vs.installationVersion.Split('.')[0]) {
+      18 { '2026' } 17 { '2022' } 16 { '2019' } 15 { '2017' } default { $null }
+    }
+    if ($year) {
+      Set-Item -Path "env:vs${year}_install" -Value $vs.installationPath
+      Log "Visual Studio $year at $($vs.installationPath)"
+    } else {
+      Write-Host "  [warn] VS $($vs.installationVersion) is not a version Chromium supports." -ForegroundColor Yellow
+    }
+  } else {
+    Write-Host "  [warn] No VS install with the C++ x64 toolset. Run build\setup-windows.ps1." -ForegroundColor Yellow
+  }
+} else {
+  Write-Host "  [warn] vswhere.exe not found - cannot locate Visual Studio." -ForegroundColor Yellow
+}
 
 Log "gn gen $Out"
 Invoke-Native "$DepotTools\gn.bat" gen $Out
