@@ -12,6 +12,7 @@ build_webui("resources") {
     "app.ts",
     "runs.ts",
     "approvals.ts",
+    "settings.ts",
   ]
   mojo_files_deps = [ "//chrome/browser/flux:mojo_bindings_ts__generator" ]
   mojo_files = [

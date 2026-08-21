@@ -12,6 +12,7 @@ import {
 
 import {RunList} from './runs.js';
 import {ApprovalQueue} from './approvals.js';
+import {SettingsView} from './settings.js';
 
 /**
  * Owns the Mojo connection and routes browser-process events to the views.
@@ -24,6 +25,7 @@ class FluxApp {
   private handler: FluxPageHandlerRemote;
   private runs: RunList;
   private approvals: ApprovalQueue;
+  private settings: SettingsView;
 
   constructor() {
     this.handler = new FluxPageHandlerRemote();
@@ -43,6 +45,8 @@ class FluxApp {
         document.getElementById('approvals-nav')!,
         document.getElementById('approvals-badge')!,
         this.handler);
+
+    this.settings = new SettingsView(this.handler);
 
     this.bindNav();
     void this.refresh();
@@ -68,6 +72,10 @@ class FluxApp {
 
   private render(view: string) {
     const content = document.getElementById('content')!;
+    if (view === 'agent') {
+      void this.settings.render(content);
+      return;
+    }
     content.replaceChildren();
     const h1 = document.createElement('h1');
     h1.textContent = view.replace('-', ' ').replace(/^\w/, c => c.toUpperCase());
