@@ -38,7 +38,12 @@ if (-not (Test-Path $Src)) { throw "No checkout at $Src. Run build\fetch.ps1 fir
 
 function Log($m) { Write-Host "==> $m" -ForegroundColor Cyan }
 
-Set-Location $Src
+# Push, don't Set: these scripts are chained on one line, and a bare
+# Set-Location leaves the caller's shell parked in the Chromium tree, where the
+# next command in the chain no longer resolves. The finally runs on throw and
+# on exit alike.
+Push-Location $Src
+try {
 
 Log "Resetting tree to pristine"
 $ErrorActionPreference = 'Continue'
@@ -110,3 +115,6 @@ if ($failed) {
 }
 
 Log "Sync complete. Next: .\build\build.ps1 -CheckoutDrive $CheckoutDrive"
+} finally {
+  Pop-Location
+}

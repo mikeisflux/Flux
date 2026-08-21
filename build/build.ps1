@@ -53,7 +53,12 @@ if ($freeGB -lt $need) {
   Write-Host "  [warn] Low space - the build may fail partway." -ForegroundColor Yellow
 }
 
-Set-Location $Src
+# Push, don't Set: these scripts are chained on one line, and a bare
+# Set-Location leaves the caller's shell parked in the Chromium tree, where the
+# next command in the chain no longer resolves. The finally runs on throw and
+# on exit alike.
+Push-Location $Src
+try {
 New-Item -ItemType Directory -Force -Path $Out | Out-Null
 
 # GN reads args.gn out of the output directory, so the config is copied in
@@ -114,3 +119,6 @@ $sw.Stop()
 
 Log "Built in $($sw.Elapsed.ToString('hh\:mm\:ss'))"
 Write-Host "  $Src\$Out\chrome.exe" -ForegroundColor Green
+} finally {
+  Pop-Location
+}
