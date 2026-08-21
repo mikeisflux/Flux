@@ -1,0 +1,140 @@
+// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
+//
+// The contract between the chrome://flux WebUI renderer and the browser-process
+// agent service. Everything the console can do goes through here.
+
+module flux.mojom;
+
+import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
+
+// What a task is permitted to do without stopping to ask. Derived from the
+// reference product, where write-safety was stated only in prose
+// ("left unsent", "nothing sends without you") and never enforced.
+// Flux makes it structural: the runner refuses any tool call whose effect
+// exceeds the declared scope.
+enum WriteScope {
+  kReadOnly,   // navigate, read, extract. No mutation of remote state.
+  kDraft,      // may compose and save drafts; may not transmit.
+  kSend,       // may send messages, submit forms, post content.
+  kPurchase,   // may complete transactions. Always gated on approval.
+};
+
+// How a service is reached. The reference product conflated these behind
+// identical connector icons; their latency, reliability and failure modes are
+// completely different, so the user is told which one a task depends on.
+enum Transport {
+  kApi,        // authenticated API. Stable contract, rate-limited.
+  kBrowser,    // driving a live page. Breaks when the site changes.
+};
+
+enum RunState {
+  kQueued,          // waiting on the parallelism cap
+  kRunning,
+  kAwaitingApproval,
+  kPaused,
+  kSucceeded,
+  kFailed,
+  kCancelled,
+};
+
+enum Provider {
+  kAnthropic,
+  kOpenAI,
+};
+
+struct ModelConfig {
+  Provider provider;
+  string model;              // e.g. "claude-opus-5", "gpt-5"
+  uint32 max_output_tokens;
+  // Fall back to the other provider if the primary errors or is rate-limited.
+  bool allow_failover;
+};
+
+// A single action the agent took. The full ordered list is the run's audit
+// trail, and is also what gets compiled into a deterministic replay.
+struct ActionRecord {
+  string tool_name;
+  string summary;            // human-readable: "Clicked 'Next page'"
+  url.mojom.Url? page_url;
+  mojo_base.mojom.Time started_at;
+  mojo_base.mojom.Time finished_at;
+  bool succeeded;
+  string? error;
+  // Set when this action required and received human approval.
+  bool was_approved;
+};
+
+// Raised when the agent wants to do something beyond its WriteScope.
+// The run blocks until resolved.
+struct ApprovalRequest {
+  string run_id;
+  string tool_name;
+  string rationale;          // why the agent wants to do this
+  string effect_summary;     // plain language: "Send this email to 12 people"
+  url.mojom.Url? page_url;
+  // Rendered so the user can see exactly what will happen.
+  string? payload_preview;
+};
+
+struct RunProgress {
+  string run_id;
+  RunState state;
+  string? current_step;
+  uint32 actions_taken;
+  // Metered cost. The reference product bills in credits but surfaces cost
+  // nowhere in the task UI; Flux reports it live.
+  uint32 input_tokens;
+  uint32 output_tokens;
+  uint64 credits_spent;
+};
+
+struct TaskSpec {
+  string prompt;
+  string? template_id;
+  WriteScope write_scope;
+  ModelConfig model;
+  // Chromium profile this run acts as. Parallel runs get isolated contexts by
+  // default so they cannot collide over cookies or single-session services.
+  string profile_id;
+  // Hard ceiling; the run fails closed rather than billing indefinitely.
+  uint64 credit_budget;
+};
+
+// Browser -> renderer. Live updates for the console.
+interface FluxPageHandlerObserver {
+  OnRunProgress(RunProgress progress);
+  OnAction(string run_id, ActionRecord action);
+  OnApprovalRequested(ApprovalRequest request);
+  OnRunFinished(string run_id, RunState final_state, string? summary);
+  // Emitted when the agent writes back to the Instructions buffer, so the UI
+  // can show provenance rather than silently mutating what the user wrote.
+  OnLearnedFact(string fact, string source_run_id);
+};
+
+// Renderer -> browser.
+interface FluxPageHandler {
+  StartRun(TaskSpec spec) => (string run_id, string? error);
+  CancelRun(string run_id);
+  PauseRun(string run_id);
+  ResumeRun(string run_id);
+
+  ResolveApproval(string run_id, bool approved, string? user_note);
+
+  ListRuns() => (array<RunProgress> runs);
+  GetActions(string run_id) => (array<ActionRecord> actions);
+
+  // Compile a successful run's action trace into a deterministic script that
+  // replays without model inference. Turns an expensive agentic run into a
+  // near-free repeatable one — the main lever against per-run credit cost.
+  CompileReplay(string run_id) => (string? workflow_id, string? error);
+
+  // Resolved concurrency, so the UI can show "Auto - 4 concurrent on this
+  // machine" instead of an opaque setting.
+  GetConcurrencyLimit() => (uint32 limit, uint32 active, uint32 queued);
+};
+
+interface FluxPageHandlerFactory {
+  CreatePageHandler(pending_remote<FluxPageHandlerObserver> observer,
+                    pending_receiver<FluxPageHandler> handler);
+};
