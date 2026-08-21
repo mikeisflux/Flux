@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -298,8 +299,10 @@ void PageContext::ClickNode(int32_t node_id, ActionCallback callback) {
     return;
   }
 
+  // RenderFrameHost::GetRenderWidgetHost is the documented preferred path.
+  content::RenderFrameHost* frame = web_contents_->GetPrimaryMainFrame();
   content::RenderWidgetHost* widget =
-      web_contents_->GetRenderViewHost()->GetWidget();
+      frame ? frame->GetRenderWidgetHost() : nullptr;
   if (!widget) {
     std::move(callback).Run(false);
     return;
@@ -340,8 +343,10 @@ void PageContext::TypeIntoNode(int32_t node_id,
 
   ClickNode(node_id, base::DoNothing());
 
+  // RenderFrameHost::GetRenderWidgetHost is the documented preferred path.
+  content::RenderFrameHost* frame = web_contents_->GetPrimaryMainFrame();
   content::RenderWidgetHost* widget =
-      web_contents_->GetRenderViewHost()->GetWidget();
+      frame ? frame->GetRenderWidgetHost() : nullptr;
   if (!widget) {
     std::move(callback).Run(false);
     return;

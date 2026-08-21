@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <utility>
 
+// Membership tests below use std::find rather than the base:: helper, whose
+// header does not exist at this revision.
+
 #include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -93,18 +96,18 @@ std::optional<base::Time> WorkflowScheduler::NextFireTime(
   base::Time::Exploded exploded;
   for (int i = 0; i < 366 * 24 * 60; ++i, candidate += base::Minutes(1)) {
     candidate.LocalExplode(&exploded);
-    if (!base::Contains(minutes, exploded.minute))
+    if (std::find(minutes.begin(), minutes.end(), exploded.minute) == minutes.end())
       continue;
-    if (!base::Contains(hours, exploded.hour))
+    if (std::find(hours.begin(), hours.end(), exploded.hour) == hours.end())
       continue;
-    if (!base::Contains(months, exploded.month))
+    if (std::find(months.begin(), months.end(), exploded.month) == months.end())
       continue;
 
     // cron's historical quirk: when both day-of-month and day-of-week are
     // restricted, a match on EITHER fires. Getting this wrong makes
     // "1st of the month" and "every Monday" silently wrong together.
-    const bool dom_match = base::Contains(doms, exploded.day_of_month);
-    const bool dow_match = base::Contains(dows, exploded.day_of_week);
+    const bool dom_match = std::find(doms.begin(), doms.end(), exploded.day_of_month) != doms.end();
+    const bool dow_match = std::find(dows.begin(), dows.end(), exploded.day_of_week) != dows.end();
     if (dom_restricted && dow_restricted) {
       if (!dom_match && !dow_match)
         continue;
