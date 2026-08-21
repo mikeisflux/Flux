@@ -104,8 +104,24 @@ if (Test-Path $vswhere) {
   Write-Host "  [warn] vswhere.exe not found - cannot locate Visual Studio." -ForegroundColor Yellow
 }
 
+# autoninja refuses to switch build runners inside a populated output directory
+# ("Run gn clean before switching from siso to ninja"). Rather than sniff for
+# whatever state files siso leaves behind - a filename we would be guessing at,
+# and a guess that fails silently - record what we generated with and compare.
+# Correct by construction, and it catches a switch in either direction.
+$runner = if (Select-String -Path "$Out\args.gn" -Pattern '^\s*use_siso\s*=\s*false' -Quiet) { 'ninja' } else { 'siso' }
+$stamp = "$Out\.flux_runner"
+$previous = if (Test-Path $stamp) { (Get-Content $stamp -Raw).Trim() } else { '' }
+# No stamp beside an existing build.ninja means the dir predates this check,
+# so its runner is unknown and a clean is the safe read.
+if ((Test-Path "$Out\build.ninja") -and $previous -ne $runner) {
+  Log "Build runner is now $runner: gn clean $Out"
+  Invoke-Native "$DepotTools\gn.bat" clean $Out
+}
+
 Log "gn gen $Out"
 Invoke-Native "$DepotTools\gn.bat" gen $Out
+Set-Content -Path $stamp -Value $runner
 
 $ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 $jobs = @()
