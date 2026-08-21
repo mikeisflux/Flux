@@ -2,6 +2,33 @@
   "version": 1,
   "skills": [
     {
+      "file": "ai-agent-design.md",
+      "name": "Design an agent that actually finishes the job",
+      "command": "ai-agent-design",
+      "category": "Engineering, Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A design for the agent's tools, scope, and stop conditions \u2014 or a recommendation not to build one"
+    },
+    {
+      "file": "ai-prompt-engineering.md",
+      "name": "Write a prompt that actually works",
+      "command": "ai-prompt-engineering",
+      "category": "Docs, Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A prompt rewritten to be specific, testable, and free of scaffolding that hurts modern models"
+    },
+    {
+      "file": "ai-workflow-automation.md",
+      "name": "Work out what to automate and build it",
+      "command": "ai-workflow-automation",
+      "category": "Ops, Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A shortlist of what is worth automating, with the highest-value one specified and built"
+    },
+    {
       "file": "data-ai-paper-reading-digest.md",
       "name": "AI paper reading & digest",
       "command": "data-ai-paper-reading-digest",
