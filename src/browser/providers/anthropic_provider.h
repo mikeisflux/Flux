@@ -24,6 +24,9 @@ namespace flux {
 class AnthropicProvider : public LLMProvider {
  public:
   explicit AnthropicProvider(Profile* profile);
+  // Uses `key` instead of the stored credential. Used to validate a candidate
+  // key before it is written to disk.
+  AnthropicProvider(Profile* profile, std::string key);
   ~AnthropicProvider() override;
 
   // LLMProvider:
@@ -43,6 +46,8 @@ class AnthropicProvider : public LLMProvider {
                   std::unique_ptr<std::string> body);
 
   raw_ptr<Profile> profile_;
+  // When set, overrides the stored key.
+  std::string explicit_key_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   base::WeakPtrFactory<AnthropicProvider> weak_factory_{this};
 };

@@ -70,6 +70,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 }  // namespace
 
 AnthropicProvider::AnthropicProvider(Profile* profile) : profile_(profile) {}
+
+AnthropicProvider::AnthropicProvider(Profile* profile, std::string key)
+    : profile_(profile), explicit_key_(std::move(key)) {}
 AnthropicProvider::~AnthropicProvider() = default;
 
 std::string AnthropicProvider::GetProviderName() const { return "anthropic"; }
@@ -150,7 +153,8 @@ std::string AnthropicProvider::BuildRequestBody(
 
 void AnthropicProvider::Complete(CompletionRequest request,
                                  CompletionCallback callback) {
-  const std::string key = GetApiKey(profile_, "anthropic");
+  const std::string key =
+      explicit_key_.empty() ? GetApiKey(profile_, "anthropic") : explicit_key_;
   if (key.empty()) {
     CompletionResponse r;
     r.error = "No Anthropic API key configured. Add one in Settings > Agent.";

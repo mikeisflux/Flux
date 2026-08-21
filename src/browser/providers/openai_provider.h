@@ -25,6 +25,9 @@ namespace flux {
 class OpenAIProvider : public LLMProvider {
  public:
   explicit OpenAIProvider(Profile* profile);
+  // Uses `key` instead of the stored credential. Used to validate a candidate
+  // key before it is written to disk.
+  OpenAIProvider(Profile* profile, std::string key);
   ~OpenAIProvider() override;
 
   // LLMProvider:
@@ -44,6 +47,8 @@ class OpenAIProvider : public LLMProvider {
                   std::unique_ptr<std::string> body);
 
   raw_ptr<Profile> profile_;
+  // When set, overrides the stored key.
+  std::string explicit_key_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   base::WeakPtrFactory<OpenAIProvider> weak_factory_{this};
 };

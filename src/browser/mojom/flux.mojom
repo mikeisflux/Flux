@@ -132,6 +132,39 @@ interface FluxPageHandler {
   // Resolved concurrency, so the UI can show "Auto - 4 concurrent on this
   // machine" instead of an opaque setting.
   GetConcurrencyLimit() => (uint32 limit, uint32 active, uint32 queued);
+
+  // --- Provider credentials -------------------------------------------------
+
+  ListProviderKeys() => (array<ProviderKeyStatus> statuses);
+
+  // Validates the key against the provider with a minimal request, then stores
+  // it encrypted only if it works. Validating before storing means the user
+  // finds out the key is wrong here, rather than three steps into a task that
+  // then fails.
+  SetProviderKey(Provider provider, string key)
+      => (bool stored, string? error);
+
+  ClearProviderKey(Provider provider);
+
+  // Re-checks a stored key. Keys get revoked and quotas get exhausted; a
+  // scheduled workflow failing at 7am should not be the first sign of it.
+  ValidateProviderKey(Provider provider) => (bool valid, string? error);
+};
+
+// What the console is allowed to know about a stored key. Deliberately never
+// the key itself: once written it is only ever read by the browser process on
+// its way to the provider. The renderer gets enough to render state and no
+// more.
+struct ProviderKeyStatus {
+  Provider provider;
+  bool configured;
+  // Last four characters, for "is this the key I think it is". Empty when
+  // not configured.
+  string hint;
+  // Result of the last validation, so the console can distinguish "saved"
+  // from "saved and known to work".
+  bool validated;
+  string? last_error;
 };
 
 interface FluxPageHandlerFactory {

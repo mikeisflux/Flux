@@ -3,6 +3,7 @@
 #ifndef CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 #define CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,19 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void CompileReplay(const std::string& run_id,
                      CompileReplayCallback callback) override;
   void GetConcurrencyLimit(GetConcurrencyLimitCallback callback) override;
+  void ListProviderKeys(ListProviderKeysCallback callback) override;
+  void SetProviderKey(mojom::Provider provider,
+                      const std::string& key,
+                      SetProviderKeyCallback callback) override;
+  void ClearProviderKey(mojom::Provider provider) override;
+  void ValidateProviderKey(mojom::Provider provider,
+                           ValidateProviderKeyCallback callback) override;
+
+  // Issues a minimal completion to confirm the key is accepted. Shared by
+  // SetProviderKey and ValidateProviderKey.
+  void ProbeKey(mojom::Provider provider,
+                const std::string& key,
+                base::OnceCallback<void(bool, std::string)> done);
 
   // FluxAgentService::Observer:
   void OnRunProgress(const mojom::RunProgress& progress) override;
@@ -63,10 +77,13 @@ class FluxPageHandler : public mojom::FluxPageHandler,
 
   raw_ptr<Profile> profile_;
   raw_ptr<FluxAgentService> service_;
+  // Providers whose stored key has been confirmed to work this session.
+  std::set<std::string> validated_;
   mojo::Receiver<mojom::FluxPageHandler> receiver_;
   mojo::Remote<mojom::FluxPageHandlerObserver> observer_;
   base::ScopedObservation<FluxAgentService, FluxAgentService::Observer>
       observation_{this};
+  base::WeakPtrFactory<FluxPageHandler> weak_factory_{this};
 };
 
 }  // namespace flux

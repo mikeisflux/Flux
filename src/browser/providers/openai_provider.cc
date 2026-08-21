@@ -68,6 +68,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 }  // namespace
 
 OpenAIProvider::OpenAIProvider(Profile* profile) : profile_(profile) {}
+
+OpenAIProvider::OpenAIProvider(Profile* profile, std::string key)
+    : profile_(profile), explicit_key_(std::move(key)) {}
 OpenAIProvider::~OpenAIProvider() = default;
 
 std::string OpenAIProvider::GetProviderName() const { return "openai"; }
@@ -156,7 +159,8 @@ std::string OpenAIProvider::BuildRequestBody(
 
 void OpenAIProvider::Complete(CompletionRequest request,
                               CompletionCallback callback) {
-  const std::string key = GetApiKey(profile_, "openai");
+  const std::string key =
+      explicit_key_.empty() ? GetApiKey(profile_, "openai") : explicit_key_;
   if (key.empty()) {
     CompletionResponse r;
     r.error = "No OpenAI API key configured. Add one in Settings > Agent.";
