@@ -1,0 +1,161 @@
+/* Flux console.
+ *
+ * Deliberately no accent color in the chrome: the only saturated pixels are
+ * third-party service icons, so the eye goes straight to what a task touches.
+ * Tokens are duplicated for dark because the browser ships both themes.
+ */
+
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --fg-muted: #6b6b68;
+  --border: #e8e8e6;
+  --hover: #f1f1f0;
+  --invert-bg: #111111;
+  --invert-fg: #ffffff;
+  --danger: #c0392b;
+  --radius-card: 12px;
+  --radius-nav: 8px;
+  --sidebar-w: 305px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1b1a;
+    --fg: #f2f2f0;
+    --fg-muted: #9a9a96;
+    --border: #34343150;
+    --hover: #262624;
+    --invert-bg: #f2f2f0;
+    --invert-fg: #111111;
+    --danger: #e8705f;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 system-ui, sans-serif;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+  border-right: 1px solid var(--border);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: var(--radius-nav);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-item:hover { background: var(--hover); }
+.nav-item[aria-current="page"] { background: var(--hover); }
+.nav-item svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+
+.nav-section { margin-top: 20px; padding: 0 14px; }
+.nav-label {
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 8px;
+}
+.muted { color: var(--fg-muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.run-list { display: flex; flex-direction: column; gap: 4px; }
+.run {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.run:hover { background: var(--hover); }
+.run-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-muted); }
+.run[data-state="running"] .run-dot { background: var(--fg); animation: pulse 1.6s ease-in-out infinite; }
+.run[data-state="awaitingApproval"] .run-dot { background: var(--danger); }
+.run[data-state="queued"] .run-dot { background: transparent; border: 1.5px solid var(--fg-muted); }
+.run-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run-cost { color: var(--fg-muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+@media (prefers-reduced-motion: reduce) { .run[data-state="running"] .run-dot { animation: none } }
+
+.approvals { margin-top: auto; }
+.badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+}
+
+.content { padding: 40px 48px; overflow-y: auto; }
+
+.approval {
+  width: min(560px, 90vw);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.approval::backdrop { background: rgb(0 0 0 / .4); }
+.approval h2 { margin: 0 0 12px; font-size: 20px; }
+.approval-effect { margin: 0 0 8px; font-size: 16px; }
+.approval-rationale { margin: 0 0 16px; color: var(--fg-muted); font-size: 14px; }
+.approval-payload {
+  max-height: 220px;
+  margin: 0 0 16px;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.approval-note { display: block; margin-bottom: 20px; font-size: 13px; color: var(--fg-muted); }
+.approval-note input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+.approval-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.primary, .ghost {
+  padding: 10px 18px;
+  border-radius: 999px;
+  font: inherit;
+  cursor: pointer;
+}
+.primary { border: 0; background: var(--invert-bg); color: var(--invert-fg); }
+.ghost { border: 1px solid var(--border); background: transparent; color: inherit; }

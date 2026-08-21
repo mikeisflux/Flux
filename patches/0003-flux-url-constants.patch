@@ -1,0 +1,14 @@
+Subject: [flux] Add chrome://flux URL constants
+
+Declares the host the Flux console is served from. Required by
+chrome_web_ui_controller_factory.cc (patch 0003) and by FluxUI itself.
+
+diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_constants.h
+--- a/chrome/common/webui_url_constants.h
++++ b/chrome/common/webui_url_constants.h
+@@ -40,6 +40,8 @@ inline constexpr char kChromeUIFlagsHost[] = "flags";
+ inline constexpr char kChromeUIFlagsURL[] = "chrome://flags";
++inline constexpr char kChromeUIFluxHost[] = "flux";
++inline constexpr char kChromeUIFluxURL[] = "chrome://flux/";
+ inline constexpr char kChromeUIHistoryHost[] = "history";
+ inline constexpr char kChromeUIHistoryURL[] = "chrome://history/";
