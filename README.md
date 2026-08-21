@@ -47,33 +47,46 @@ against a codebase that ships every four weeks, multi-hour builds, and a
 
 ### Hardware
 
-Chromium is one of the largest open-source codebases in existence. These are
-minimums, not recommendations:
+**A laptop can do this.** Disk and RAM decide whether it works; cores only
+decide how long you wait. Full guide: **[`docs/10-building.md`](docs/10-building.md)**.
 
-| Resource | Minimum | Realistic |
+| Resource | Hard floor | Comfortable |
 |---|---|---|
-| Free disk | 200 GB | 300 GB SSD |
-| RAM | 32 GB | 64 GB |
-| CPU cores | 16 | 32+ |
-| First build | ~20 h @ 16 cores | 3–5 h @ 32 cores |
-| Incremental build | — | 2–10 min |
+| Free disk | 150 GB SSD | 250 GB |
+| RAM | 16 GB | 32 GB |
+| Cores | 4 | 8+ |
 
-Linking needs roughly 1.5 GB per parallel job; under 32 GB of RAM the link
-step OOMs. `build/common.sh` preflights all of this and warns before you spend
-hours discovering it.
+First `dev` build: 8–14 h on a 4-core laptop, 3–5 h on an 8-core/32 GB one,
+~2 h on a 16-core desktop. **Incremental rebuilds of the agent layer are
+1–3 minutes** — the first build is the only painful one. Run it overnight.
+
+Linking needs ~1.5 GB per parallel job; `build/build.sh` detects low RAM and
+caps `-j` automatically rather than letting the link OOM.
 
 ### Steps
 
 ```bash
 build/fetch.sh     # depot_tools + Chromium source. ~100GB, 1-3 hours. Once.
 build/sync.sh      # apply Flux patches, symlink our modules. Fast, idempotent.
-build/build.sh     # gn gen + autoninja. Hours the first time.
+build/build.sh dev # gn gen + autoninja.
 ```
 
-Then `../chromium/src/out/Release/chrome`.
+Then `../chromium/src/out/Dev/chrome`.
 
-For day-to-day work on the agent layer, `build/build.sh debug` uses a component
-build with fast incremental links.
+### Configs
+
+| Config | Use | Relative build time |
+|---|---|---|
+| `dev` *(default)* | Day-to-day agent work. No LTO/PGO, component build. | 1× |
+| `debug` | Stepping through C++ in a debugger. | ~1.5× |
+| `release` | Shipping. Official build, ThinLTO + PGO. | **4–6×** |
+
+Use `dev` unless you are cutting a binary for a user.
+
+**On Windows:** WSL2 is far easier and gives you a Linux binary — fine for
+developing the agent layer. A native `Flux.exe` needs Visual Studio 2022 and
+several non-obvious setup steps. Both routes are in
+[`docs/10-building.md`](docs/10-building.md).
 
 ### Two caveats before the first build
 

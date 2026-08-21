@@ -1,0 +1,32 @@
+# Laptop / constrained-machine development build.
+#
+# This is the config to use for day-to-day work on the agent layer. It trades
+# runtime performance and debuggability for build time and disk, and it is
+# roughly 4-6x faster to build than args/release.gn.
+#
+# Do not ship this. Use release.gn for anything a user will run.
+
+import("//flux/build/args/common.gni")
+
+is_debug = false              # debug builds are enormous and slow to link
+is_official_build = false     # <- the single biggest build-time saving
+is_component_build = true     # many small .so/.dll; links in seconds not minutes
+
+# Symbols dominate both disk and link time. Level 0 makes stack traces useless
+# but cuts build output by more than half. Raise to 1 when you need to debug.
+symbol_level = 0
+blink_symbol_level = 0
+
+# ThinLTO and PGO are what make an official build fast at runtime and slow to
+# produce. Neither is wanted while iterating.
+use_thin_lto = false
+chrome_pgo_phase = 0
+
+# Catches real bugs in a young fork; cheap in a dev build.
+dcheck_always_on = true
+
+# Trim anything not needed to exercise the agent layer.
+enable_nacl = false
+enable_print_preview = true   # keep: some agent tasks produce PDFs
+
+target_cpu = "x64"

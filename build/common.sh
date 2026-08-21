@@ -23,14 +23,28 @@ require_checkout() {
 }
 
 # Fail early rather than 6 hours into a build.
+# Thresholds differ sharply by config: an official build with LTO+PGO needs
+# far more of everything than a dev build.
 preflight() {
-  local free_gb cores ram_gb
+  local free_gb cores ram_gb config="${2:-dev}"
   free_gb=$(df -BG --output=avail "$1" 2>/dev/null | tail -1 | tr -dc '0-9')
   cores=$(nproc)
   ram_gb=$(free -g 2>/dev/null | awk '/^Mem:/{print $2}')
 
-  log "Preflight: ${free_gb}GB free, ${cores} cores, ${ram_gb}GB RAM"
-  [ "${free_gb:-0}" -ge 200 ] || warn "Chromium needs ~200GB free (checkout ~100GB + build ~80GB). Have ${free_gb}GB."
-  [ "${cores:-0}" -ge 16 ]    || warn "Only ${cores} cores. A full build takes 20h+ below 16 cores; 32+ recommended."
-  [ "${ram_gb:-0}" -ge 32 ]   || warn "Only ${ram_gb}GB RAM. Linking needs ~1.5GB/core; expect OOM under 32GB."
+  log "Preflight: ${free_gb}GB free, ${cores} cores, ${ram_gb}GB RAM (config: $config)"
+
+  # Checkout is ~100GB regardless; build output is what varies.
+  local need_disk=150 need_ram=16
+  if [ "$config" = "release" ]; then need_disk=250; need_ram=32; fi
+
+  [ "${free_gb:-0}" -ge "$need_disk" ] || \
+    warn "Need ~${need_disk}GB for a '$config' build (checkout ~100GB + output). Have ${free_gb}GB."
+  [ "${ram_gb:-0}" -ge "$need_ram" ] || \
+    warn "Only ${ram_gb}GB RAM. A '$config' build wants ${need_ram}GB+. Cap link jobs: autoninja -j2 (see docs/10-building.md)."
+  [ "${cores:-0}" -ge 8 ] || \
+    warn "Only ${cores} cores. Expect a long first build; see docs/10-building.md for realistic timings."
+
+  if [ "$config" = "release" ] && [ "${cores:-0}" -lt 16 ]; then
+    warn "Official builds on <16 cores take 15-25h. Use 'dev' while iterating."
+  fi
 }
