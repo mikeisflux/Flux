@@ -1,0 +1,9 @@
+[
+  {
+    "file": "social-post-facebook.md",
+    "name": "Post to Facebook",
+    "command": "social-post-facebook",
+    "writeScope": "send              # publishes publicly; gated on approval",
+    "description": "Publish a post to your Facebook profile or Page from your logged-in session"
+  }
+]
