@@ -1,0 +1,18 @@
+# Patches are applied against Chromium's tree, which is LF throughout. If these
+# check out as CRLF, every context line mismatches and `git apply` refuses the
+# patch even when the content is correct - with a confusing "patch does not
+# apply" that points at the content rather than the encoding.
+*.patch text eol=lf
+*.diff  text eol=lf
+
+# Shell scripts must be LF or they fail on WSL/Linux with "bad interpreter".
+*.sh    text eol=lf
+
+# GN/Python/data read by the Chromium build - keep consistent with upstream.
+*.gn    text eol=lf
+*.gni   text eol=lf
+*.py    text eol=lf
+*.mojom text eol=lf
+
+# PowerShell is Windows-native; CRLF is correct there.
+*.ps1   text eol=crlf

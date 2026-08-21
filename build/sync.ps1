@@ -69,6 +69,16 @@ Get-Content "$FluxRoot\patches\series" | ForEach-Object {
   if ($line -eq '' -or $line.StartsWith('#')) { return }
   $patch = "$FluxRoot\patches\$line"
 
+  # Normalize to LF before applying. Chromium's tree is LF throughout; if the
+  # patch arrives with CRLF (a git checkout setting away on any Windows box),
+  # every context line mismatches and git apply refuses it - reporting a
+  # content failure for what is purely an encoding difference.
+  $normalized = Join-Path ([System.IO.Path]::GetTempPath()) ("flux-" + [System.IO.Path]::GetFileName($patch))
+  [System.IO.File]::WriteAllText(
+      $normalized,
+      ([System.IO.File]::ReadAllText($patch) -replace "`r`n", "`n"))
+  $patch = $normalized
+
   # A failing --check is the normal probe result, not an error.
   $ErrorActionPreference = 'Continue'
   git apply --check $patch 2>&1 | Out-Null
