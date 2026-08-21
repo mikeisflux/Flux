@@ -9,6 +9,29 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+# Native tools (git, gclient, ninja) write progress to stderr. With
+# $ErrorActionPreference = 'Stop', PowerShell treats ANY native stderr output as
+# a terminating error, so a normal "Cloning into..." aborts the script. Run them
+# through this instead: stderr is passed through as text, and success is judged
+# by the exit code, which is the only thing that actually means anything.
+function Invoke-Native {
+  param(
+    [Parameter(Mandatory=$true)][string]$Exe,
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments
+  )
+  $previous = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $Exe @Arguments 2>&1 | ForEach-Object { "$_" }
+    $code = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previous
+  }
+  if ($code -ne 0) {
+    throw "$Exe exited with code $code"
+  }
+}
+
 $FluxRoot   = Split-Path -Parent $PSScriptRoot
 $Root       = "$CheckoutDrive\flux-build"
 $DepotTools = "$Root\depot_tools"
@@ -38,8 +61,7 @@ New-Item -ItemType Directory -Force -Path $Out | Out-Null
 Copy-Item "$FluxRoot\build\args\$Config.gn" "$Out\args.gn" -Force
 
 Log "gn gen $Out"
-& "$DepotTools\gn.bat" gen $Out
-if ($LASTEXITCODE -ne 0) { throw "gn gen failed" }
+Invoke-Native "$DepotTools\gn.bat" gen $Out
 
 $ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 $jobs = @()
@@ -48,8 +70,7 @@ elseif ($ramGB -lt 32)  { $jobs = @('-j4') }
 
 Log "Building $($Targets -join ' ') - first build takes hours; incremental takes minutes"
 $sw = [Diagnostics.Stopwatch]::StartNew()
-& "$DepotTools\autoninja.bat" -C $Out @jobs @Targets
-if ($LASTEXITCODE -ne 0) { throw "Build failed after $($sw.Elapsed.ToString('hh\:mm\:ss'))" }
+Invoke-Native "$DepotTools\autoninja.bat" -C $Out @jobs @Targets
 $sw.Stop()
 
 Log "Built in $($sw.Elapsed.ToString('hh\:mm\:ss'))"

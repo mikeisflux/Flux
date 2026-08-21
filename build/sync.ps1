@@ -9,6 +9,29 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+# Native tools (git, gclient, ninja) write progress to stderr. With
+# $ErrorActionPreference = 'Stop', PowerShell treats ANY native stderr output as
+# a terminating error, so a normal "Cloning into..." aborts the script. Run them
+# through this instead: stderr is passed through as text, and success is judged
+# by the exit code, which is the only thing that actually means anything.
+function Invoke-Native {
+  param(
+    [Parameter(Mandatory=$true)][string]$Exe,
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments
+  )
+  $previous = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $Exe @Arguments 2>&1 | ForEach-Object { "$_" }
+    $code = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previous
+  }
+  if ($code -ne 0) {
+    throw "$Exe exited with code $code"
+  }
+}
+
 $FluxRoot = Split-Path -Parent $PSScriptRoot
 $Src      = "$CheckoutDrive\flux-build\chromium\src"
 if (-not (Test-Path $Src)) { throw "No checkout at $Src. Run build\fetch.ps1 first." }
@@ -18,8 +41,10 @@ function Log($m) { Write-Host "==> $m" -ForegroundColor Cyan }
 Set-Location $Src
 
 Log "Resetting tree to pristine"
-git checkout -- . 2>$null
-git clean -fd chrome/browser/flux 2>$null
+$ErrorActionPreference = 'Continue'
+git checkout -- . 2>&1 | Out-Null
+git clean -fd chrome/browser/flux 2>&1 | Out-Null
+$ErrorActionPreference = 'Stop'
 
 # Directory JUNCTIONS, not symlinks: junctions need no elevation or Developer
 # Mode, and ninja follows them fine. Editing flux\src\ is picked up directly.
@@ -44,12 +69,14 @@ Get-Content "$FluxRoot\patches\series" | ForEach-Object {
   if ($line -eq '' -or $line.StartsWith('#')) { return }
   $patch = "$FluxRoot\patches\$line"
 
-  git apply --check $patch 2>$null
+  # A failing --check is the normal probe result, not an error.
+  $ErrorActionPreference = 'Continue'
+  git apply --check $patch 2>&1 | Out-Null
   if ($LASTEXITCODE -eq 0) {
-    git apply $patch
+    git apply $patch 2>&1 | ForEach-Object { "$_" }
     Write-Host "    applied  $line" -ForegroundColor Green
   } else {
-    git apply --reverse --check $patch 2>$null
+    git apply --reverse --check $patch 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
       Write-Host "    already  $line" -ForegroundColor DarkGray
     } else {
@@ -58,6 +85,8 @@ Get-Content "$FluxRoot\patches\series" | ForEach-Object {
     }
   }
 }
+
+$ErrorActionPreference = 'Stop'
 
 if ($failed) {
   Write-Host ""
