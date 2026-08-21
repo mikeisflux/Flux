@@ -6,9 +6,16 @@
 #include <string>
 #include <vector>
 
+#include <optional>
+
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/values.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 class WebContents;
@@ -134,7 +141,15 @@ class PageContext {
   // an agent ends up clicking the wrong control.
   std::optional<gfx::Point> ResolveNodeCenter(int32_t node_id);
 
+  void PollForText(const std::string& text,
+                   base::TimeTicks deadline,
+                   ActionCallback callback);
+
   base::WeakPtr<content::WebContents> web_contents_;
+  // The tree behind the most recent snapshot. Node ids the model refers to are
+  // resolved against this, so a stale id fails cleanly rather than hitting
+  // whatever now occupies that position.
+  ui::AXTree tree_;
   base::WeakPtrFactory<PageContext> weak_factory_{this};
 };
 
