@@ -35,94 +35,17 @@ Not for: bulk posting across many accounts, engagement automation (likes,
 follows, comments at scale), or posting as anyone other than the signed-in
 user. Those are what account bans are for.
 
-## Choose the transport first
+## Transport
 
-This decides everything downstream, so resolve it before doing anything else.
-**Default to the API path.** Only fall through to the browser when the target
-is a personal profile, which genuinely has no API.
+**This skill runs through the browser, against the signed-in personal
+profile.** Facebook removed `publish_actions` for personal profiles in 2018,
+so there is no API for this — driving the logged-in session is the only route.
 
-**If the target is a Page → use the Graph API.** It is supported, documented,
-rate-limited rather than ban-triggering, and does not break when Facebook
-redesigns. Requires a Page access token with `pages_manage_posts`.
-
-```
-POST https://graph.facebook.com/v21.0/{page-id}/feed
-  message=<text>
-  link=<optional url>
-  access_token=<page token>
-```
-
-**Anything schedulable belongs on the API path.** The Graph API schedules
-natively (10 minutes to 6 months out), so a recurring "post weekly" workflow
-never needs a browser open, never needs this machine awake at post time, and
-never accrues detection risk. If the user asks to schedule profile posts,
-propose moving that content to a Page rather than running a browser job.
-
-**If the target is a personal profile → browser only.** Facebook removed
-`publish_actions` for personal profiles in 2018; there is no API. Driving the
-logged-in session is the only route, and it is the risky one. Say so to the
-user before the first run, not after.
-
-## Quickstart: a small business posting a few times a day
-
-This is the common case — one person promoting their own work, a handful of
-posts a day, images doing most of the selling. **It runs entirely on the API
-path.** No browser automation, no ToS exposure, no detection question, and the
-machine does not need to be awake when the posts go out.
-
-Setup is one-time, maybe twenty minutes:
-
-1. **Post as a Page, not a personal profile.** For a business this is correct
-   on every axis, independent of automation: Insights and reach data, native
-   scheduling, no 5,000-friend ceiling, no risk of a personal account
-   restriction taking the business offline with it. Personal profiles have no
-   API at all, so posting to one is the *only* reason to touch the browser.
-
-2. **Create a Meta app** at developers.facebook.com, add the *Facebook Login*
-   product, and request `pages_show_list`, `pages_manage_posts`, and
-   `pages_read_engagement`. As the Page admin you do not need App Review for
-   your own Page.
-
-3. **Get a non-expiring Page token.** Exchange the short-lived user token for a
-   long-lived one, then derive the Page token from it — Page tokens obtained
-   this way do not expire, so this is genuinely a one-time step:
-   ```
-   GET /oauth/access_token?grant_type=fb_exchange_token&fb_exchange_token=<short>
-   GET /me/accounts        # returns the Page token
-   ```
-
-4. **Queue the day's posts.** Schedule between 10 minutes and 6 months ahead:
-   ```
-   POST /{page-id}/photos
-     url=<image url>            (or source=<upload>)
-     caption=<text>
-     published=false
-     scheduled_publish_time=<unix seconds>
-   ```
-   Use `/photos` rather than `/feed` for image posts — for visual work the
-   image is the post, and `/feed` with a `link` produces a link preview card
-   instead of a full-bleed image.
-
-5. **Let the workflow batch it.** A scheduled Flux workflow that runs once each
-   morning, picks the day's three images and captions, and queues them all via
-   the API is strictly better than three separate runs: one execution, three
-   posts, delivered by Facebook whether or not your machine is on.
-
-### What this costs
-
-Three scheduled API posts a day is one short agent run each morning — a few
-thousand tokens to select and caption, then three HTTP calls. Well under a
-cent a day at current model pricing. The browser path would cost more in
-tokens (page snapshots on every step) *and* carry the account risk, for a
-worse result.
-
-### When you would still need the browser
-
-- Posting to a personal profile rather than a Page.
-- Reading or replying to comments beyond what the API exposes.
-- Anything in Groups — the Groups API was substantially closed in 2024.
-
-For a business promoting its own work, none of those are on the critical path.
+The tradeoff is recorded in `risk:` above and is accepted: automated
+interaction is against Facebook's ToS, and the realistic downside is a
+checkpoint or a restriction on the account. The mitigations below are what
+keep this looking like what it actually is — one person posting their own work
+a few times a day.
 
 ## Posting through the browser
 
@@ -146,20 +69,35 @@ For a business promoting its own work, none of those are on the critical path.
    does nothing — the text must be typed. Pace it like a human; instant fill of
    a long post is a strong bot signal.
 
-5. **Attach media if asked.** Click `Photo/video`, then hand the file path to
-   the file chooser. Wait for the thumbnail to render before continuing —
-   submitting during upload posts without the image.
+5. **Attach the image.** Click `Photo/video`, then hand the file path to the
+   file chooser. **Wait for the thumbnail to finish rendering before doing
+   anything else** — submitting mid-upload posts the caption with no image,
+   and for visual work that is a wasted post rather than a partial one. Verify
+   the thumbnail is present in the snapshot, not merely that the upload
+   control was clicked.
+
+   Multiple images go in one post, not several: click `Photo/video` once and
+   add each file. Separate posts for a single page-set fragments reach and
+   burns the daily cap.
 
 6. **Verify before submitting.** `read_page` and check the composer contains
    the intended text, the audience selector reads as intended, and no unrelated
    link preview attached itself. Facebook auto-attaches a preview to any URL in
    the body, which frequently is not what the user wanted.
 
-7. **Request approval.** This is a `send`-scope action: the runner blocks here
+7. **Set the audience to Public — check this every time.** The composer
+   remembers whatever audience was used last, and it is not necessarily what
+   this post needs. A promotional post left on *Friends* reaches a few hundred
+   people who already know you, cannot be shared onward by anyone outside that
+   list, and will not surface in search or hashtag results. The post looks
+   successful and accomplishes nothing. Read the audience control in the
+   snapshot, and if it is not `Public`, change it before submitting.
+
+8. **Request approval.** This is a `send`-scope action: the runner blocks here
    and shows the user the exact text, the target identity, and the audience.
    Nothing is published without an explicit approve.
 
-8. **Submit and confirm.** Click `Post`. Wait for the composer to close and the
+9. **Submit and confirm.** Click `Post`. Wait for the composer to close and the
    post to appear in the feed. **Do not report success until you have seen the
    published post** — a closed dialog is not proof; Facebook silently discards
    posts it flags.
