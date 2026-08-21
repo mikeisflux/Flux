@@ -36,3 +36,13 @@ dcheck_always_on = true
 
 use_remoteexec = false
 target_cpu = "x64"
+
+# Siso's file store will not traverse a Windows directory junction, so it
+# cannot see //chrome/browser/flux - the junction sync.ps1 creates so that
+# editing src\ in this repo is picked up without copying files into the
+# Chromium tree. GN resolves the junction correctly; only siso refuses.
+#
+# Plain ninja follows it. Siso's advantage is remote execution, which needs
+# Google-internal RBE access we do not have - locally it just prints "offline
+# mode" and builds the same graph. Nothing is being given up here.
+use_siso = false
