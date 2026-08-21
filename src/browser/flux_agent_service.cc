@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/byte_size.h"
 #include "base/system/sys_info.h"
 #include "base/uuid.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
@@ -42,7 +43,10 @@ FluxAgentService::~FluxAgentService() = default;
 
 // static
 uint32_t FluxAgentService::ComputeConcurrencyLimit() {
-  const uint64_t physical = base::SysInfo::AmountOfPhysicalMemory();
+  // AmountOfPhysicalMemory() was renamed and now returns base::ByteSize
+  // rather than a raw int64_t.
+  const uint64_t physical =
+      base::SysInfo::AmountOfTotalPhysicalMemory().InBytes();
   const uint64_t budget = physical / 2;
   const uint32_t by_memory = static_cast<uint32_t>(budget / kBytesPerRun);
   return std::clamp(by_memory, kMinConcurrency, kMaxConcurrency);
