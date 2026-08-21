@@ -1,17 +1,13 @@
 Subject: [flux] Build //chrome/browser/flux into the WebUI configs target
 
-chrome_web_ui_configs.cc references FluxUIConfig, so the source_set that owns
-it needs the dependency. This is deliberately NOT a dep of the monolithic
-chrome/browser target - that target no longer exists as such, and the configs
-target is the minimal correct place.
-
 diff --git a/chrome/browser/ui/webui/BUILD.gn b/chrome/browser/ui/webui/BUILD.gn
 --- a/chrome/browser/ui/webui/BUILD.gn
 +++ b/chrome/browser/ui/webui/BUILD.gn
-@@ -54,6 +54,7 @@ source_set("configs") {
+@@ -55,6 +55,7 @@
      ":webui",
      "//chrome/browser/actor/ui:actor_overlay",
      "//chrome/browser/contextual_tasks:ui",
 +    "//chrome/browser/flux",
      "//chrome/browser/glic",
      "//chrome/browser/glic:impl",
+     "//chrome/browser/optimization_guide",

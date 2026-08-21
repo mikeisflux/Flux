@@ -1,21 +1,18 @@
 Subject: [flux] Register the chrome://flux WebUIConfig
 
-Modern Chromium routes WebUI through a config registry rather than the
-host-comparison chain in chrome_web_ui_controller_factory.cc, which now
-handles only DevTools. Registration therefore goes in
-RegisterChromeWebUIConfigs alongside every other browser WebUI.
-
 diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 --- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 +++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
-@@ -103,6 +103,7 @@
+@@ -101,6 +101,7 @@
+ #include "chrome/browser/ui/webui/commerce/shopping_insights_side_panel_ui.h"
+ #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
  #include "chrome/browser/ui/webui/drive_picker_host/drive_picker_host_ui.h"
- #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 +#include "chrome/browser/flux/webui/flux_ui.h"
+ #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
  #include "chrome/browser/ui/webui/history/history_ui.h"
  #include "chrome/browser/ui/webui/infobar_internals/infobar_internals_ui.h"
- #include "chrome/browser/ui/webui/inspect/inspect_ui.h"
-@@ -354,6 +355,7 @@ void RegisterChromeWebUIConfigs() {
+@@ -353,6 +354,7 @@
+   map.AddWebUIConfig(std::make_unique<DrivePickerHostUIConfig>());
    map.AddWebUIConfig(std::make_unique<glic::GlicExperimentalOptInUIConfig>());
    map.AddWebUIConfig(std::make_unique<FeedbackUIConfig>());
 +  map.AddWebUIConfig(std::make_unique<flux::FluxUIConfig>());

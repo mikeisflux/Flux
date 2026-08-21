@@ -1,16 +1,14 @@
 Subject: [flux] Add chrome://flux URL constants
 
-Declares the host the Flux console is served from. Inserted in alphabetical
-position between the Flags and GCMInternals entries, matching the file's
-ordering convention.
-
 diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_constants.h
 --- a/chrome/common/webui_url_constants.h
 +++ b/chrome/common/webui_url_constants.h
-@@ -165,6 +165,8 @@ inline constexpr char kChromeUIFileiconURL[] = "chrome://fileicon/";
+@@ -165,6 +165,8 @@
  inline constexpr char kChromeUIFlagsHost[] = "flags";
  inline constexpr char kChromeUIFlagsURL[] = "chrome://flags/";
  inline constexpr char16_t kChromeUIFlagsURL16[] = u"chrome://flags/";
 +inline constexpr char kChromeUIFluxHost[] = "flux";
 +inline constexpr char kChromeUIFluxURL[] = "chrome://flux/";
  inline constexpr char kChromeUIGCMInternalsHost[] = "gcm-internals";
+ inline constexpr char kChromeUIGlicHost[] = "glic";
+ inline constexpr char kChromeUIGlicURL[] = "chrome://glic/";
