@@ -1,9 +1,1067 @@
-[
-  {
-    "file": "social-post-facebook.md",
-    "name": "Post to Facebook",
-    "command": "social-post-facebook",
-    "writeScope": "send              # publishes publicly; gated on approval",
-    "description": "Publish a post to your Facebook profile or Page from your logged-in session"
-  }
-]
+{
+  "version": 1,
+  "skills": [
+    {
+      "file": "data-ai-paper-reading-digest.md",
+      "name": "AI paper reading & digest",
+      "command": "data-ai-paper-reading-digest",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Look up a Hugging Face or arXiv paper, read it, and summarize with linked models"
+    },
+    {
+      "file": "data-analysis-qa-validation.md",
+      "name": "Analysis QA & validation",
+      "command": "data-analysis-qa-validation",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Methodology, calculation, and bias checks before a stakeholder presentation"
+    },
+    {
+      "file": "data-budget-vs-actual-variance.md",
+      "name": "Budget vs actual variance analysis",
+      "command": "data-budget-vs-actual-variance",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Decompose budget-vs-actual variances into drivers with a clear narrative"
+    },
+    {
+      "file": "data-chart-creation-data.md",
+      "name": "Chart creation from data",
+      "command": "data-chart-creation-data",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn query results, a table, or pasted data into a clear, honest chart"
+    },
+    {
+      "file": "data-chart-selection-design.md",
+      "name": "Chart selection & design",
+      "command": "data-chart-selection-design",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Chart-type selection, design principles, and accessibility for honest visuals"
+    },
+    {
+      "file": "data-dashboard-design-building.md",
+      "name": "Dashboard design & building",
+      "command": "data-dashboard-design-building",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a sheet or query results into a clean dashboard with the right chart types"
+    },
+    {
+      "file": "data-data-warehouse-context.md",
+      "name": "Data warehouse context",
+      "command": "data-data-warehouse-context",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build a reusable reference of your tables, metrics, terminology, and gotchas"
+    },
+    {
+      "file": "data-dataset-profiling-eda.md",
+      "name": "Dataset profiling (EDA)",
+      "command": "data-dataset-profiling-eda",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Assess a dataset's shape, quality, and patterns so you trust it before analysis"
+    },
+    {
+      "file": "data-hugging-face-dataset-exploration.md",
+      "name": "Hugging Face dataset exploration",
+      "command": "data-hugging-face-dataset-exploration",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Browse, search, filter, and paginate any Hugging Face dataset via the Dataset Viewer"
+    },
+    {
+      "file": "data-margin-pricing-analysis.md",
+      "name": "Margin & Pricing Analysis",
+      "command": "data-margin-pricing-analysis",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Compute unit economics by product and model +5/+10/+15% pricing scenarios; data only"
+    },
+    {
+      "file": "data-product-metrics-review.md",
+      "name": "Product Metrics Review",
+      "command": "data-product-metrics-review",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn product metrics into a scorecard with trends, drivers, and next actions"
+    },
+    {
+      "file": "data-sql-across-warehouse-dialects.md",
+      "name": "SQL across warehouse dialects",
+      "command": "data-sql-across-warehouse-dialects",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Correct, performant SQL for Postgres, Snowflake, BigQuery, Redshift, Databricks"
+    },
+    {
+      "file": "data-sql-plain-english-question.md",
+      "name": "SQL from a plain-English question",
+      "command": "data-sql-plain-english-question",
+      "category": "Data",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a plain-English data need into optimized, dialect-correct SQL"
+    },
+    {
+      "file": "docs-accessibility-review.md",
+      "name": "Accessibility review",
+      "command": "docs-accessibility-review",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "WCAG 2.1 AA audit: contrast, keyboard, focus, touch targets, screen readers"
+    },
+    {
+      "file": "docs-design-critique.md",
+      "name": "Design critique",
+      "command": "docs-design-critique",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Structured feedback on usability, hierarchy, consistency, and accessibility"
+    },
+    {
+      "file": "docs-design-system-documentation.md",
+      "name": "Design system documentation",
+      "command": "docs-design-system-documentation",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Audit consistency, document components, or design new patterns that fit"
+    },
+    {
+      "file": "docs-developer-handoff-specs.md",
+      "name": "Developer handoff specs",
+      "command": "docs-developer-handoff-specs",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Spec layout, tokens, states, responsive behavior, edge cases, and motion"
+    },
+    {
+      "file": "docs-distinctive-frontend-design.md",
+      "name": "Distinctive frontend design",
+      "command": "docs-distinctive-frontend-design",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Make intentional palette, type, and layout choices that avoid templated looks"
+    },
+    {
+      "file": "docs-help-article-writing.md",
+      "name": "Help article writing",
+      "command": "docs-help-article-writing",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Write a searchable, self-service KB article from a resolved issue or FAQ"
+    },
+    {
+      "file": "docs-internal-comms-writing.md",
+      "name": "Internal comms writing",
+      "command": "docs-internal-comms-writing",
+      "category": "Docs",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Draft status reports, leadership updates, and announcements in your house style"
+    },
+    {
+      "file": "docs-notion-knowledge-base.md",
+      "name": "Notion knowledge base",
+      "command": "docs-notion-knowledge-base",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn conversations and decisions into structured, linkable Notion pages for reuse"
+    },
+    {
+      "file": "docs-prd-writing.md",
+      "name": "PRD writing",
+      "command": "docs-prd-writing",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a rough idea into a structured spec with goals, scope, and success metrics"
+    },
+    {
+      "file": "docs-product-brainstorming-partner.md",
+      "name": "Product Brainstorming Partner",
+      "command": "docs-product-brainstorming-partner",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "A sharp thinking partner to explore problems, ideate, and stress-test ideas"
+    },
+    {
+      "file": "docs-stakeholder-update-writer.md",
+      "name": "Stakeholder Update Writer",
+      "command": "docs-stakeholder-update-writer",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Tailor a progress update to any audience: exec, eng, partner, customer, board"
+    },
+    {
+      "file": "docs-ux-copywriting.md",
+      "name": "UX copywriting",
+      "command": "docs-ux-copywriting",
+      "category": "Docs",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Microcopy, error messages, empty states, and CTAs that help users act"
+    },
+    {
+      "file": "engineering-architecture-decision-records-adrs.md",
+      "name": "Architecture decision records (ADRs)",
+      "command": "engineering-architecture-decision-records-adrs",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Document a design decision with options, trade-offs, and consequences"
+    },
+    {
+      "file": "engineering-code-review.md",
+      "name": "Code review",
+      "command": "engineering-code-review",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Structured review for security, performance, correctness, and maintainability"
+    },
+    {
+      "file": "engineering-core-web-vitals-audit.md",
+      "name": "Core Web Vitals Audit",
+      "command": "engineering-core-web-vitals-audit",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Profile page load performance, measure Core Web Vitals, and prioritize fixes by impact"
+    },
+    {
+      "file": "engineering-error-queue-triage.md",
+      "name": "Error queue triage",
+      "command": "engineering-error-queue-triage",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Archive non-actionable noise from your error tracker's queue, approval-gated"
+    },
+    {
+      "file": "engineering-incident-response-runbook.md",
+      "name": "Incident response runbook",
+      "command": "engineering-incident-response-runbook",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Drive incident severity, status comms, and a blameless postmortem to closure"
+    },
+    {
+      "file": "engineering-linear-issue-project-management.md",
+      "name": "Linear issue & project management",
+      "command": "engineering-linear-issue-project-management",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Read, create, and update Linear issues, projects, and cycles for triage and planning"
+    },
+    {
+      "file": "engineering-pre-deployment-readiness-checklist.md",
+      "name": "Pre-Deployment Readiness Checklist",
+      "command": "engineering-pre-deployment-readiness-checklist",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Verify tests, approvals, migrations, and rollback triggers before shipping"
+    },
+    {
+      "file": "engineering-production-error-review.md",
+      "name": "Production error review",
+      "command": "engineering-production-error-review",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Pull and summarize recent production errors and issue health from your error monitor"
+    },
+    {
+      "file": "engineering-seo-audit.md",
+      "name": "SEO audit",
+      "command": "engineering-seo-audit",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Check titles, headings, metadata, speed, and content gaps, then prioritize fixes"
+    },
+    {
+      "file": "engineering-standup-updates.md",
+      "name": "Standup updates",
+      "command": "engineering-standup-updates",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn recent activity into a clean yesterday / today / blockers update"
+    },
+    {
+      "file": "engineering-structured-debugging.md",
+      "name": "Structured debugging",
+      "command": "engineering-structured-debugging",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Reproduce, isolate, diagnose root cause, and fix \u2013 systematically"
+    },
+    {
+      "file": "engineering-system-design.md",
+      "name": "System design",
+      "command": "engineering-system-design",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Framework for requirements, high-level design, scale, and trade-offs"
+    },
+    {
+      "file": "engineering-tech-debt-assessment.md",
+      "name": "Tech-debt assessment",
+      "command": "engineering-tech-debt-assessment",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Categorize debt and rank it by impact, risk, and effort"
+    },
+    {
+      "file": "engineering-technical-documentation.md",
+      "name": "Technical documentation",
+      "command": "engineering-technical-documentation",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "READMEs, API docs, runbooks, architecture docs, and onboarding guides"
+    },
+    {
+      "file": "engineering-test-strategy.md",
+      "name": "Test strategy",
+      "command": "engineering-test-strategy",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Balance coverage, speed, and maintenance across the testing pyramid"
+    },
+    {
+      "file": "engineering-web-app-qa-testing.md",
+      "name": "Web app QA testing",
+      "command": "engineering-web-app-qa-testing",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Recon, act, and verify flows in the browser, capturing every failure with evidence"
+    },
+    {
+      "file": "engineering-zero-trust-access-config.md",
+      "name": "Zero Trust Access Config",
+      "command": "engineering-zero-trust-access-config",
+      "category": "Engineering",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Design and review Cloudflare One Zero Trust/SASE: Access, Gateway, Tunnel, posture"
+    },
+    {
+      "file": "marketing-brand-voice-review.md",
+      "name": "Brand voice review",
+      "command": "marketing-brand-voice-review",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Flag off-brand tone, terms, and claims, and rewrite them to match your style guide"
+    },
+    {
+      "file": "marketing-competitor-ad-teardown.md",
+      "name": "Competitor ad teardown",
+      "command": "marketing-competitor-ad-teardown",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Pull a rival's live ads from public ad libraries and decode their messaging angles"
+    },
+    {
+      "file": "marketing-email-nurture-sequence-design.md",
+      "name": "Email nurture sequence design",
+      "command": "marketing-email-nurture-sequence-design",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Plan a multi-email sequence with timing, branching, and copy that converts"
+    },
+    {
+      "file": "marketing-marketing-campaign-execution.md",
+      "name": "Marketing campaign execution",
+      "command": "marketing-marketing-campaign-execution",
+      "category": "Marketing",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Orchestrate a campaign: sales analysis, content brief, assets, segment, staged send"
+    },
+    {
+      "file": "marketing-marketing-campaign-planning.md",
+      "name": "Marketing campaign planning",
+      "command": "marketing-marketing-campaign-planning",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Full brief: objective, audience, messaging, channels, calendar, and metrics"
+    },
+    {
+      "file": "marketing-marketing-content-drafting.md",
+      "name": "Marketing content drafting",
+      "command": "marketing-marketing-content-drafting",
+      "category": "Marketing",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Generate blog, social, email, landing, PR, or case-study drafts in your voice"
+    },
+    {
+      "file": "marketing-marketing-content-frameworks-seo.md",
+      "name": "Marketing Content Frameworks and SEO",
+      "command": "marketing-marketing-content-frameworks-seo",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Channel templates, SEO checklist, and headline/CTA formulas for any content"
+    },
+    {
+      "file": "marketing-marketing-performance-reporting.md",
+      "name": "Marketing performance reporting",
+      "command": "marketing-marketing-performance-reporting",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Metrics, trends, wins/misses, and prioritized optimizations for any channel"
+    },
+    {
+      "file": "marketing-sales-driven-content-plan.md",
+      "name": "Sales-Driven Content Plan",
+      "command": "marketing-sales-driven-content-plan",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn sales data into a 30-day content brief: what to push, hold, and offer"
+    },
+    {
+      "file": "ops-business-pulse-snapshot.md",
+      "name": "Business Pulse Snapshot",
+      "command": "ops-business-pulse-snapshot",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "One-page cross-functional snapshot of cash, sales, pipeline, and what needs you today"
+    },
+    {
+      "file": "ops-cash-flow-forecast-30.md",
+      "name": "Cash Flow Forecast (30/60/90)",
+      "command": "ops-cash-flow-forecast-30",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Forecast cash with confidence bands and named risk flags; answer \"will I make payroll?\""
+    },
+    {
+      "file": "ops-change-request-rollback-plan.md",
+      "name": "Change Request & Rollback Plan",
+      "command": "ops-change-request-rollback-plan",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Document a system/process change with impact analysis, risks, and rollback"
+    },
+    {
+      "file": "ops-compliance-audit-readiness-tracking.md",
+      "name": "Compliance & Audit Readiness Tracking",
+      "command": "ops-compliance-audit-readiness-tracking",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Track controls, evidence, and gaps for SOC 2, ISO 27001, GDPR, and more"
+    },
+    {
+      "file": "ops-customer-complaint-handling.md",
+      "name": "Customer complaint handling",
+      "command": "ops-customer-complaint-handling",
+      "category": "Ops",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Work a complaint end-to-end: pull context, draft a reply, suggest an operational fix"
+    },
+    {
+      "file": "ops-customer-escalation-packaging.md",
+      "name": "Customer escalation packaging",
+      "command": "ops-customer-escalation-packaging",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Bundle full reproduction context so engineering can act on an escalation fast"
+    },
+    {
+      "file": "ops-customer-response-drafting.md",
+      "name": "Customer Response Drafting",
+      "command": "ops-customer-response-drafting",
+      "category": "Ops",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Draft customer-facing replies tuned to the situation, relationship, and channel"
+    },
+    {
+      "file": "ops-customer-voice-top-fixes.md",
+      "name": "Customer Voice to Top Fixes",
+      "command": "ops-customer-voice-top-fixes",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Synthesize disputes, tickets, and reviews into themes and a top-3 fixable-issues list"
+    },
+    {
+      "file": "ops-e-signature-prep-routing.md",
+      "name": "E-Signature Prep & Routing",
+      "command": "ops-e-signature-prep-routing",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Run a pre-signature checklist, set signing order, and route a doc for execution"
+    },
+    {
+      "file": "ops-friday-revenue-recap.md",
+      "name": "Friday Revenue Recap",
+      "command": "ops-friday-revenue-recap",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "End-of-week pulse: revenue vs last week, top and bottom sellers, wins and watches"
+    },
+    {
+      "file": "ops-journal-entry-preparation.md",
+      "name": "Journal Entry Preparation",
+      "command": "ops-journal-entry-preparation",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build balanced journal entries with supporting detail and a review checklist"
+    },
+    {
+      "file": "ops-month-end-close-packet.md",
+      "name": "Month-End Close Packet",
+      "command": "ops-month-end-close-packet",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Reconcile books vs payment processors, flag gaps, narrate the P&L, export the packet"
+    },
+    {
+      "file": "ops-month-end-close.md",
+      "name": "Month-end close",
+      "command": "ops-month-end-close",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Sequence and track month-end close tasks so nothing slips before the deadline"
+    },
+    {
+      "file": "ops-month-end-journal-entry.md",
+      "name": "Month-End Journal Entry Playbook",
+      "command": "ops-month-end-journal-entry",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Standard entry types, documentation, approval matrix, and common-error checks"
+    },
+    {
+      "file": "ops-new-hire-onboarding-planning.md",
+      "name": "New-hire onboarding planning",
+      "command": "ops-new-hire-onboarding-planning",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Create a 30-60-90 onboarding plan with accounts, training, and first wins"
+    },
+    {
+      "file": "ops-operational-risk-assessment.md",
+      "name": "Operational Risk Assessment",
+      "command": "ops-operational-risk-assessment",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Identify, score, and mitigate operational risks in a prioritized risk register"
+    },
+    {
+      "file": "ops-operational-runbook.md",
+      "name": "Operational Runbook",
+      "command": "ops-operational-runbook",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a recurring task into an exact step-by-step runbook with rollback and escalation"
+    },
+    {
+      "file": "ops-overdue-invoice-collection.md",
+      "name": "Overdue invoice collection",
+      "command": "ops-overdue-invoice-collection",
+      "category": "Ops",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Draft tone-matched reminders for overdue invoices, scored by payment history"
+    },
+    {
+      "file": "ops-payroll-cash-check.md",
+      "name": "Payroll Cash Check",
+      "command": "ops-payroll-cash-check",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Confirm you can make payroll: forecast cash, rank overdue invoices, stage reminders"
+    },
+    {
+      "file": "ops-process-documentation-sops.md",
+      "name": "Process Documentation & SOPs",
+      "command": "ops-process-documentation-sops",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a process in someone's head into an SOP with RACI, steps, and edge cases"
+    },
+    {
+      "file": "ops-process-optimization.md",
+      "name": "Process Optimization",
+      "command": "ops-process-optimization",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Map a workflow, find waste, and design a faster future state with impact"
+    },
+    {
+      "file": "ops-project-status-report.md",
+      "name": "Project Status Report",
+      "command": "ops-project-status-report",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn project activity into a leadership-ready report with KPIs, risks, decisions"
+    },
+    {
+      "file": "ops-quarterly-business-review.md",
+      "name": "Quarterly Business Review",
+      "command": "ops-quarterly-business-review",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build a QBR: revenue and margin trends, customer health, opportunities and risks"
+    },
+    {
+      "file": "ops-sox-404-control-testing.md",
+      "name": "SOX 404 Control Testing Methodology",
+      "command": "ops-sox-404-control-testing",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Scope accounts, test control design vs operation, and classify deficiencies"
+    },
+    {
+      "file": "ops-sox-sample-selection-workpapers.md",
+      "name": "SOX Sample Selection & Workpapers",
+      "command": "ops-sox-sample-selection-workpapers",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build SOX testing samples, workpaper templates, and control assessments"
+    },
+    {
+      "file": "ops-support-ticket-triage.md",
+      "name": "Support ticket triage",
+      "command": "ops-support-ticket-triage",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Categorize a ticket, set P1\u2013P4 priority, check duplicates, and route it"
+    },
+    {
+      "file": "ops-team-capacity-planning.md",
+      "name": "Team Capacity Planning",
+      "command": "ops-team-capacity-planning",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Analyze workload and utilization to decide whether to hire, delay, or reprioritize"
+    },
+    {
+      "file": "ops-vendor-evaluation.md",
+      "name": "Vendor Evaluation",
+      "command": "ops-vendor-evaluation",
+      "category": "Ops",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Evaluate a vendor on cost (TCO), risk, and performance with a recommendation"
+    },
+    {
+      "file": "personal-bill-negotiation.md",
+      "name": "Bill negotiation",
+      "command": "personal-bill-negotiation",
+      "category": "Personal",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Find retention offers and chat or call your provider to lower a monthly bill"
+    },
+    {
+      "file": "recruiting-boolean-search-sourcing.md",
+      "name": "Boolean search sourcing",
+      "command": "recruiting-boolean-search-sourcing",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build precise boolean strings to surface candidates on LinkedIn, GitHub, and more"
+    },
+    {
+      "file": "recruiting-company-policy-lookup.md",
+      "name": "Company Policy Lookup",
+      "command": "recruiting-company-policy-lookup",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Answer plain-language questions about PTO, benefits, travel, and handbook rules"
+    },
+    {
+      "file": "recruiting-compensation-analysis.md",
+      "name": "Compensation Analysis",
+      "command": "recruiting-compensation-analysis",
+      "category": "Recruiting",
+      "writeScope": "send",
+      "bodyStatus": "skeleton",
+      "description": "Benchmark pay, place against bands, and model equity for offers and retention"
+    },
+    {
+      "file": "recruiting-hiring-packet-builder.md",
+      "name": "Hiring Packet Builder",
+      "command": "recruiting-hiring-packet-builder",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Produce a job post, structured interview guide with rubric, and offer letter from a brief"
+    },
+    {
+      "file": "recruiting-org-headcount-planning.md",
+      "name": "Org & Headcount Planning",
+      "command": "recruiting-org-headcount-planning",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Plan headcount, team structure, and hiring sequence with healthy-org benchmarks"
+    },
+    {
+      "file": "recruiting-people-analytics-report.md",
+      "name": "People Analytics Report",
+      "command": "recruiting-people-analytics-report",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Generate headcount, attrition, diversity, or org-health reports from HR data"
+    },
+    {
+      "file": "recruiting-performance-review-builder.md",
+      "name": "Performance Review Builder",
+      "command": "recruiting-performance-review-builder",
+      "category": "Recruiting",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Structure self-assessments, manager reviews, and calibration prep with examples"
+    },
+    {
+      "file": "recruiting-recruiting-pipeline-tracker.md",
+      "name": "Recruiting Pipeline Tracker",
+      "command": "recruiting-recruiting-pipeline-tracker",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Track candidates through pipeline stages and the metrics that reveal bottlenecks"
+    },
+    {
+      "file": "recruiting-structured-interview-kit.md",
+      "name": "Structured Interview Kit",
+      "command": "recruiting-structured-interview-kit",
+      "category": "Recruiting",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Design a fair, structured interview: competencies, questions, scorecard, debrief"
+    },
+    {
+      "file": "research-competitive-analysis-brief.md",
+      "name": "Competitive Analysis Brief",
+      "command": "research-competitive-analysis-brief",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Build a competitive brief: landscape, feature matrix, positioning, win/loss"
+    },
+    {
+      "file": "research-contract-review-redlining.md",
+      "name": "Contract review & redlining",
+      "command": "research-contract-review-redlining",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Plain-English contract review with severity-ranked red flags and suggested edits"
+    },
+    {
+      "file": "research-cross-tool-catch-up.md",
+      "name": "Cross-tool catch-up digest",
+      "command": "research-cross-tool-catch-up",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Daily or weekly digest of action items, decisions, and mentions"
+    },
+    {
+      "file": "research-customer-question-research.md",
+      "name": "Customer Question Research",
+      "command": "research-customer-question-research",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Research a customer question across sources with attribution and confidence"
+    },
+    {
+      "file": "research-legal-inquiry-response-escalation.md",
+      "name": "Legal Inquiry Response & Escalation Check",
+      "command": "research-legal-inquiry-response-escalation",
+      "category": "Research",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Draft responses to common legal inquiries with built-in escalation triggers"
+    },
+    {
+      "file": "research-legal-meeting-briefing.md",
+      "name": "Legal Meeting Briefing",
+      "command": "research-legal-meeting-briefing",
+      "category": "Research",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Prep briefings for legally-relevant meetings and track resulting action items"
+    },
+    {
+      "file": "research-legal-risk-assessment.md",
+      "name": "Legal Risk Assessment",
+      "command": "research-legal-risk-assessment",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Classify legal risk by severity x likelihood and decide when to escalate"
+    },
+    {
+      "file": "research-legal-team-briefing.md",
+      "name": "Legal Team Briefing",
+      "command": "research-legal-team-briefing",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Daily, topic, or incident briefings synthesized across your legal sources"
+    },
+    {
+      "file": "research-multi-source-synthesis.md",
+      "name": "Multi-source synthesis",
+      "command": "research-multi-source-synthesis",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Merge multi-source results into one cited answer with confidence levels"
+    },
+    {
+      "file": "research-nda-triage.md",
+      "name": "NDA triage",
+      "command": "research-nda-triage",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Screen an NDA against standard carveouts and classify it green, yellow, or red"
+    },
+    {
+      "file": "research-prioritization.md",
+      "name": "Source prioritization",
+      "command": "research-prioritization",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Order sources by question type and degrade gracefully when one is down"
+    },
+    {
+      "file": "research-regulatory-compliance-check.md",
+      "name": "Regulatory compliance check",
+      "command": "research-regulatory-compliance-check",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Map the laws, licenses, and disclosures that apply to a planned action or launch"
+    },
+    {
+      "file": "research-research-query-decomposition.md",
+      "name": "Research query decomposition",
+      "command": "research-research-query-decomposition",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Break a question into targeted per-source queries and rank the results"
+    },
+    {
+      "file": "research-session-replay-ux-research.md",
+      "name": "Session Replay UX Research",
+      "command": "research-session-replay-ux-research",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Analyze session replays to surface user journeys, friction, and pain points"
+    },
+    {
+      "file": "research-unified-cross-tool-search.md",
+      "name": "Unified cross-tool search",
+      "command": "research-unified-cross-tool-search",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "One question, parallel searches across chat, email, docs, and trackers"
+    },
+    {
+      "file": "research-user-research-synthesis.md",
+      "name": "User research synthesis",
+      "command": "research-user-research-synthesis",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Cluster interview and survey notes into themes, insights, and recommendations"
+    },
+    {
+      "file": "research-vendor-agreement-status-check.md",
+      "name": "Vendor Agreement Status Check",
+      "command": "research-vendor-agreement-status-check",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Consolidate a vendor's agreements across systems with gap analysis and deadlines"
+    },
+    {
+      "file": "research-vendor-shortlisting.md",
+      "name": "Vendor shortlisting",
+      "command": "research-vendor-shortlisting",
+      "category": "Research",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn a vague market need into a short, scored shortlist of vendors, tools, or partners"
+    },
+    {
+      "file": "sales-account-prospect-research.md",
+      "name": "Account & Prospect Research",
+      "command": "sales-account-prospect-research",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Research any company or person for sales intel before outreach or a call"
+    },
+    {
+      "file": "sales-crm-activity-logging.md",
+      "name": "CRM activity logging",
+      "command": "sales-crm-activity-logging",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Log calls, emails, and meeting notes into your CRM from inbox and calendar context"
+    },
+    {
+      "file": "sales-crm-cleanup-pass.md",
+      "name": "CRM Cleanup Pass",
+      "command": "sales-crm-cleanup-pass",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Find stale deals, duplicate contacts, and missing fields in your CRM, then fix them"
+    },
+    {
+      "file": "sales-daily-sales-briefing.md",
+      "name": "Daily Sales Briefing",
+      "command": "sales-daily-sales-briefing",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Start the day with a prioritized brief: meetings, pipeline alerts, and emails"
+    },
+    {
+      "file": "sales-lead-triage-call-list.md",
+      "name": "Lead Triage & Call List",
+      "command": "sales-lead-triage-call-list",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Score inbound leads by engagement, fit, and urgency into a ranked call list"
+    },
+    {
+      "file": "sales-personalized-outreach-drafting.md",
+      "name": "Personalized Outreach Drafting",
+      "command": "sales-personalized-outreach-drafting",
+      "category": "Sales",
+      "writeScope": "draft",
+      "bodyStatus": "skeleton",
+      "description": "Research a prospect, then draft personalized cold email and LinkedIn outreach"
+    },
+    {
+      "file": "sales-pipeline-health-review.md",
+      "name": "Pipeline Health Review",
+      "command": "sales-pipeline-health-review",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Score pipeline health, flag at-risk deals, and get a weekly action plan"
+    },
+    {
+      "file": "sales-sales-asset-builder.md",
+      "name": "Sales Asset Builder",
+      "command": "sales-sales-asset-builder",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Generate a tailored, branded sales asset: landing page, deck, one-pager, or demo"
+    },
+    {
+      "file": "sales-sales-call-prep.md",
+      "name": "Sales Call Prep",
+      "command": "sales-sales-call-prep",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Get fully prepped for any sales call with account context, attendees, and agenda"
+    },
+    {
+      "file": "sales-sales-call-summary-follow.md",
+      "name": "Sales Call Summary & Follow-up",
+      "command": "sales-sales-call-summary-follow",
+      "category": "Sales",
+      "writeScope": "readonly",
+      "bodyStatus": "skeleton",
+      "description": "Turn call notes or a transcript into action items, a recap email, and CRM log"
+    },
+    {
+      "file": "social-post-facebook.md",
+      "name": "Post to Facebook",
+      "command": "social-post-facebook",
+      "category": "Marketing, Personal",
+      "writeScope": "send",
+      "bodyStatus": "authored",
+      "description": "Publish a post to your Facebook profile from your logged-in session"
+    }
+  ]
+}

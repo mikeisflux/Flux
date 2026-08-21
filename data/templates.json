@@ -1,0 +1,4272 @@
+{
+  "version": 1,
+  "provenance": {
+    "transcribed": [
+      "title",
+      "outcome",
+      "category",
+      "connectors.id",
+      "schedule.display"
+    ],
+    "derived": [
+      "id",
+      "schedule.cron",
+      "writeScope",
+      "connectors.transport"
+    ]
+  },
+  "templates": [
+    {
+      "id": "sales-prospect-list-linkedin-sheet",
+      "title": "Build a prospect list from LinkedIn into a sheet",
+      "outcome": "A deduped tracker sheet of every match with name, title, company, and profile URL",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-company-list-decision-maker",
+      "title": "Enrich my company list with decision-maker contacts",
+      "outcome": "Your sheet filled with up to 3 verified decision-makers per company",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-outreach-replies-update-tracker",
+      "title": "Check my outreach replies and update my tracker",
+      "outcome": "Tracker rows updated with each reply, plus drafted follow-ups for the interested ones",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8,17 * * *",
+        "display": "Twice a day, 8am and 5pm"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-15-personalized-connection-requests",
+      "title": "Send 15 personalized connection requests every morning",
+      "outcome": "A steady drip of tailored LinkedIn invites, capped daily and logged to your tracker",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1-5",
+        "display": "Weekdays at 9am"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "sales-replies-sales-thread-waiting",
+      "title": "Draft replies to every sales thread waiting on me",
+      "outcome": "Gmail drafts ready for review on each thread where a prospect is waiting on you",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-prospects-who-went-silent",
+      "title": "Nudge prospects who went silent after my last email",
+      "outcome": "Polite bump drafts queued for every outbound thread with no reply in 4+ days",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1,4",
+        "display": "Mondays and Thursdays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-conference-notes-follow-up",
+      "title": "Turn my conference notes into follow-up email drafts",
+      "outcome": "A personalized Gmail draft for every contact in your event notes, logged row by row",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-scrub-target-list-against",
+      "title": "Scrub my target list against CRM and past outreach",
+      "outcome": "A cleaned list with existing customers, open deals, and recent touches flagged out",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-outreach-tracker-while-sleep",
+      "title": "Refresh my outreach tracker while I sleep",
+      "outcome": "Every row re-checked overnight with a next action, stale flags, and backup contacts",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 5 * * *",
+        "display": "Every day at 5am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-target-accounts-buying-signals",
+      "title": "Watch my target accounts for buying signals on LinkedIn",
+      "outcome": "A morning brief of intent posts from your watch list with a suggested angle for each",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "30 8 * * 1-5",
+        "display": "Weekdays at 8:30am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-partner-programs-list-log",
+      "title": "Apply to partner programs from my list and log status",
+      "outcome": "Applications submitted across your list with per-row status and blockers logged",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "sales-inbound-lead-alerts-crm",
+      "title": "Turn inbound lead alerts into CRM deals",
+      "outcome": "Every demo request and form fill from your inbox filed as a deal in the right stage",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9,14 * * 1-5",
+        "display": "Weekdays at 9am and 2pm"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-niche-company-list-right",
+      "title": "Build a niche company list with the right buyer at each",
+      "outcome": "A researched sheet of niche-market companies, each with the likely decision-maker",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-lead-sheet-tier-angle",
+      "title": "Score every lead in my sheet with a tier and an angle",
+      "outcome": "Your list graded A to C with one researched fact and an outreach angle per company",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-warm-paths-target-accounts",
+      "title": "Find warm paths into my target accounts",
+      "outcome": "A map of who you already know at each target company, with intro asks drafted",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-work-local-business-outreach",
+      "title": "Work my local business outreach queue every Monday",
+      "outcome": "The next 15 queue rows enriched with owner contacts and draft emails, status logged",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-researched-cold-email-lead",
+      "title": "Draft a researched cold email for every lead in my sheet",
+      "outcome": "Gmail drafts with a specific researched hook per lead, no template-blast filler",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-account-before-next-sales",
+      "title": "Brief me on an account before my next sales call",
+      "outcome": "A one-page brief on the company and attendees with discovery questions to ask",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-job-changes-among-past",
+      "title": "Catch job changes among my past champions and buyers",
+      "outcome": "Movers flagged in your contact sheet with a congrats-and-reopen draft for each",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1",
+        "display": "Mondays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-companies-hiring-roles-signal",
+      "title": "Find companies hiring roles that signal they need us",
+      "outcome": "A CSV of companies with live postings that imply a need, plus whom to contact",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-public-complaints-about-competitor",
+      "title": "Mine public complaints about a competitor into leads",
+      "outcome": "A table of companies publicly frustrated with a rival, each with quote and angle",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "G2",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-tiered-lead-list-apollo",
+      "title": "Pull a tiered lead list from Apollo matching my ICP",
+      "outcome": "A deduped CSV of Apollo leads graded A to C against your ideal customer profile",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Apollo",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-stale-crm-deals-draft",
+      "title": "Flag my stale CRM deals and draft the next move",
+      "outcome": "A Monday digest of deals gone quiet, each with a drafted follow-up ready to review",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "30 7 * * 1",
+        "display": "Mondays at 7:30am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "sales-day-gong-deal-briefing",
+      "title": "Start my day with a Gong deal briefing",
+      "outcome": "Recent Gong activity, deal risks, and today's highest-priority sales actions",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gong",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-gong-pipeline-deal-hygiene",
+      "title": "Audit my Gong pipeline for deal hygiene",
+      "outcome": "Open opportunities flagged for stale activity, missing next steps, and coverage gaps",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gong",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1",
+        "display": "Mondays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-battlecard-competitor",
+      "title": "Build a battlecard for a competitor",
+      "outcome": "A call-ready battlecard with their weak spots, our win themes, and rebuttals",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "G2",
+          "transport": "browser"
+        },
+        {
+          "id": "Outreach/Salesloft",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-forecast-pipeline-quarter",
+      "title": "Forecast my pipeline for the quarter",
+      "outcome": "A weighted forecast with commit, upside, and the gap to my quota",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Salesforce",
+          "transport": "api"
+        },
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-connection-requests-list-linkedin",
+      "title": "Send connection requests to my list on LinkedIn",
+      "outcome": "Every person in your sheet sent a tailored invite, with each send logged",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "sales-sales-call-recording",
+      "title": "Coach me on my sales call from the recording",
+      "outcome": "A coaching review of one call: what worked, what to fix, and better lines",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gong",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-event-attendee-list-outreach",
+      "title": "Turn an event attendee list into an outreach sheet",
+      "outcome": "Attendees scraped, enriched with LinkedIn and emails, and prioritized for outreach",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-who-mentioned-topic-across",
+      "title": "Find who mentioned a topic across my sales calls",
+      "outcome": "Every account that raised the topic, with the quote, context, and a follow-up angle",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "Gong",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "sales-relationships-ve-let-go",
+      "title": "Resurface relationships I've let go quiet",
+      "outcome": "Valuable contacts you haven't touched in months, with a warm note drafted for each",
+      "category": "Sales",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 1 * *",
+        "display": "1st of each month 9am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-30-candidates-role-sheet",
+      "title": "Source 30 candidates for this role into a sheet",
+      "outcome": "A vetted sourcing sheet of 30 matching candidates ready for outreach",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-interview-job-post",
+      "title": "Prep me for an interview from a job post",
+      "outcome": "A prep doc with company cheat sheet, likely questions, and STAR answers",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Greenhouse",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-candidates-haven-t-messaged",
+      "title": "Find candidates I haven't messaged and draft the DMs",
+      "outcome": "A vetted list of net-new candidates with a tailored draft message for each",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-recruiting-inbox-morning",
+      "title": "Triage my recruiting inbox every morning",
+      "outcome": "An inbox sorted into candidates, scheduling, and noise with reply drafts ready",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-job-boards-weekly-apply",
+      "title": "Sweep job boards weekly and apply where I match",
+      "outcome": "New matching roles applied to or logged with links, comp, and fit notes each week",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "recruiting-recruiter-pipeline-against-job",
+      "title": "Review my Recruiter pipeline against the job spec",
+      "outcome": "Weak fits archived with reasons and strong fits queued with personalized messages",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-folder-resumes-against-rubric",
+      "title": "Rank a folder of resumes against my rubric",
+      "outcome": "A ranked shortlist with per-candidate rationale, flags, and interview questions",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-slack-referrals-ats-week",
+      "title": "Sync Slack referrals into my ATS every week",
+      "outcome": "Referrals from your Slack channel checked against the ATS and filed with sources",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Ashby",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 10 * * 1",
+        "display": "Mondays at 10am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-how-company-actually-runs",
+      "title": "Map how a company actually runs its interviews",
+      "outcome": "A report on stages, recurring questions, and difficulty drawn from public reviews",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "Greenhouse",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-candidate-s-github-tell",
+      "title": "Review a candidate's GitHub and tell me what they built",
+      "outcome": "A grounded read on real contributions, code signals, and questions worth asking",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-interview-rubric-role-edge",
+      "title": "Build an interview rubric for a role with edge cases",
+      "outcome": "A structured rubric with dimensions, question bank, probes, and scoring anchors",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-linkedin-profile-match-resume",
+      "title": "Tune my LinkedIn profile to match my resume and target",
+      "outcome": "Rewritten headline, about, and experience bullets aligned to the roles you want",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-linkedin-connection-requests-weekly",
+      "title": "Triage my LinkedIn connection requests weekly",
+      "outcome": "Pending invites accepted or declined by your criteria, with a log of every call",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 16 * * 5",
+        "display": "Fridays at 4pm"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "recruiting-benchmark-pay-role-before",
+      "title": "Benchmark pay for a role before I make the offer",
+      "outcome": "A salary range table from public data with a defensible offer recommendation",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Greenhouse",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-candidates-github-speaker-circuits",
+      "title": "Source candidates from GitHub and speaker circuits",
+      "outcome": "A sheet of candidates found through code and talks, each with evidence links",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-scheduling-emails-interview-loop",
+      "title": "Draft the scheduling emails for my interview loop",
+      "outcome": "Conflict-free slot proposals and ready-to-review drafts for every participant",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-job-description-benchmarked-against",
+      "title": "Write a job description benchmarked against the market",
+      "outcome": "A ready-to-post JD grounded in what comparable companies actually ask for",
+      "category": "Recruiting",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-re-engage-past-finalists",
+      "title": "Re-engage past finalists for my new opening",
+      "outcome": "Strong past candidates rechecked for fit and timing, with fresh outreach drafts",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-offer-letter-comp",
+      "title": "Draft an offer letter with comp",
+      "outcome": "A ready-to-review offer letter with salary, equity, and start details",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "recruiting-reference-checks-finalist",
+      "title": "Run reference checks for a finalist",
+      "outcome": "Tailored reference questions plus drafted outreach to each reference",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "recruiting-fresh-candidates-role-morning",
+      "title": "Source fresh candidates for my role every morning",
+      "outcome": "A daily drip of new matching candidates appended to your sourcing sheet",
+      "category": "Recruiting",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1-5",
+        "display": "Weekdays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-50-creators-niche-contact",
+      "title": "Find 50 creators in my niche with contact emails",
+      "outcome": "A fit-sorted spreadsheet of creators with follower counts and verified emails",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-creators-already-sponsored-by",
+      "title": "Find creators already sponsored by competitor brands",
+      "outcome": "A vetted sheet of creators with proven paid-partnership history in your space",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-instagram-dms-replies-outreach",
+      "title": "Check my Instagram DMs for replies to my outreach",
+      "outcome": "Your outreach tracker updated daily with who replied and what they said",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "Daily at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-trending-content-formats-niche",
+      "title": "Spot trending content formats in my niche each week",
+      "outcome": "A Monday briefing on the formats blowing up in your niche and why they work",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        },
+        {
+          "id": "Instagram",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-what-s-blowing-up",
+      "title": "Brief me on what's blowing up in my feeds",
+      "outcome": "A daily digest of the posts and conversations on X and LinkedIn that matter to you",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "X",
+          "transport": "browser"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-buying-intent-posts-reddit",
+      "title": "Find buying-intent posts on Reddit and draft replies",
+      "outcome": "Fresh high-intent threads plus ready-to-post replies written in your voice",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "30 8 * * *",
+        "display": "Daily at 8:30am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-x-followers-collab-worthy",
+      "title": "Audit my X followers for collab-worthy accounts",
+      "outcome": "A ranked shortlist of followers worth a collab, intro, or meeting",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "X",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-hunt-down-working-promo",
+      "title": "Hunt down working promo codes for my merchant list",
+      "outcome": "A CSV of current promo codes and offers for every merchant on your list",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-fill-social-links-brand",
+      "title": "Fill in the social links for every brand in my sheet",
+      "outcome": "Your sheet completed with verified, live social profile links for each brand",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-affiliate-programs-track-status",
+      "title": "Apply to affiliate programs and track every status",
+      "outcome": "Applications submitted where possible and a tracker showing each program's status",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "marketing-podcasts-should-have-as",
+      "title": "Find podcasts that should have me on as a guest",
+      "outcome": "A pitch-ready sheet of podcasts with hosts, contact emails, and episode angles",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "YouTube",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-social-mentions-brand-log",
+      "title": "Watch social for mentions of my brand and log them",
+      "outcome": "A running log of brand mentions with priority levels and suggested next moves",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "X",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 17 * * *",
+        "display": "Daily at 5pm"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-comments-linkedin-posts-matter",
+      "title": "Draft comments for the LinkedIn posts that matter to me",
+      "outcome": "Daily comment drafts that build your presence with the right people",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "30 8 * * 1-5",
+        "display": "Weekdays at 8:30am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "marketing-next-week-s-posts",
+      "title": "Plan next week's posts from what performed this week",
+      "outcome": "A week of post ideas grounded in your own top performers, ready every Sunday",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        },
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 17 * * 0",
+        "display": "Sundays at 5pm"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-swipe-file-winning-ugc",
+      "title": "Build a swipe file of winning UGC ads in my category",
+      "outcome": "A reference library of 30 high-performing UGC examples with hook breakdowns",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        },
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-tear-down-competitor-s",
+      "title": "Tear down a competitor's social strategy",
+      "outcome": "A report on their cadence, formats, and what works that you can act on",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-personalized-collab-dms-creator",
+      "title": "Write personalized collab DMs for my creator list",
+      "outcome": "A draft DM for every creator on your list, grounded in their actual content",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "marketing-youtube-comments-content-ideas",
+      "title": "Mine YouTube comments for content ideas in my niche",
+      "outcome": "A ranked list of content ideas pulled from what viewers actually ask for",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "YouTube",
+          "transport": "browser"
+        },
+        {
+          "id": "X",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-viral-posts-about-topic",
+      "title": "Track viral posts about my topic on X every day",
+      "outcome": "A daily shortlist of breakout posts with ready-to-edit reply and quote drafts",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "X",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 12 * * *",
+        "display": "Daily at noon"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "marketing-pick-fair-giveaway-winner",
+      "title": "Pick a fair giveaway winner from my post comments",
+      "outcome": "A verified winner plus backup picks and a clean audit trail of all entries",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-profiles-links-across-platform",
+      "title": "Audit my profiles and links across every platform",
+      "outcome": "A punch list of dead links, stale bios, and mismatches across your profiles",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-slack-digest-when-creators",
+      "title": "Get a Slack digest when creators I track post",
+      "outcome": "A daily Slack message summarizing net-new posts from your watchlist",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        },
+        {
+          "id": "YouTube",
+          "transport": "browser"
+        },
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "Daily at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-seo-content-brief-keyword",
+      "title": "Write an SEO content brief for a keyword",
+      "outcome": "An outline with target terms, headings, and links a writer can run with",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-press-list-draft-pitches",
+      "title": "Build a press list and draft pitches",
+      "outcome": "Targeted journalists with beats, contacts, and a personalized pitch each",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-creators-before-partnership",
+      "title": "Vet creators before a partnership",
+      "outcome": "An audience-quality and brand-fit scorecard for each creator you're eyeing",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Instagram",
+          "transport": "api"
+        },
+        {
+          "id": "TikTok",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "marketing-ad-copy-variations-test",
+      "title": "Write ad copy variations to test",
+      "outcome": "On-brand ad variations across distinct angles, hooks, and CTAs",
+      "category": "Marketing",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-directory-spreadsheet",
+      "title": "Scrape this directory into a spreadsheet",
+      "outcome": "A clean, deduplicated CSV of every entry with pagination handled",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-research-missing-fields-row",
+      "title": "Research missing fields for every row in my sheet",
+      "outcome": "Your sheet filled in with researched data and a source link for each value",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-table-page-blocks-copy",
+      "title": "Pull a table from a page that blocks copy-paste",
+      "outcome": "A clean CSV of the table data that wouldn't let you select or copy it",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-up-spreadsheet-exactly-how",
+      "title": "Clean up my spreadsheet exactly how I tell you",
+      "outcome": "A tidy sheet \u2014 deduped, reformatted, and rule-checked without touching the rest",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-sheets-one-reconcile-conflicts",
+      "title": "Merge my sheets into one and reconcile conflicts",
+      "outcome": "One master sheet with duplicates resolved and every conflict accounted for",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-messy-list-clean-structured",
+      "title": "Turn this messy list into clean structured rows",
+      "outcome": "Structured, consistent rows you can paste anywhere, straight from raw text",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-pricing-comparison-across-competitor",
+      "title": "Build a pricing comparison across competitor sites",
+      "outcome": "A side-by-side table of every competitor's plans, prices, and limits with sources",
+      "category": "Data",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-listings-page-log-new",
+      "title": "Watch a listings page and log new entries daily",
+      "outcome": "A sheet that quietly accumulates every new listing the moment it appears",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 * * *",
+        "display": "Daily at 7am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-new-job-postings-match",
+      "title": "Track new job postings that match my criteria",
+      "outcome": "A daily-updated sheet of fresh, deduped job matches scored for fit",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Daily at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-log-prices-products-m",
+      "title": "Log prices for products I'm watching every day",
+      "outcome": "A price history sheet for your watchlist with drops called out as they happen",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "30 7 * * *",
+        "display": "Daily at 7:30am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-fields-batch-invoice-pdfs",
+      "title": "Extract fields from a batch of invoice PDFs",
+      "outcome": "Every invoice's key fields captured into your template, with iffy ones flagged",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-last-month-s-email",
+      "title": "Turn last month's email receipts into an expense report",
+      "outcome": "A categorized monthly expense summary built from receipts sitting in your inbox",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 1 * *",
+        "display": "Monthly on the 1st at 7am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-current-rates-affiliate-dashboards",
+      "title": "Pull current rates from my affiliate dashboards",
+      "outcome": "One tracker showing every program's current rates, terms, and looming expirations",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-shortlist-events-worth-attending",
+      "title": "Build a shortlist of events worth attending",
+      "outcome": "A ranked list of conferences and events with dates, costs, and reasons to go",
+      "category": "Data",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-product-reviews-themes-quotes",
+      "title": "Mine product reviews for themes and quotes",
+      "outcome": "A breakdown of what customers praise and complain about, with receipts",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "G2",
+          "transport": "browser"
+        },
+        {
+          "id": "Trustpilot",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-two-versions-sheet-show",
+      "title": "Diff two versions of a sheet and show what changed",
+      "outcome": "A change report listing every added, removed, and edited row between two versions",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-engineer-candidates-github-activity",
+      "title": "Source engineer candidates from GitHub activity",
+      "outcome": "A candidate sheet of active GitHub profiles matching your stack and location",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-summarize-competitor-product-updates",
+      "title": "Summarize competitor product updates every week",
+      "outcome": "A Monday brief on every feature competitors shipped in the last week",
+      "category": "Data",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-vendors-against-evaluation-criteria",
+      "title": "Score vendors against my evaluation criteria",
+      "outcome": "A weighted scorecard comparing every vendor on the criteria you care about",
+      "category": "Data",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-amazon-order-history-sheet",
+      "title": "Export my Amazon order history into a sheet",
+      "outcome": "Your full order history in one sheet with spend totals by month and category",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Amazon",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-bank-statement-books",
+      "title": "Reconcile a bank statement to my books",
+      "outcome": "A clean reconciliation with every unmatched item flagged for review",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-transactions-p-l",
+      "title": "Turn my transactions into a P&L",
+      "outcome": "Categorized income and expenses rolled up into a monthly P&L",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-survey-results",
+      "title": "Analyze my survey results",
+      "outcome": "Summary stats, cross-tabs, and open-text themes from a survey export",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-cohort-retention-analysis",
+      "title": "Build a cohort retention analysis",
+      "outcome": "Monthly cohorts with retention curves and the churn story behind them",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "data-store-s-catalog-sold",
+      "title": "Audit my store's catalog for sold-out and broken items",
+      "outcome": "A sweep of every product flagging sold-out, missing images, and price issues",
+      "category": "Data",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-dive-company-category-market",
+      "title": "Deep-dive every company in a category into a market map",
+      "outcome": "One report with a comparison table and a sourced profile of every vendor",
+      "category": "Research",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-competitor-matrix-pricing-features",
+      "title": "Build a competitor matrix on pricing, features, and news",
+      "outcome": "A side-by-side matrix of pricing, positioning, features, customers, and recent news",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "G2",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-check-report-against-filings",
+      "title": "Fact-check a report against filings and primary sources",
+      "outcome": "A claim-by-claim verdict table with citations to filings, transcripts, and primary data",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "SEC EDGAR",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-startups-fit-thesis-week",
+      "title": "Source startups that fit my thesis every week",
+      "outcome": "Fresh thesis-fit startups added to your tracker weekly, minus ones you've already seen",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Y Combinator",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1",
+        "display": "Mondays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-company-s-legitimacy-before",
+      "title": "Vet a company's legitimacy before you sign or pay",
+      "outcome": "A legitimacy report with registry records, filings, and any red flags, all linked",
+      "category": "Research",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-contact-s-real-connections",
+      "title": "Map a contact's real connections to my target list",
+      "outcome": "A map of documented relationships between a contact and your targets, with evidence",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-small-cap-stock-catalysts",
+      "title": "Analyze a small-cap stock with catalysts and risks",
+      "outcome": "A structured memo with thesis, catalysts, risks, and valuation context, fully cited",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "SEC EDGAR",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-funding-m-moves-market",
+      "title": "Track funding and M&A moves in my market each week",
+      "outcome": "A Monday digest of funding rounds, acquisitions, and talent moves with why each matters",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Crunchbase",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-research-local-language-forums",
+      "title": "Research local-language forums and report back in English",
+      "outcome": "An English brief of what local forums and communities really say, with linked quotes",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-predict-interview-questions-real",
+      "title": "Predict interview questions from real candidate reports",
+      "outcome": "A list of likely questions by round, with patterns drawn from real interview reports",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "Glassdoor",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-compare-two-products-feature",
+      "title": "Compare two products feature-by-feature like a senior PM",
+      "outcome": "A decision-ready teardown with feature table, gaps, pricing, and a recommendation",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "G2",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-verify-professional-license-against",
+      "title": "Verify a professional license against official registries",
+      "outcome": "A verification table showing each credential checked against the official registry",
+      "category": "Research",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-who-s-who-brief",
+      "title": "Build a who's-who brief on a company's leadership team",
+      "outcome": "Profiles of each executive with background, track record, and recent public statements",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-people-worth-meeting-at",
+      "title": "Rank the people worth meeting at an upcoming event",
+      "outcome": "A ranked shortlist of attendees with why they matter and an opener for each",
+      "category": "Research",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-customer-reviews-complaints-feature",
+      "title": "Mine customer reviews for complaints and feature gaps",
+      "outcome": "Themed complaints, praise, and feature gaps with representative quotes and counts",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "G2",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-competitor-pricing-releases-changes",
+      "title": "Watch competitor pricing and releases for changes weekly",
+      "outcome": "A weekly change report on competitor pricing, releases, and announcements",
+      "category": "Research",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 16 * * 5",
+        "display": "Fridays at 4pm"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-read-company-s-strategy",
+      "title": "Read a company's strategy from its job postings monthly",
+      "outcome": "A monthly read on team growth, new functions, and strategy shifts from job posts",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "First of the month at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-compare-neighborhoods-before-you",
+      "title": "Compare neighborhoods before you choose where to live",
+      "outcome": "A comparison of neighborhoods on cost, schools, safety, and commute with a verdict",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "Zillow",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-research-account-apollo-list",
+      "title": "Deep-research every account in my Apollo list",
+      "outcome": "Each Apollo account researched, scored against your ICP, and ranked in a table",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Apollo",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-angel-investment-opportunities-week",
+      "title": "Find angel investment opportunities this week",
+      "outcome": "A short list of seed-stage companies with high-signal founders and source links",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "TechCrunch",
+          "transport": "browser"
+        },
+        {
+          "id": "Y Combinator",
+          "transport": "browser"
+        },
+        {
+          "id": "Product Hunt",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1",
+        "display": "Mondays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-experts-interview-topic",
+      "title": "Find experts to interview on a topic",
+      "outcome": "A shortlist of credible experts with their background and how to reach them",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-tear-down-competitor-s",
+      "title": "Tear down a competitor's signup and onboarding funnel",
+      "outcome": "A page-by-page teardown of a rival's funnel with the moves worth stealing",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-everyone-network-who-matches",
+      "title": "Find everyone in my network who matches a profile",
+      "outcome": "A vetted list of 1st/2nd-degree connections matching your criteria, with links",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "research-dossier-someone-before-meet",
+      "title": "Build a dossier on someone before I meet them",
+      "outcome": "An executive-ready brief: background, recent moves, and talking points, sourced",
+      "category": "Research",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-confirmed-orders-quickbooks-invoices",
+      "title": "Turn confirmed orders into QuickBooks invoices and POs",
+      "outcome": "Every confirmed order booked in QuickBooks with IDs synced back to your board",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Monday.com",
+          "transport": "api"
+        },
+        {
+          "id": "QuickBooks",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "ops-overdue-invoice-collections-sweep",
+      "title": "Run my overdue-invoice collections sweep every Monday",
+      "outcome": "An updated collections tracker plus a drafted nudge sitting in each invoice thread",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "QuickBooks",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-label-gmail-inbox-morning",
+      "title": "Triage and label my Gmail inbox every morning",
+      "outcome": "A labeled inbox and a short brief of what actually needs you today",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 * * *",
+        "display": "Daily at 7am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-event-rsvps-keep-invite",
+      "title": "Track event RSVPs and keep my invite list current",
+      "outcome": "Labeled replies, an up-to-date invite tracker, and a daily headcount summary",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 17 * * *",
+        "display": "Daily at 5pm"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "ops-contractor-agreement-ready-signature",
+      "title": "Draft a contractor agreement ready for signature",
+      "outcome": "A completed agreement doc from your template, ready to review and send for signature",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-bill-inbox-prep-payment",
+      "title": "Find a bill in my inbox and prep the payment",
+      "outcome": "The invoice located, the portal opened, and payment staged for your final click",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-collect-access-review-evidence",
+      "title": "Collect access-review evidence for my audit",
+      "outcome": "Screenshots and records reconciled against your tracker, with every gap flagged",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "GitHub",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-last-month-s-receipts",
+      "title": "Pull last month's receipts into one tidy folder",
+      "outcome": "Receipts and invoices saved to Drive, renamed consistently, and logged in a sheet",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "First of the month at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-visit-site-sheet-fill",
+      "title": "Visit every site in my sheet and fill the blanks",
+      "outcome": "Every missing status, owner, and note in your sheet filled in from live websites",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-fill-out-portal-forms",
+      "title": "Fill out portal forms using my saved details",
+      "outcome": "Forms completed across portals, a tracker updated, and anything blocked flagged",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-scattered-knowledge-clean-sop",
+      "title": "Turn scattered knowledge into a clean SOP doc",
+      "outcome": "A clean, current SOP doc rebuilt from real examples in Slack and email",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        },
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-client-records-airtable-webflow",
+      "title": "Sync client records from Airtable into Webflow",
+      "outcome": "Webflow records updated to match Airtable, with a change log of every edit",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Airtable",
+          "transport": "api"
+        },
+        {
+          "id": "Webflow",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-vendors-security-pages-risk",
+      "title": "Audit my vendors' security pages into a risk table",
+      "outcome": "A vendor risk table with certifications, gaps, owners, and evidence links",
+      "category": "Ops",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-meeting-times-draft-scheduling",
+      "title": "Find meeting times and draft the scheduling email",
+      "outcome": "Open slots found across calendars and a polished scheduling email ready to send",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-screen-new-applicants-hiring",
+      "title": "Screen new applicants into my hiring tracker daily",
+      "outcome": "New applicants logged in your tracker with drafted replies awaiting your OK",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-compile-creator-payouts-one",
+      "title": "Compile my creator payouts into one monthly sheet",
+      "outcome": "One sheet with every platform payout for the month, reconciled and totaled",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        },
+        {
+          "id": "Patreon",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 10 * * *",
+        "display": "First of the month at 10am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-release-notes-week-s",
+      "title": "Draft release notes from this week's merged PRs",
+      "outcome": "Release notes drafted from merged pull requests, grouped and ready to publish",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 15 * * 5",
+        "display": "Fridays at 3pm"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-saas-renewals-before-they",
+      "title": "Track SaaS renewals before they auto-renew",
+      "outcome": "A renewal calendar with costs, seats, and dates, plus flags on anything due soon",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "First of the month at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-shortlist-flights-stage-booking",
+      "title": "Shortlist flights and stage the booking for review",
+      "outcome": "A shortlist of flight options with a booking staged up to the payment step",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-today-s-meetings-before",
+      "title": "Brief me on today's meetings before I start",
+      "outcome": "A morning brief on every meeting with attendee research and suggested talking points",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 * * 1-5",
+        "display": "Weekdays at 7am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-unsubscribe-newsletters-never-read",
+      "title": "Unsubscribe me from newsletters I never read",
+      "outcome": "A lighter inbox with junk senders unsubscribed and a log of every list you left",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-replies-emails-waiting",
+      "title": "Draft replies to emails waiting on me",
+      "outcome": "Drafts for the emails that need you, matched to your voice and left unsent",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 17 * * 1-5",
+        "display": "Weekdays at 5pm"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-follow-up-sent-emails",
+      "title": "Follow up on sent emails with no reply",
+      "outcome": "Unanswered sent threads found after your wait period, with bump drafts ready",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-estimate-quarterly-taxes",
+      "title": "Estimate my quarterly taxes",
+      "outcome": "An estimated quarterly tax figure with the math and a payment checklist",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "IRS",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-1099-contractor-list",
+      "title": "Prep my 1099 contractor list",
+      "outcome": "Every contractor who needs a 1099 with totals and missing-info flags",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "QuickBooks",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-bulk-update-crm-records",
+      "title": "Bulk-update my CRM records by a rule",
+      "outcome": "Every matching record updated per your rule, with skips and edge cases logged",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        },
+        {
+          "id": "Salesforce",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-submit-record-list-through",
+      "title": "Submit every record in my list through a web form",
+      "outcome": "Each record submitted one at a time with a per-row status and blockers flagged",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "ops-set-up-gmail-filters",
+      "title": "Set up Gmail filters that keep my inbox clean",
+      "outcome": "Filter rules built from how you actually read email, applied and documented",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-down-documents-scattered-across",
+      "title": "Track down documents scattered across my accounts",
+      "outcome": "Every matching document found across Gmail and Drive, organized into one folder",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "ops-cold-pitches-out-inbox",
+      "title": "Sweep cold pitches out of my inbox with polite declines",
+      "outcome": "Unsolicited pitches labeled and archived, with decline drafts for the borderline ones",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 12 * * 1-5",
+        "display": "Weekdays at noon"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "ops-optimize-next-week-s",
+      "title": "Optimize next week's calendar before it hardens",
+      "outcome": "Back-to-backs broken up, focus blocks placed, and reschedule drafts ready",
+      "category": "Ops",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 16 * * 5",
+        "display": "Fridays at 4pm"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "engineering-test-app-file-what",
+      "title": "Click-test my app and file what breaks",
+      "outcome": "A numbered bug list with severity, repro steps, and screenshots",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-qa-checklist-mark-case",
+      "title": "Run my QA checklist and mark every case pass or fail",
+      "outcome": "A completed checklist with pass/fail status, screenshots, and notes on every failure",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-bug-report-find-exactly",
+      "title": "Reproduce this bug report and find exactly where it fails",
+      "outcome": "A confirmed repro with the exact failing step, console errors, and screenshots",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-diagnose-why-page-is",
+      "title": "Diagnose why this page is broken and give me fix options",
+      "outcome": "A root-cause diagnosis with console and network evidence, plus ranked fix options",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-open-prs-flag-risky",
+      "title": "Review my open PRs and flag the risky ones",
+      "outcome": "A risk-ranked summary of every open PR with what to merge, question, or block",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-trace-production-issue-its",
+      "title": "Trace this production issue to its likely root cause",
+      "outcome": "A written incident analysis linking the symptom to a deploy, commit, or dependency",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        },
+        {
+          "id": "Vercel",
+          "transport": "browser"
+        },
+        {
+          "id": "Sentry",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-site-s-accessibility-prioritize",
+      "title": "Audit my site's accessibility and prioritize the fixes",
+      "outcome": "A prioritized accessibility report covering alt text, contrast, labels, and keyboard nav",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-broken-link-dead-image",
+      "title": "Find every broken link and dead image on my site",
+      "outcome": "A page-by-page list of broken links and missing images with where each one lives",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-compare-what-we-built",
+      "title": "Compare what we built against the spec and list the gaps",
+      "outcome": "A gap list of missing behavior, wrong behavior, and unhandled edge cases vs the spec",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-read-these-api-docs",
+      "title": "Read these API docs and fill in my integration config",
+      "outcome": "Exact endpoints, field names, auth headers, and example payloads ready to paste",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "engineering-set-up-github-webhook",
+      "title": "Set up my GitHub webhook and prove it fires",
+      "outcome": "A configured webhook with a verified test delivery and the response code to prove it",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-verify-security-report-s",
+      "title": "Verify this security report's claim without breaking things",
+      "outcome": "A safe, evidence-backed verdict on whether the reported vulnerability is real",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-test-signup-flow-at",
+      "title": "Test my signup flow at phone, tablet, and desktop sizes",
+      "outcome": "A viewport-by-viewport report of layout breaks and blockers with screenshots",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-test-preview-deploy-against",
+      "title": "Test this preview deploy against what the PR promises",
+      "outcome": "An acceptance verdict on the PR with evidence from the live preview deployment",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "Vercel",
+          "transport": "browser"
+        },
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-site-s-speed-tell",
+      "title": "Check my site's speed and tell me what to fix first",
+      "outcome": "A Core Web Vitals report with the top fixes ranked by impact",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-bug-notes-clean-linear",
+      "title": "Turn my bug notes into clean Linear issues",
+      "outcome": "Deduped, well-formed Linear issues with severity, repro steps, and labels",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "Linear",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-dashboards-morning-flag-regressions",
+      "title": "Sweep my dashboards every morning and flag regressions",
+      "outcome": "A daily digest of metric regressions and new errors, or a one-line all-clear",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "Analytics",
+          "transport": "browser"
+        },
+        {
+          "id": "Sentry",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1-5",
+        "display": "Weekdays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-smoke-test-core-flows",
+      "title": "Smoke-test my core flows every morning before standup",
+      "outcome": "A daily pass/fail report on your critical flows, diffed against yesterday's run",
+      "category": "Engineering",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 8 * * 1-5",
+        "display": "Weekdays at 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-monday-repo-health-report",
+      "title": "Send me a Monday repo health report",
+      "outcome": "A weekly summary of stale PRs, unanswered issues, and failing checks with owners",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays at 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-stress-test-form-site",
+      "title": "Stress-test every form on my site",
+      "outcome": "A pass/fail log of how each form handles valid and invalid input",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "Vercel",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "engineering-cookie-consent-banner",
+      "title": "Audit my cookie and consent banner",
+      "outcome": "What trackers fire before consent and where the banner falls short",
+      "category": "Engineering",
+      "connectors": [
+        {
+          "id": "Vercel",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-explain-contract-plain-english",
+      "title": "Explain this contract to me in plain English",
+      "outcome": "A one-page brief of key terms, your obligations, and red flags worth pushing back on",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-tighten-draft-without-losing",
+      "title": "Tighten my draft without losing my voice",
+      "outcome": "A sharper, shorter draft that still sounds like you, with the edits explained",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "docs-rough-notes-polished-google",
+      "title": "Turn my rough notes into a polished Google Doc",
+      "outcome": "A clean, structured doc in your Drive \u2014 formatted, titled, and ready to share",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "docs-all-feedback-across-doc",
+      "title": "Apply all my feedback across this doc in one pass",
+      "outcome": "A revised doc with every feedback point applied and a summary of what changed",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-rewrite-resume-specific-job",
+      "title": "Rewrite my resume for this specific job posting",
+      "outcome": "A tailored resume that mirrors the role's language without inventing experience",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-visual-html-timeline-research",
+      "title": "Build a visual HTML timeline from my research",
+      "outcome": "A self-contained HTML page with a sourced timeline you can open and share",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-doc-slide-outline-can",
+      "title": "Turn this doc into a slide outline I can build from",
+      "outcome": "A slide-by-slide outline with titles, talking points, and speaker notes",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-translate-google-doc-keep",
+      "title": "Translate my Google Doc and keep the formatting",
+      "outcome": "A translated copy of your doc with structure, links, and tables intact",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-decisions-action-items-out",
+      "title": "Pull decisions and action items out of this transcript",
+      "outcome": "A crisp list of decisions made, action items with owners, and open questions",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-organize-these-scattered-answers",
+      "title": "Organize these scattered answers into a clean FAQ",
+      "outcome": "An organized FAQ with grouped sections and answers anyone can understand",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-proofread-show-change-you",
+      "title": "Proofread this and show me every change you made",
+      "outcome": "A corrected version plus a tracked-changes-style list of every fix and why",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-bio-simple-personal-site",
+      "title": "Draft my bio and a simple personal site from LinkedIn",
+      "outcome": "Three bio lengths plus a clean one-page personal site built from your real profile",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-newsletter-week-s-links",
+      "title": "Draft my newsletter from this week's links",
+      "outcome": "A ready-to-send newsletter draft in your voice with sections and subject lines",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "docs-customer-facing-release-notes",
+      "title": "Write customer-facing release notes from my changelog",
+      "outcome": "Polished release notes grouped by what users care about, not by commit order",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-message-sound-more-confident",
+      "title": "Make my message sound more confident, kind, or firm",
+      "outcome": "Three rewrites in your target tone that keep the meaning and all the facts",
+      "category": "Docs",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-distill-long-slack-thread",
+      "title": "Distill that long Slack thread into a decision doc",
+      "outcome": "A shareable decision record with context, options weighed, the call, and owners",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-meeting-formatted-minutes",
+      "title": "Turn my meeting into formatted minutes",
+      "outcome": "Clean minutes with attendees, decisions, and owned action items",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-customer-case-study",
+      "title": "Write a customer case study",
+      "outcome": "A polished case study with challenge, solution, and quantified results",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-proposal-or-sow-notes",
+      "title": "Draft a proposal or SOW from my notes",
+      "outcome": "A client-ready proposal with scope, deliverables, timeline, and price",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-prioritize-product-backlog",
+      "title": "Prioritize my product backlog",
+      "outcome": "Your backlog scored with RICE and a recommended sequenced roadmap",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "docs-video-or-lecture-structured",
+      "title": "Turn this video or lecture into structured notes",
+      "outcome": "Skimmable notes from a long video: key points, takeaways, and action items",
+      "category": "Docs",
+      "connectors": [
+        {
+          "id": "YouTube",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-booked-out-restaurant-table",
+      "title": "Watch a booked-out restaurant for a table",
+      "outcome": "An instant alert with the exact slot and booking link the moment a table opens",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "OpenTable",
+          "transport": "browser"
+        },
+        {
+          "id": "Resy",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 */3 * * *",
+        "display": "Every 3 hours"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-trip-live-hotel-prices",
+      "title": "Plan my trip with live hotel prices",
+      "outcome": "A ranked comparison of hotels with live rates, total cost, and booking links",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-best-flight-dates-constraints",
+      "title": "Find the best flight for my dates and constraints",
+      "outcome": "A ranked shortlist of flights with prices, times, and booking links",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Kayak",
+          "transport": "browser"
+        },
+        {
+          "id": "Google",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-road-trip-timed-stops",
+      "title": "Plan a road trip with timed stops",
+      "outcome": "A day-by-day driving plan with stops, drive times, hotels, and links",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-right-restaurant-occasion",
+      "title": "Find the right restaurant for the occasion",
+      "outcome": "A vetted shortlist of restaurants with the why, price level, and reservation links",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "OpenTable",
+          "transport": "browser"
+        },
+        {
+          "id": "Resy",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-apartments-under-budget-target",
+      "title": "Search apartments under my budget in target areas",
+      "outcome": "A table of current listings with rent, specs, scam flags, and which to tour first",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Zillow",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-product-stock-ships-country",
+      "title": "Find a product in stock that ships to my country",
+      "outcome": "Live in-stock sources ranked by total landed cost, with links and the best buy",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Amazon",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-compare-subscription-prices-across",
+      "title": "Compare subscription prices across regions",
+      "outcome": "A region-by-region price table and the cheapest legitimate way to subscribe",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-flight",
+      "title": "Check me in for my flight",
+      "outcome": "You're checked in with seats confirmed and boarding pass status verified",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-packing-list-trip",
+      "title": "Build my packing list for this trip",
+      "outcome": "A packing and prep checklist tailored to your destination, dates, and plans",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "draft"
+    },
+    {
+      "id": "personal-signup-ready-race-or",
+      "title": "Get me signup-ready for a race or tournament",
+      "outcome": "Every requirement, fee, and deadline for your event in one ordered plan",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-compare-gyms-studios-near",
+      "title": "Compare gyms and studios near me",
+      "outcome": "A side-by-side of nearby gyms with real pricing, reviews, and trial offers",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-negotiate-marketplace-listing",
+      "title": "Negotiate this marketplace listing for me",
+      "outcome": "A deal negotiated in chat within your limits, ready for your final OK",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Facebook",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-visa-entry-rules-trip",
+      "title": "Check visa and entry rules for my trip",
+      "outcome": "A sourced rundown of visa and entry rules with an apply-by timeline",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-fares-trip-until-they",
+      "title": "Track fares for a trip until they hit my target",
+      "outcome": "A fare alert with booking link the moment your route dips below target",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Google",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-product-until-price-drops",
+      "title": "Watch a product until the price drops",
+      "outcome": "A buy alert with link when your item hits a genuinely good price",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Amazon",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 */6 * * *",
+        "display": "Every 6 hours"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-queue-usual-lunch-order",
+      "title": "Queue my usual lunch order every workday",
+      "outcome": "Your usual order carted on time and held at checkout for your OK",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "DoorDash",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "30 11 * * 1-5",
+        "display": "Weekdays 11:30 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-enter-ticket-lottery-day",
+      "title": "Enter the ticket lottery for me every day",
+      "outcome": "Your daily entry submitted and verified, with instant alerts if you win",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "TodayTix",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 10 * * *",
+        "display": "Daily 10:00 AM"
+      },
+      "writeScope": "send"
+    },
+    {
+      "id": "personal-grab-sold-out-campsite",
+      "title": "Grab a sold-out campsite when someone cancels",
+      "outcome": "An instant alert with booking link when your campground dates open up",
+      "category": "Personal",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 */2 * * *",
+        "display": "Every 2 hours"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-recurring-charges-should-cancel",
+      "title": "Find recurring charges I should cancel",
+      "outcome": "Every subscription on my statement, ranked by whether it's worth keeping",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        },
+        {
+          "id": "Google Drive",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-dispute-incorrect-charge",
+      "title": "Dispute an incorrect charge",
+      "outcome": "A filed dispute with the evidence and a paper trail you can follow up on",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Chase",
+          "transport": "browser"
+        },
+        {
+          "id": "PayPal",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-file-warranty-or-return",
+      "title": "File a warranty or return claim",
+      "outcome": "A submitted claim with proof of purchase and a tracked confirmation",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Amazon",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "personal-book-doctor-takes-insurance",
+      "title": "Book a doctor that takes my insurance",
+      "outcome": "A booked or shortlisted appointment with an in-network provider near me",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Zocdoc",
+          "transport": "browser"
+        },
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "send"
+    },
+    {
+      "id": "personal-best-ticket-deal-event",
+      "title": "Find the best ticket deal for an event",
+      "outcome": "Resale prices compared fee-inclusive across marketplaces, with the best value picked",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "StubHub",
+          "transport": "browser"
+        },
+        {
+          "id": "SeatGeek",
+          "transport": "browser"
+        },
+        {
+          "id": "Vivid Seats",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-comb-facebook-marketplace-across",
+      "title": "Comb Facebook Marketplace across regions for an item",
+      "outcome": "Every matching listing across your search area in one sheet with price and link",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Facebook",
+          "transport": "browser"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "personal-keep-travel-plans-organized",
+      "title": "Keep my travel plans organized from my inbox",
+      "outcome": "Every confirmation pulled into one itinerary, with gaps and conflicts flagged",
+      "category": "Personal",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Every day 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-morning-briefing-slack-calendar",
+      "title": "Morning briefing from Slack, calendar, and inbox",
+      "outcome": "One prioritized brief: needs action now, today's meetings, and FYIs",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        },
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        },
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 * * *",
+        "display": "Every day at 7am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-today-s-economic-data",
+      "title": "Brief me on today's economic data releases",
+      "outcome": "A weekday brief on econ releases with numbers, surprises, and the takeaway",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "30 7 * * 1-5",
+        "display": "Weekdays 7:30 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-weekly-pipeline-report-crm",
+      "title": "Send my weekly pipeline report from the CRM",
+      "outcome": "A Friday pipeline recap with wins, stalls, and next steps, ready to paste",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "HubSpot",
+          "transport": "api"
+        },
+        {
+          "id": "Slack",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 16 * * 5",
+        "display": "Fridays 4:00 PM"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "monitoring-x-linkedin-feeds-morning",
+      "title": "Digest my X and LinkedIn feeds every morning",
+      "outcome": "A daily feed digest with the five posts worth reading and two ideas worth posting",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "X",
+          "transport": "browser"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Daily 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-funding-rounds-market-week",
+      "title": "Track funding rounds in my market every week",
+      "outcome": "A weekly digest of who raised, who bought whom, and why each deal matters to you",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Crunchbase",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * 1",
+        "display": "Mondays 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-competitor-pricing-feature-pages",
+      "title": "Diff competitor pricing and feature pages weekly",
+      "outcome": "A weekly diff of competitor pages \u2014 what changed and what it signals",
+      "category": "Monitoring",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays 9:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-recap-watchlist-after-market",
+      "title": "Recap my watchlist after every market close",
+      "outcome": "A market-close recap of your tickers with moves, catalysts, and what's next",
+      "category": "Monitoring",
+      "connectors": [],
+      "schedule": {
+        "cron": "30 16 * * 1-5",
+        "display": "Weekdays 4:30 PM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-reddit-hacker-news-brand",
+      "title": "Watch Reddit and Hacker News for my brand",
+      "outcome": "A daily mention log with sentiment, hot threads, and a drafted reply",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        },
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "Hacker News",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 17 * * *",
+        "display": "Daily 5:00 PM"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "monitoring-scan-job-boards-daily",
+      "title": "Scan job boards daily for matching roles",
+      "outcome": "Fresh postings matched to your brief, scored and linked while they're new",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1-5",
+        "display": "Weekdays 9:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-round-up-new-customer",
+      "title": "Round up new customer reviews every week",
+      "outcome": "A weekly review roundup with themes, trend, and replies drafted to paste",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "G2",
+          "transport": "browser"
+        },
+        {
+          "id": "Trustpilot",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Mondays 9:00 AM"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "monitoring-everyone-m-meeting-today",
+      "title": "Brief me on everyone I'm meeting today",
+      "outcome": "A prep sheet per meeting: who they are, what's new, and what to say",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Google Calendar",
+          "transport": "api"
+        },
+        {
+          "id": "LinkedIn",
+          "transport": "browser"
+        },
+        {
+          "id": "Docs",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 7 * * 1-5",
+        "display": "Weekdays 7:00 AM"
+      },
+      "writeScope": "draft"
+    },
+    {
+      "id": "monitoring-list-blogs-new-posts",
+      "title": "Check my list of blogs for new posts weekly",
+      "outcome": "A ranked weekly summary of new posts across the blogs you follow",
+      "category": "Monitoring",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 8 * * 5",
+        "display": "Fridays 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-new-releases-dependencies",
+      "title": "Track new releases of my dependencies",
+      "outcome": "A weekly release digest with breaking changes and security fixes flagged",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "GitHub",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 3",
+        "display": "Wednesdays 9:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-regulator-moves-affect-us",
+      "title": "Watch a regulator for moves that affect us",
+      "outcome": "A weekly regulatory scan with plain-English implications and deadlines",
+      "category": "Monitoring",
+      "connectors": [],
+      "schedule": {
+        "cron": "0 8 * * 2",
+        "display": "Tuesdays 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-pulse-check-our-feedback",
+      "title": "Pulse-check our feedback channel every morning",
+      "outcome": "A daily digest of feedback themes, urgent issues, and who should own them",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Slack",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1-5",
+        "display": "Weekdays 9:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-summarize-newsletters-piling-up",
+      "title": "Summarize the newsletters piling up in my inbox",
+      "outcome": "Your newsletter backlog distilled into takeaways and a ranked reading list",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Gmail",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 0",
+        "display": "Sundays 9:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-up-topic-ve-ignored",
+      "title": "Catch me up on a topic I've ignored for weeks",
+      "outcome": "A catch-up brief on what actually mattered while you weren't looking",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Reddit",
+          "transport": "browser"
+        },
+        {
+          "id": "Hacker News",
+          "transport": "browser"
+        }
+      ],
+      "schedule": null,
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-vc-news-morning",
+      "title": "Track VC news every morning",
+      "outcome": "A daily venture brief with funding, fund, LP, and partner moves ranked by signal",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "TechCrunch",
+          "transport": "browser"
+        },
+        {
+          "id": "Crunchbase",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Daily 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-ai-robotics-news-morning",
+      "title": "Track AI and robotics news every morning",
+      "outcome": "A daily brief of the AI, deep tech, and robotics stories that actually matter",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "TechCrunch",
+          "transport": "browser"
+        },
+        {
+          "id": "Hacker News",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Daily 8:00 AM"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-vendors-status-pages",
+      "title": "Watch my vendors' status pages",
+      "outcome": "A daily alert when a tool I depend on reports an outage or incident",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Atlassian",
+          "transport": "api"
+        },
+        {
+          "id": "Statuspage",
+          "transport": "browser"
+        }
+      ],
+      "schedule": {
+        "cron": "0 8 * * *",
+        "display": "Every day 8am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-grant-rfp-deadlines",
+      "title": "Track grant and RFP deadlines",
+      "outcome": "A weekly roundup of new grants and RFPs I qualify for, sorted by deadline",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "SAM.gov",
+          "transport": "browser"
+        },
+        {
+          "id": "Google",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * 1",
+        "display": "Every Monday 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-monthly-budget-vs-actual",
+      "title": "Monthly budget vs actual check",
+      "outcome": "A monthly summary of where spend beat or blew the budget, by category",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 1 * *",
+        "display": "1st of each month 9am"
+      },
+      "writeScope": "readonly"
+    },
+    {
+      "id": "monitoring-application-or-case-status",
+      "title": "Watch my application or case status and alert me",
+      "outcome": "A daily check on a status page that pings you the moment it changes",
+      "category": "Monitoring",
+      "connectors": [
+        {
+          "id": "Docs",
+          "transport": "api"
+        },
+        {
+          "id": "Sheets",
+          "transport": "api"
+        }
+      ],
+      "schedule": {
+        "cron": "0 9 * * *",
+        "display": "Every day 9am"
+      },
+      "writeScope": "readonly"
+    }
+  ]
+}
