@@ -321,23 +321,24 @@ Three editable fields, then `Cancel` (text) / `Add skill` (black filled).
 **1. Skills have a slash command.** This is the field nothing else exposed.
 Two samples captured:
 
-| Skill name | Command | Description field |
+| Skill name | Command | Derivation |
 |---|---|---|
-| Dashboard design & building | `dashboard-building` | Turn a sheet or query results into a clean dashboard with the right ch… |
-| Chart creation from data | `data-create-chart` | Turn query results, a table, or pasted data into a clear, honest chart |
+| Dashboard design & building | `dashboard-building` | abbreviated slug — drops "design &" |
+| Chart creation from data | `data-create-chart` | semantic rewrite — reordered to `<domain>-<verb>-<object>` |
+| Data warehouse context | `data-warehouse-context` | exact slug of the name |
 
-Neither is a mechanical slug. "Dashboard design & building" would slugify to
-`dashboard-design-building`; "Chart creation from data" would slugify to
-`chart-creation-from-data`. Instead both are **hand-authored semantic
-handles** — and `data-create-chart` even reorders the words into
-`<domain>-<verb>-<object>` form.
+All three skills are in the **Data** category, and **all three commands are
+derived by a different rule**: one abbreviates, one rewrites and reorders, one
+slugifies literally. There is no convention here to implement — these are
+hand-authored one at a time.
 
-**The two samples do not follow the same convention.** `data-create-chart`
-is domain-prefixed; `dashboard-building` is not, despite both skills living in
-the **Data** category — under a `<domain>-<verb>-<object>` rule it would be
-something like `data-build-dashboard`. With 117 skills sharing one command
-namespace, an inconsistent naming scheme makes commands unguessable, which
-defeats the point of having them.
+Worse, the namespace is **ambiguous**. Because `data-create-chart` really is
+domain-prefixed, a user seeing `data-warehouse-context` cannot tell whether it
+parses as *"data-warehouse context"* (the subject) or *"data / warehouse-context"*
+(category + name). Typing `/data-` and expecting to filter the Data category
+gets you an inconsistent, partial list. With 117 skills plus every saved
+workflow sharing one namespace, commands stop being guessable — which is the
+entire reason to have commands rather than a picker.
 
 The handle is **user-editable at adoption time**, so inconsistency is partly
 self-correcting per user — but the shipped defaults set the pattern.
@@ -346,8 +347,8 @@ self-correcting per user — but the shipped defaults set the pattern.
 show the resulting command live as the user types the name, and check it for
 collisions across both the skill and workflow namespaces before saving.
 
-**1b. `Description` carries over from the catalog unchanged** — the Chart
-skill's field is verbatim the card description. So the catalog `description`
+**1b. `Description` carries over from the catalog unchanged** — verified on all
+three samples; each field is verbatim the catalog card description. So the catalog `description`
 *is* the retrieval description; there is no separate trigger text besides the
 `When to use` section in the body.
 
