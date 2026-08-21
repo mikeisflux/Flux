@@ -115,7 +115,7 @@ $previous = if (Test-Path $stamp) { (Get-Content $stamp -Raw).Trim() } else { ''
 # No stamp beside an existing build.ninja means the dir predates this check,
 # so its runner is unknown and a clean is the safe read.
 if ((Test-Path "$Out\build.ninja") -and $previous -ne $runner) {
-  Log "Build runner is now $runner: gn clean $Out"
+  Log "Build runner is now ${runner}: gn clean $Out"
   Invoke-Native "$DepotTools\gn.bat" clean $Out
 }
 

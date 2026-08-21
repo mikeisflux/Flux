@@ -35,6 +35,20 @@ project than every real bug combined.
 When something fails, the first question is "what did I get wrong", not "what
 did they do wrong". So far the answer has been the former every single time.
 
+### PowerShell is parse-checked, not eyeballed
+
+`tools/check-powershell.sh` parses every `.ps1` with the real PowerShell parser
+(downloading pwsh on first run and caching it). A PostToolUse hook runs it
+after every edit, so a syntax error cannot reach the user's machine.
+
+It exists because these errors are invisible to review. `"$runner: gn clean"`
+reads correctly and parses as a drive-qualified variable reference, which is a
+hard parse failure - the script dies at line 1, having done nothing. Reading
+carefully does not catch this class of bug. A parser does.
+
+If the download fails the check exits 0 and says so. That means the scripts are
+**unverified** - say that rather than claiming they work.
+
 ## Layout
 
 - `src/browser/` - agent layer, junctioned into `//chrome/browser/flux`

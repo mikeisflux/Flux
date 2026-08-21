@@ -6,5 +6,18 @@
       "Bash(cat *)",
       "Bash(ls *)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-powershell.sh"
+          }
+        ]
+      }
+    ]
   }
 }
