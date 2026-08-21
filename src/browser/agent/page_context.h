@@ -72,9 +72,58 @@ class PageContext {
   // than emitting a selector it guessed.
   static std::string Format(const Snapshot& snapshot);
 
+  // Renders only the fields named in `request`, as JSON rows. Used by the
+  // extract tool so tabular pages don't cost a full-page snapshot.
+  static std::string FormatForExtraction(const Snapshot& snapshot,
+                                         const base::Value::Dict& request);
+
+  using ActionCallback = base::OnceCallback<void(bool success)>;
+
+  // --- Interaction ---------------------------------------------------------
+  //
+  // These deliver input through RenderWidgetHost rather than by executing
+  // JavaScript in the page. That is a correctness requirement:
+  //
+  //   - Rich-text editors are contenteditable, not <input>. Assigning .value
+  //     does nothing, so the surrounding form submits empty. Every major mail
+  //     and social composer works this way, and the failure is silent - the
+  //     UI looks like it worked.
+  //   - element.click() skips focus transitions and the mousedown/mouseup/
+  //     click ordering that handlers bind to.
+  //   - Frameworks with their own synthetic event systems frequently ignore
+  //     JS-dispatched events, or update the DOM without updating component
+  //     state, leaving the page and the model disagreeing about what happened.
+  //
+  // Delivering real input avoids all three without per-site special cases.
+
+  // Clicks the element identified by `node_id` from the last snapshot.
+  void ClickNode(int32_t node_id, ActionCallback callback);
+
+  // Focuses `node_id` and enters `text` as key events. Paced rather than
+  // delivered at once: composers that debounce input handling drop characters
+  // that arrive faster than the debounce interval.
+  void TypeIntoNode(int32_t node_id,
+                    const std::string& text,
+                    ActionCallback callback);
+
+  void SubmitForm(int32_t node_id, ActionCallback callback);
+  void ScrollToNode(int32_t node_id, ActionCallback callback);
+
+  // Resolves once `text` appears, or `timeout` elapses. Preferable to a fixed
+  // sleep after any action that triggers a load.
+  void WaitForText(const std::string& text,
+                   base::TimeDelta timeout,
+                   ActionCallback callback);
+
  private:
   void OnAccessibilityTreeReady(SnapshotCallback callback,
                                 const ui::AXTreeUpdate& update);
+
+  // Maps a node id to viewport coordinates, scrolling it into view first.
+  // Returns nullopt when the node is gone - the page may have changed since
+  // the snapshot the model is reasoning about, and acting on a stale id is how
+  // an agent ends up clicking the wrong control.
+  std::optional<gfx::Point> ResolveNodeCenter(int32_t node_id);
 
   base::WeakPtr<content::WebContents> web_contents_;
   base::WeakPtrFactory<PageContext> weak_factory_{this};
