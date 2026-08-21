@@ -1,4 +1,29 @@
-import("//flux/build/args/common.gni")
+# Debugger build: full symbols, component links. Self-contained - see dev.gn.
+
+# --- Fork identity -----------------------------------------------------------
+# A fork must supply its own API keys. Chromium's are Google-internal and baked
+# into official Google Chrome builds only. Without these, sync, safe-browsing,
+# geolocation and translate are inert.
+# Obtain at https://www.chromium.org/developers/how-tos/api-keys/
+google_api_key = ""
+google_default_client_id = ""
+google_default_client_secret = ""
+
+# --- Media -------------------------------------------------------------------
+# Required for a browser people will actually use: H.264, AAC, MP3.
+# NOTE: shipping these carries patent-licensing obligations (MPEG-LA/Via).
+# Chromium-branded builds ship without them; Chrome ships with them under
+# Google's licenses. This is a legal decision, not a technical one.
+proprietary_codecs = true
+ffmpeg_branding = "Chrome"
+
+# Widevine DRM (Netflix, Spotify, most paid video) requires a separate license
+# agreement with Google. Left off; without it those sites will not play.
+enable_widevine = false
+
+# --- Trim --------------------------------------------------------------------
+enable_nacl = false          # deprecated upstream, large build cost
+enable_reporting = false     # no telemetry endpoint of our own yet
 
 is_debug = true
 is_component_build = true     # fast incremental links while iterating
@@ -10,6 +35,5 @@ use_thin_lto = false
 chrome_pgo_phase = 0
 dcheck_always_on = true
 
-# Fast rebuilds while working on the agent layer.
 use_remoteexec = false
 target_cpu = "x64"

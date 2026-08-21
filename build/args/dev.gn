@@ -1,16 +1,41 @@
 # Laptop / constrained-machine development build.
 #
-# This is the config to use for day-to-day work on the agent layer. It trades
-# runtime performance and debuggability for build time and disk, and it is
-# roughly 4-6x faster to build than args/release.gn.
+# This is the config for day-to-day work on the agent layer. It trades runtime
+# performance and debuggability for build time and disk, and is roughly 4-6x
+# faster to build than release.gn. Do not ship it.
 #
-# Do not ship this. Use release.gn for anything a user will run.
+# Self-contained by necessity: build.ps1 copies this file to out/<dir>/args.gn,
+# and GN resolves import() against the Chromium source root - which has no
+# knowledge of the Flux repo.
 
-import("//flux/build/args/common.gni")
+# --- Fork identity -----------------------------------------------------------
+# A fork must supply its own API keys. Chromium's are Google-internal and baked
+# into official Google Chrome builds only. Without these, sync, safe-browsing,
+# geolocation and translate are inert.
+# Obtain at https://www.chromium.org/developers/how-tos/api-keys/
+google_api_key = ""
+google_default_client_id = ""
+google_default_client_secret = ""
 
-is_debug = false              # debug builds are enormous and slow to link
+# --- Media -------------------------------------------------------------------
+# Required for a browser people will actually use: H.264, AAC, MP3.
+# NOTE: shipping these carries patent-licensing obligations (MPEG-LA/Via).
+# Chromium-branded builds ship without them; Chrome ships with them under
+# Google's licenses. This is a legal decision, not a technical one.
+proprietary_codecs = true
+ffmpeg_branding = "Chrome"
+
+# Widevine DRM (Netflix, Spotify, most paid video) requires a separate license
+# agreement with Google. Left off; without it those sites will not play.
+enable_widevine = false
+
+# --- Trim --------------------------------------------------------------------
+enable_nacl = false          # deprecated upstream, large build cost
+enable_reporting = false     # no telemetry endpoint of our own yet
+
+is_debug = false
 is_official_build = false     # <- the single biggest build-time saving
-is_component_build = true     # many small .so/.dll; links in seconds not minutes
+is_component_build = true     # many small .dll; links in seconds not minutes
 
 # Symbols dominate both disk and link time. Level 0 makes stack traces useless
 # but cuts build output by more than half. Raise to 1 when you need to debug.
@@ -24,9 +49,5 @@ chrome_pgo_phase = 0
 
 # Catches real bugs in a young fork; cheap in a dev build.
 dcheck_always_on = true
-
-# Trim anything not needed to exercise the agent layer.
-enable_nacl = false
-enable_print_preview = true   # keep: some agent tasks produce PDFs
 
 target_cpu = "x64"
