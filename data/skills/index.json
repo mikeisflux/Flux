@@ -380,6 +380,42 @@
       "description": "Design and review Cloudflare One Zero Trust/SASE: Access, Gateway, Tunnel, posture"
     },
     {
+      "file": "market-comparable-campaigns.md",
+      "name": "Study campaigns like mine and pull the playbook",
+      "command": "market-comparable-campaigns",
+      "category": "Marketing, Research",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A breakdown of comparable crowdfunding campaigns: funding, tiers, cadence, and what actually drove pledges"
+    },
+    {
+      "file": "market-find-buyer-communities.md",
+      "name": "Find the communities my buyers are already in",
+      "command": "market-find-buyer-communities",
+      "category": "Marketing, Research",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A vetted list of forums, subreddits, and groups where your audience gathers, with each one's promotion rules"
+    },
+    {
+      "file": "market-find-reviewers.md",
+      "name": "Find reviewers and shows that cover my niche",
+      "command": "market-find-reviewers",
+      "category": "Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A pitch-ready sheet of reviewers, podcasts, and channels in your category with contacts and per-outlet angles"
+    },
+    {
+      "file": "market-find-stockists.md",
+      "name": "Find shops that would carry my product",
+      "command": "market-find-stockists",
+      "category": "Sales, Marketing",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A researched sheet of independent retailers who stock comparable products, with buyer contact and pitch angle"
+    },
+    {
       "file": "marketing-brand-voice-review.md",
       "name": "Brand voice review",
       "command": "marketing-brand-voice-review",
@@ -459,6 +495,42 @@
       "writeScope": "readonly",
       "bodyStatus": "skeleton",
       "description": "Turn sales data into a 30-day content brief: what to push, hold, and offer"
+    },
+    {
+      "file": "money-data-broker-optout.md",
+      "name": "Remove me from data broker sites",
+      "command": "money-data-broker-optout",
+      "category": "Personal",
+      "writeScope": "send",
+      "bodyStatus": "authored",
+      "description": "Opt-out requests filed across every major broker, tracked, and re-checked for relistings"
+    },
+    {
+      "file": "money-medical-bill-audit.md",
+      "name": "Check a medical bill against my EOB",
+      "command": "money-medical-bill-audit",
+      "category": "Personal",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A line-by-line comparison flagging duplicates, upcoding, and charges your plan already covered"
+    },
+    {
+      "file": "money-recall-sweep.md",
+      "name": "Check everything I own for safety recalls",
+      "command": "money-recall-sweep",
+      "category": "Personal, Monitoring",
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "description": "A checked list of your vehicles, appliances, and gear against open recall notices"
+    },
+    {
+      "file": "money-subscription-audit.md",
+      "name": "Audit my subscriptions and cancel the dead ones",
+      "command": "money-subscription-audit",
+      "category": "Personal, Ops",
+      "writeScope": "send",
+      "bodyStatus": "authored",
+      "description": "Every recurring charge found across your statements, with the forgotten ones cancelled"
     },
     {
       "file": "ops-business-pulse-snapshot.md",
