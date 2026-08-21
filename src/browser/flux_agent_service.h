@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/flux/agent/agent_runner.h"
 #include "chrome/browser/flux/agent/tool_registry.h"
+#include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -80,6 +81,7 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   void RemoveObserver(Observer* observer);
 
   SkillRegistry* skills() { return skills_.get(); }
+  ApiKeyStore* keys() { return keys_.get(); }
   ToolRegistry* tools() { return &tools_; }
 
   // KeyedService:
@@ -105,6 +107,7 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   raw_ptr<Profile> profile_;
   ToolRegistry tools_;
   std::unique_ptr<SkillRegistry> skills_;
+  std::unique_ptr<ApiKeyStore> keys_;
   std::unique_ptr<WorkflowScheduler> scheduler_;
 
   std::map<std::string, std::unique_ptr<AgentRunner>> runs_;

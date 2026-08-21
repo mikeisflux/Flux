@@ -20,9 +20,9 @@ FluxUI::FluxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::CreateAndAdd(profile, chrome::kChromeUIFluxHost);
 
-  webui::SetupWebUIDataSource(
-      source, base::make_span(kFluxResources, kFluxResourcesSize),
-      IDR_FLUX_INDEX_HTML);
+  // Takes base::span<const ResourcePath>; the generated array converts
+  // directly. base::make_span(ptr, size) is not the current form.
+  webui::SetupWebUIDataSource(source, kFluxResources, IDR_FLUX_INDEX_HTML);
 
   // The console renders task titles, page titles, and model output - all of
   // which originate outside the browser. Keep the default WebUI CSP intact so

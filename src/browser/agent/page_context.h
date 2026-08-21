@@ -132,8 +132,11 @@ class PageContext {
                    ActionCallback callback);
 
  private:
+  // Note: RequestAXTreeSnapshot's callback is
+  // base::OnceCallback<void(ui::AXTreeUpdate&)> - a NON-const ref. Taking a
+  // const ref here silently fails to bind.
   void OnAccessibilityTreeReady(SnapshotCallback callback,
-                                const ui::AXTreeUpdate& update);
+                                ui::AXTreeUpdate& update);
 
   // Maps a node id to viewport coordinates, scrolling it into view first.
   // Returns nullopt when the node is gone - the page may have changed since

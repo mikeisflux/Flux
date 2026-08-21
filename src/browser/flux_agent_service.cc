@@ -32,6 +32,7 @@ constexpr uint32_t kMinConcurrency = 1;
 FluxAgentService::FluxAgentService(Profile* profile)
     : profile_(profile),
       skills_(std::make_unique<SkillRegistry>(profile)),
+      keys_(std::make_unique<ApiKeyStore>(profile)),
       scheduler_(std::make_unique<WorkflowScheduler>(this)),
       concurrency_limit_(ComputeConcurrencyLimit()) {
   tools_.RegisterBuiltins();

@@ -13,6 +13,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -149,7 +150,7 @@ void PageContext::CaptureWhenStable(SnapshotCallback callback) {
 }
 
 void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
-                                           const ui::AXTreeUpdate& update) {
+                                           ui::AXTreeUpdate& update) {
   Snapshot snapshot;
   if (web_contents_) {
     snapshot.url = web_contents_->GetLastCommittedURL().spec();
@@ -348,9 +349,11 @@ void PageContext::TypeIntoNode(int32_t node_id,
 
   const std::u16string wide = base::UTF8ToUTF16(text);
   for (char16_t c : wide) {
-    blink::WebKeyboardEvent key(blink::WebInputEvent::Type::kChar,
-                                blink::WebInputEvent::kNoModifiers,
-                                ui::EventTimeForNow());
+    // ForwardKeyboardEvent takes input::NativeWebKeyboardEvent, not
+    // blink::WebKeyboardEvent - the latter does not convert implicitly.
+    input::NativeWebKeyboardEvent key(blink::WebInputEvent::Type::kChar,
+                                      blink::WebInputEvent::kNoModifiers,
+                                      ui::EventTimeForNow());
     key.text[0] = c;
     key.unmodified_text[0] = c;
     widget->ForwardKeyboardEvent(key);
