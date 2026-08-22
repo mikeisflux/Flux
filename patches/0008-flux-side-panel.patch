@@ -150,7 +150,13 @@ to own, so a free function in side_panel_helper.cc builds the view directly.
            browser->GetProfile())) {
 --- a/chrome/browser/ui/views/side_panel/BUILD.gn
 +++ b/chrome/browser/ui/views/side_panel/BUILD.gn
-@@ -105,6 +105,7 @@
+@@ -100,11 +100,13 @@
+   ]
+   deps = [
+     "//base:i18n",
++    "//chrome/app:branded_strings",
+     "//chrome/app:generated_resources",
+     "//chrome/app:generated_resources_grit",
      "//chrome/app/vector_icons",
      "//chrome/browser/contextual_tasks",
      "//chrome/browser/favicon",

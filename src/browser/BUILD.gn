@@ -42,13 +42,19 @@ source_set("flux") {
     "scheduler/workflow_scheduler.h",
   ]
 
-  # Targets under //chrome/browser depend on this rather than on //chrome/browser
-  # directly; depending on the browser target itself is circular.
-  public_deps = [ "//chrome/browser:browser_public_dependencies" ]
-
-  deps = [
+  # One list, all public. flux_ui.h and flux_page_handler.h are included from
+  # //chrome/browser/ui/views/side_panel to build the console's panel, and they
+  # expose the mojom bindings, the KeyedService base and the TopChrome WebUI
+  # base in their signatures. Splitting these would mean auditing every header
+  # this target exports on every change; there is nothing to gain from it on a
+  # leaf target with two dependents.
+  public_deps = [
     ":mojo_bindings",
     "//base",
+
+    # Targets under //chrome/browser depend on this rather than on
+    # //chrome/browser directly; depending on the browser target is circular.
+    "//chrome/browser:browser_public_dependencies",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/resources/flux:resources",
     "//chrome/browser/ui/webui/top_chrome",
