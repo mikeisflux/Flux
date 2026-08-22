@@ -1,0 +1,73 @@
+{
+  "id": "superhuman_mail",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "shape": {
+    "note": "Superhuman Mail publishes NO REST API. The only programmatic surface is an MCP server, so this is the one connector in the catalogue Flux does not call over HTTP itself - it attaches the server to the agent and the agent calls tools. That is why its transport is `mcp` rather than `api`, and why the operations below have tool names instead of methods and paths.",
+    "not_to_be_confused_with": "Superhuman Docs, which is the rebranded Coda and has a full REST API at coda.io/apis/v1. Different product, different connector - see data/connectors/coda.json. Superhuman also ships Go (AI agents) and Grammarly under the same brand."
+  },
+  "auth": {
+    "type": "mcp",
+    "mechanism": "Browser sign-in. The Superhuman Mail Chrome extension performs the authentication; no key, token or client secret is issued to the caller, and Flux stores no credential for this connector.",
+    "notes": [
+      "Nothing to paste and nothing to put in the OS keychain - the whole reason this connector's setup flow differs from every other one.",
+      "Adding a second mailbox is done by asking the agent, which calls add_account and returns a one-time sign-in link. That link is a live credential in URL form: it must never be forwarded to anyone, and a link arriving from someone else must never be opened. Superhuman says so twice on their own page and the console should repeat it at the point the link is produced.",
+      "An account being added must already be on the user's own seat. Linking someone else's address fails."
+    ]
+  },
+  "requirements": [
+    "A Superhuman Mail account with Ask AI enabled.",
+    "The Superhuman Mail Chrome extension installed - it is what authenticates the session.",
+    "A Business plan or higher. The MCP server is not available on Starter, so a Starter user cannot connect this at all and the console should say that rather than failing at sign-in.",
+    "On Enterprise or otherwise managed accounts an admin may have to enable MCP access first, arranged through the customer's CSM. Not every managed account requires it."
+  ],
+  "api": {
+    "base_url": null,
+    "note": "Deliberately null. There is no HTTP base URL to record - see `shape`."
+  },
+  "operations": {
+    "query_email_and_calendar": {"tool": "query_email_and_calendar", "write_scope": "readonly", "notes": "Semantic search in natural language across mail and calendar. The right first call for an open-ended question."},
+    "list_threads": {"tool": "list_threads", "write_scope": "readonly", "notes": "Structured filters - From, To, Subject, Labels, Split, date. Prefer this over the semantic search when the filter is known, since it is deterministic."},
+    "get_thread": {"tool": "get_thread", "write_scope": "readonly", "notes": "Full thread including messages, drafts and comments."},
+    "get_message": {"tool": "get_message", "write_scope": "readonly"},
+    "get_attachment": {"tool": "get_attachment", "write_scope": "readonly"},
+    "list_labels": {"tool": "list_labels", "write_scope": "readonly"},
+    "list_splits": {"tool": "list_splits", "write_scope": "readonly", "notes": "Split Inboxes, e.g. Important and Other."},
+    "get_availability": {"tool": "get_availability", "write_scope": "readonly", "notes": "Free time across a set of participants."},
+    "get_read_statuses": {"tool": "get_read_statuses", "write_scope": "readonly", "notes": "Who opened a sent email, when, and on what device. It is the user's own read-tracking data, but it is data about other people - worth surfacing in a summary only when the task actually asked for it."},
+    "list_accounts": {"tool": "list_accounts", "write_scope": "readonly", "notes": "Which mailboxes are linked and which is default. Worth calling first on any multi-account request: tools act on the default account unless told otherwise, so a search that looks empty is often a search of the wrong inbox."},
+    "create_or_update_draft": {"tool": "create_or_update_draft", "write_scope": "draft", "notes": "Writes in the user's voice using their Personalization settings. Drafts created here appear in Superhuman Mail; drafts made in Gmail or Outlook do not, and vice versa."},
+    "create_or_update_event": {"tool": "create_or_update_event", "write_scope": "send", "notes": "Scoped as `send`, not `draft`, on purpose: creating or moving a meeting mails invitations to the other attendees. It is outbound whatever it is called."},
+    "send_draft": {"tool": "send_draft", "write_scope": "send", "notes": "Sends immediately with no built-in delay. Superhuman's own guidance is to require confirmation on every call, and Flux must do that rather than relying on the client's tool-approval settings. Supports Smart Send (deliver when the recipient is most likely to open it), Scheduled Send, and Undo Send."},
+    "undo_send": {"tool": "undo_send", "write_scope": "draft", "notes": "Cancels a send inside the undo window. Recorded as a write rather than readonly because it changes state, but it only ever retracts - it is the safe half of send_draft and should stay available wherever send_draft is."}
+  },
+  "never_expose": [
+    "trash_thread and update_thread - update_thread looks like harmless labelling but its documented actions include moving a thread to Trash, so the two carry the same risk.",
+    "discard_draft - deletes a draft the user may have written by hand.",
+    "unsubscribe - it also offers Trash and Block, and unsubscribing from a list on someone's behalf is a decision, not a chore.",
+    "update_personalization - rewrites the writing style and stored facts that every future draft is generated from. An agent editing its own prompt is not something to do silently.",
+    "add_account and remove_account - account linking is a credential operation and belongs in the console's own setup flow, in front of the user, not in a tool call the agent can reach mid-task.",
+    "set_default_account - silently changes which mailbox every later call acts on."
+  ],
+  "gotchas": [
+    "Every tool acts on the default account unless the account is named. A cross-account question needs to say so explicitly, or it quietly answers from one inbox.",
+    "Superhuman's own advice is to name the MCP tool in the prompt for reliable results, which suggests the tool descriptions alone do not always route correctly.",
+    "Attachments can be read but the documentation gives no way to attach one when sending."
+  ],
+  "also_ships": {
+    "skills": "Superhuman publishes a skills library at github.com/superhuman/mcp-mail/tree/main/skills - Morning Briefing, End of Day Wrap-Up, Batch Draft Writer, Deal Tracker, Meeting Scheduler. These overlap directly with several entries in data/skills, and are worth reading before writing a Superhuman skill of our own rather than after."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://help.superhuman.com/hc/en-us/articles/46005696690317-Superhuman-Mail-MCP-Server",
+      "https://help.superhuman.com/hc/en-us/articles/46615666509709-Superhuman-Mail-MCP-Skills-Guide",
+      "https://github.com/superhuman/mcp-mail/tree/main/skills"
+    ],
+    "notes": [
+      "The tool list, the plan and extension prerequisites, the send-confirmation advice and the sign-in-link warning are taken verbatim from Superhuman's own help centre article.",
+      "The write_scope on each tool is Flux's own judgement, not Superhuman's - they publish no such classification. create_or_update_event is deliberately rated `send`.",
+      "The client-by-client connection steps in that article render as empty numbered lists in the text form supplied, so the actual MCP server URL and the per-client command lines are NOT recorded here. They are needed before the console can wire this up - see the note in connectors.json."
+    ]
+  }
+}

@@ -110,9 +110,9 @@
       "id": "superhuman_mail",
       "name": "Superhuman Mail",
       "description": "Search email, draft and send messages, and manage calendar events",
-      "transport": "api",
-      "badge": null,
-      "definition": "pending"
+      "transport": "mcp",
+      "badge": "MCP server - Business plan or higher",
+      "definition": "authored"
     },
     {
       "id": "sentry",

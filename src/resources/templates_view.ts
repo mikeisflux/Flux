@@ -1,6 +1,6 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {CATEGORIES, featured, loadTemplates, matches, trustLabel} from
+import {CATEGORIES, featured, loadTemplates, matches, transportLabel, trustLabel} from
     './catalog.js';
 import type {Template} from './catalog.js';
 
@@ -238,9 +238,7 @@ export class TemplatesView {
       mark.className = 'connector-mark';
       mark.dataset['transport'] = c.transport;
       mark.textContent = c.id.slice(0, 1);
-      mark.title = c.transport === 'api' ?
-          `${c.id} - direct API` :
-          `${c.id} - driven in the browser`;
+      mark.title = transportLabel(c.id, c.transport);
       marks.append(mark);
     }
     if (t.connectors.length > 3) {

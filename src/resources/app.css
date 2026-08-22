@@ -606,6 +606,11 @@ body.tab {
   color: var(--fg-muted);
 }
 
+/* MCP sits between the two: a real API, but one Flux does not call itself. */
+.connector-mark[data-transport='mcp'] {
+  border-style: dotted;
+}
+
 .connector-more {
   align-self: center;
   color: var(--fg-muted);

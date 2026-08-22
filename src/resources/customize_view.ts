@@ -2,6 +2,7 @@
 
 import type {FluxPageHandlerRemote, LearnedFact} from './flux.mojom-webui.js';
 
+import {transportLabel} from './catalog.js';
 import {loadSkills, related, renderMarkdown} from './skills.js';
 import type {Skill} from './skills.js';
 
@@ -318,8 +319,7 @@ export class CustomizeView {
         mark.className = 'connector-mark';
         mark.dataset['transport'] = c.transport;
         mark.textContent = c.id.slice(0, 1);
-        mark.title = c.transport === 'api' ? `${c.id} - direct API` :
-                                             `${c.id} - driven in the browser`;
+        mark.title = transportLabel(c.id, c.transport);
         works.append(mark);
       }
       this.detail.append(works);

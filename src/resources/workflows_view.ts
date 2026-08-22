@@ -1,6 +1,6 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {loadTemplates, trustLabel} from './catalog.js';
+import {loadTemplates, transportLabel, trustLabel} from './catalog.js';
 import type {Template} from './catalog.js';
 
 /**
@@ -113,9 +113,7 @@ export class WorkflowsView {
       mark.className = 'connector-mark';
       mark.dataset['transport'] = c.transport;
       mark.textContent = c.id.slice(0, 1);
-      mark.title = c.transport === 'api' ?
-          `${c.id} - direct API` :
-          `${c.id} - driven in the browser`;
+      mark.title = transportLabel(c.id, c.transport);
       marks.append(mark);
     }
     footer.append(marks);

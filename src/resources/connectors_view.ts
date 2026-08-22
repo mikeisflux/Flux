@@ -4,7 +4,7 @@ export interface Connector {
   id: string;
   name: string;
   description: string;
-  transport: 'api'|'browser';
+  transport: 'api'|'browser'|'mcp';
   badge: string|null;
   definition: 'authored'|'pending';
 }

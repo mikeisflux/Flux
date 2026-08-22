@@ -8,9 +8,11 @@
  * 250 rows in the page is free, and a round trip per keystroke is not.
  */
 
+export type Transport = 'api'|'browser'|'mcp';
+
 export interface TemplateConnector {
   id: string;
-  transport: 'api'|'browser';
+  transport: Transport;
 }
 
 export interface TemplateSchedule {
@@ -94,5 +96,22 @@ export function trustLabel(scope: Template['writeScope']): string {
       return 'Sends';
     case 'purchase':
       return 'Spends money';
+  }
+}
+
+/**
+ * Tooltip for a connector mark. Three screens draw these marks, and a
+ * connector's transport is the one thing about it they all have to explain,
+ * so the wording lives here rather than in three ternaries that drifted the
+ * moment a third transport appeared.
+ */
+export function transportLabel(id: string, transport: Transport): string {
+  switch (transport) {
+    case 'api':
+      return `${id} - direct API`;
+    case 'mcp':
+      return `${id} - over MCP`;
+    default:
+      return `${id} - driven in the browser`;
   }
 }

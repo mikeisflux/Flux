@@ -11,7 +11,7 @@
 
 export interface SkillConnector {
   id: string;
-  transport: 'api'|'browser';
+  transport: 'api'|'browser'|'mcp';
 }
 
 export interface Skill {

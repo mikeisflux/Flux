@@ -24,7 +24,10 @@ WRITE_SCOPES = {'readonly', 'draft', 'send', 'purchase'}
 # The browser re-checks anything below `discovery` against the provider before
 # its first use.
 VERIFICATION = {'discovery', 'vendor-docs', 'search', 'not-applicable'}
-AUTH_TYPES = {'oauth2', 'api_key', 'local', 'unsupported'}
+AUTH_TYPES = {'oauth2', 'api_key', 'local', 'mcp', 'unsupported'}
+# The console's Transport union. A typo here is not an error anywhere - the
+# mark just renders with the wrong tooltip and border - so it is checked.
+TRANSPORTS = {'api', 'browser', 'mcp'}
 
 
 def fail(path, message, errors):
@@ -107,6 +110,12 @@ def main():
     errors = []
     catalogue = json.loads(CATALOGUE.read_text(encoding='utf-8'))['connectors']
     by_id = {c['id']: c for c in catalogue}
+
+    for c in catalogue:
+        if c.get('transport') not in TRANSPORTS:
+            fail('connectors.json',
+                 f'{c["id"]} transport must be one of {sorted(TRANSPORTS)}',
+                 errors)
 
     defined = set()
     for path in sorted(DEFS.glob('*.json')):
