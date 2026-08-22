@@ -1,0 +1,42 @@
+Subject: [flux] Let chrome://flux request its Mojo interface
+
+Without this the console loads, the page asks for FluxPageHandlerFactory, and
+the browser kills the renderer with RESULT_CODE_KILLED_BAD_MESSAGE. A WebUI may
+only bind interfaces explicitly registered for its controller; an unregistered
+request is treated as a compromised renderer rather than a bug, which is why
+the failure is a kill rather than an error.
+
+FluxUI::BindInterface already existed - nothing had told the browser it was
+allowed to be called. Registered alongside the other desktop WebUIs, plus the
+matching dep from source_set("core"), which is what compiles the binder file.
+
+--- a/chrome/browser/chrome_browser_interface_binders_webui.cc
++++ b/chrome/browser/chrome_browser_interface_binders_webui.cc
+@@ -54,6 +54,8 @@
+ 
+ #if !BUILDFLAG(IS_ANDROID)
+ #include "chrome/browser/ui/webui/history/history_ui.h"
++#include "chrome/browser/flux/mojom/flux.mojom.h"
++#include "chrome/browser/flux/webui/flux_ui.h"
+ #include "chrome/browser/ui/webui/indigo_internals/indigo_internals.mojom.h"
+ #include "chrome/browser/ui/webui/indigo_internals/indigo_internals_ui.h"
+ #include "chrome/browser/ui/webui/omnibox_popup/mojom/omnibox_popup.mojom.h"
+@@ -194,6 +196,8 @@
+       indigo_internals::mojom::PageHandlerFactory, IndigoInternalsUI>(map);
+   RegisterWebUIControllerInterfaceBinder<
+       webnn_internals::mojom::PageHandlerFactory, WebNNInternalsUI>(map);
++  RegisterWebUIControllerInterfaceBinder<flux::mojom::FluxPageHandlerFactory,
++                                         flux::FluxUI>(map);
+ #endif
+   RegisterWebUIControllerInterfaceBinder<::mojom::OmniboxPageHandler,
+                                          OmniboxUI>(map);
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -956,6 +956,7 @@
+     "//chrome/browser/finds/core",
+     "//chrome/browser/first_party_sets",
+     "//chrome/browser/first_run",
++    "//chrome/browser/flux",
+     "//chrome/browser/gcm",
+     "//chrome/browser/glic",
+     "//chrome/browser/glic:impl",
