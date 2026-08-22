@@ -31,6 +31,13 @@
     ],
     "client_id_auth": {
       "note": "Some Partner API endpoints authenticate with nothing but an approved application's client_id, passed as a QUERY PARAMETER, not a header. /v1/apps is one. Approval is a partner-programme step Flux has not been through, so those endpoints are recorded but not exposed."
+    },
+    "white_label": {
+      "note": "The other way into these APIs, and the one the billing and rate_limit claims belong to. Recorded so the JWT talk in the Actions API does not look like something an ordinary integration configures.",
+      "onboarding": "The partner supplies a JWKS URL for signature validation, redirect/callback URLs, expected issuer and audience, the claim names carrying user and tenant IDs, and client credentials.",
+      "token_exchange": "The partner signs a JWT and exchanges it for a user access token - a backend secret used to call the APIs, never sent to a browser. A separate exchange yields a connect token: short-lived (about 6 minutes), single-use, and only for sending the user through Connect UI or MCP authorization.",
+      "provisioning": "Zapier just-in-time provisions a workspace and user the first time a new combination of claim values appears, so the partner's users never hold Zapier accounts of their own.",
+      "applicability": "Not applicable to Flux, which authenticates one real person with their own Zapier account through authorization_code."
     }
   },
   "api": {
@@ -291,11 +298,10 @@
     "mcp": "Zapier serves a docs MCP server at docs.zapier.com/mcp. That is documentation search, not action invocation - do not confuse the two."
   },
   "pending_operations": {
-    "note": "The Actions API is now complete. What remains is the trigger-inbox REST paths and the surfaces that may only exist through the SDK.",
+    "note": "Searched for, not found. Recorded as open rather than guessed.",
     "wanted": [
-      "The REST paths behind the trigger-inbox lease / ack / release and create / pause / resume / delete methods - known by semantics from the SDK, not by path.",
-      "Whether Tables, Code Workflows and Forms have public REST specs at all, or exist only through the SDK.",
-      "How the JWT used as the bearer token is obtained and what else it accepts as claims - the billing and rate_limit claims imply more."
+      "The REST paths behind the trigger-inbox lease / ack / release and create / pause / resume / delete methods. Zapier documents these only as SDK methods; the semantics are complete above but no published page gives the HTTP paths. If Flux ever needs them, capturing them from the SDK's own traffic is the reliable route.",
+      "Whether Tables, Code Workflows and Forms have public REST specs. The specs directory pattern is https://api.zapier.com/api-reference/specs/<name>.yaml and docs.zapier.com/api-reference/overview indexes which APIs exist - that overview page is the one thing that would settle it, and it has not been read."
     ]
   },
   "source": {
@@ -309,14 +315,19 @@
       "https://api.zapier.com/schema",
       "https://docs.zapier.com/llms.txt",
       "https://docs.zapier.com/powered-by-zapier/api-reference/authentication",
-      "https://docs.zapier.com/sdk/api-reference"
+      "https://docs.zapier.com/sdk/api-reference",
+      "https://docs.zapier.com/sdk/using-triggers",
+      "https://docs.zapier.com/powered-by-zapier/white-label/token-exchange",
+      "https://docs.zapier.com/white-label/partner-onboarding",
+      "https://docs.zapier.com/api-reference/overview"
     ],
     "notes": [
       "Every host, path, scope, pagination scheme, error code and rate-limit figure above is taken verbatim from the OpenAPI 3.1 specs embedded in Zapier's own reference pages.",
       "The one exception is the run_stored_action path prefix, which the spec gives only in prose. It is flagged in place rather than presented as verified.",
       "docs.zapier.com and api.zapier.com are not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining specs need supplying the same way.",
       "The SDK reference supplied by the user is the source for the sdk block, the run-status vocabulary, the callback delivery guarantee and the trigger-inbox lifecycle. Those are SDK method names, not REST paths, and the file says so rather than presenting them as endpoints.",
-      "The run endpoint's path is now CONFIRMED from actions.yaml's own paths block: POST /actions/v1/stored-actions/{stored_action_id}/run. An earlier revision inferred that prefix from a sibling path and said so; the inference was right, and the caveat is removed."
+      "The run endpoint's path is now CONFIRMED from actions.yaml's own paths block: POST /actions/v1/stored-actions/{stored_action_id}/run. An earlier revision inferred that prefix from a sibling path and said so; the inference was right, and the caveat is removed.",
+      "The White Label token-exchange model and the lease_count-of-5 quarantine threshold came from documentation search rather than a supplied page. Everything else in this file is verbatim from the specs."
     ]
   },
   "sdk": {
@@ -347,7 +358,8 @@
       "consume": "leaseTriggerInboxMessages (leaseLimit 1-100, leaseSeconds default 300) then ackTriggerInboxMessages. Unacked messages return to the pool when the lease expires.",
       "release": "releaseTriggerInboxMessages returns messages immediately without acking - but the lease attempt still counts against the per-message lease limit. Releasing does not refund it, so a message repeatedly released will eventually exhaust its attempts.",
       "higher_level": "drainTriggerInbox processes until empty; watchTriggerInbox drains then subscribes to SSE for new arrivals, with a safety drain every maxDrainIntervalSeconds (default 300) because SSE events can be missed.",
-      "other": "pauseTriggerInbox, resumeTriggerInbox, deleteTriggerInbox, updateTriggerInbox (notificationUrl)."
+      "other": "pauseTriggerInbox, resumeTriggerInbox, deleteTriggerInbox, updateTriggerInbox (notificationUrl).",
+      "quarantine": "lease_count increments on every lease, and at 5 the message transitions to `quarantined` - which is where the quarantined status in the message enum comes from. Combined with release not refunding an attempt, a message that keeps failing is dropped from the pipeline after five tries rather than retrying forever. Anything that must not be lost has to notice quarantined messages."
     },
     "other_surfaces": {
       "tables": "Zapier Tables - create/list/delete tables, fields and records. keyMode chooses whether record data is keyed by human field name (default) or raw field id (f1, f2). Batch writes cap at 100 records.",
@@ -370,9 +382,9 @@
   ],
   "billing": {
     "note": "Running a stored action can be BILLED to the user, and the switch is in the auth token rather than the request. This is the most surprising thing in the API and belongs in front of anyone wiring it up.",
-    "mechanism": "The bearer token is a JWT. A `billing` claim on it - a JSON string - overrides the defaults, and setting is_billable true charges the user one task per successful run.",
+    "mechanism": "The bearer token carrying these claims is a WHITE LABEL partner JWT, not an ordinary user token. Partner onboarding registers a JWKS URL, expected issuer and audience, a mapping from the partner's claims to a Zapier user and workspace, and client credentials; the partner then signs a JWT and exchanges it for a user access token. A `billing` claim with is_billable true charges the user one task per successful run.",
     "default": "is_billable is false by default, so runs are not billed unless something opts in.",
     "on_insufficient": "HTTP 402 payment_required, 'Insufficient tasks on account'.",
-    "flux_position": "Flux must never set is_billable. Spending the user's Zapier task quota is a purchase, and nothing in the console asks for that."
+    "flux_position": "Moot for Flux, and worth knowing why: this claim can only be set by a registered White Label partner signing its own JWTs, which Flux is not. Flux therefore cannot bill the user even by mistake - and must not become a partner in order to, since spending someone's task quota is a purchase the console never asks for."
   }
 }

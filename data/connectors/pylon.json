@@ -136,6 +136,106 @@
       "write_scope": "readonly",
       "rate_limit": "20/min",
       "notes": "Filterable: account_id (equals/in/not_in/is_set/is_unset), source (equals/in/not_in), title (equals/string_contains), start_time (time_is_after/time_is_before/time_range). Timestamps are RFC 3339. This one's limit is <= 1000, not < 1000 - the only endpoint read so far that differs."
+    },
+    "list_issues": {
+      "method": "GET",
+      "path": "/issues",
+      "params": {
+        "start_time": "RFC3339, required",
+        "end_time": "RFC3339, required",
+        "cursor": "string?",
+        "limit": "1-20000, default 20000"
+      },
+      "write_scope": "readonly",
+      "rate_limit": "10/min",
+      "notes": "start_time and end_time are REQUIRED and the span must be <= 30 days. There is no 'list everything' - a wider search has to be windowed, or use search_issues."
+    },
+    "search_issues": {
+      "method": "POST",
+      "path": "/issues/search",
+      "params": {
+        "filter": "Filter",
+        "search_text": "fuzzy",
+        "cursor": "string?",
+        "limit": "1-999, default 100"
+      },
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "The practical way in, since it has no 30-day window. Filterable: created_at / resolved_at / updated_at / latest_message_activity_at (time ops), account_id / requester_id / assignee_id / ticket_form_id / issue_type (equals,in,not_in,is_set,is_unset), state / team_id / follower_user_id / follower_contact_id / slack_channel_id (equals,in,not_in), tags (contains,does_not_contain,in,not_in), title / body_html (string_contains,string_does_not_contain). Custom fields by slug in field; tags by name."
+    },
+    "get_issue": {
+      "method": "GET",
+      "path": "/issues/{id}",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "Accepts the ID or the issue number. The most generous limit on the API."
+    },
+    "list_issue_statuses": {
+      "method": "GET",
+      "path": "/issue-statuses",
+      "write_scope": "readonly",
+      "rate_limit": "10/min",
+      "notes": "Resolve before filtering on state - the standard values are new, waiting_on_you, waiting_on_customer, on_hold and closed, but organisations define custom status slugs too."
+    },
+    "get_issue_followers": {
+      "method": "GET",
+      "path": "/issues/{id}/followers",
+      "write_scope": "readonly",
+      "rate_limit": "60/min"
+    },
+    "get_issue_voice_calls": {
+      "method": "GET",
+      "path": "/issues/{id}/voice-calls",
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "Phone issues only. Returns recordings with parsed transcript segments and a PRESIGNED download URL for the audio. Recordings whose transcript has not finished are silently omitted - an empty result may mean 'not yet', not 'none', so refetch before concluding."
+    },
+    "list_messages": {
+      "method": "GET",
+      "path": "/issues/{id}/messages",
+      "params": {
+        "cursor": "string?",
+        "limit": "1-1000"
+      },
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "Oldest first, and includes both customer-visible replies and internal notes - is_private separates them. Omitting BOTH limit and cursor returns every message for backwards compatibility; passing a cursor without a limit gives pages of 100. On a long issue the default is therefore unbounded - pass a limit."
+    },
+    "list_issue_threads": {
+      "method": "GET",
+      "path": "/issues/{id}/threads",
+      "write_scope": "readonly",
+      "rate_limit": "20/min"
+    },
+    "reply_to_issue": {
+      "method": "POST",
+      "path": "/issues/{id}/reply",
+      "params": {
+        "message_id": "required",
+        "body_html": "string",
+        "email_info": "to_emails / cc_emails / bcc_emails",
+        "attachment_urls": "string[]?",
+        "user_id": "string?",
+        "contact_id": "string?"
+      },
+      "write_scope": "send",
+      "rate_limit": "10/min",
+      "notes": "Customer-facing - the requester sees this. message_id must be the TOP-LEVEL id from list_messages, not thread_id and not email_info.message_id, and it must point at a customer-visible message rather than an internal note. On an email conversation email_info must carry at least one recipient: the referenced message sets the threading headers but its recipients are NOT copied, so a reply with no recipients goes nowhere."
+    },
+    "create_internal_note": {
+      "method": "POST",
+      "path": "/issues/{id}/note",
+      "params": {
+        "body_html": "string",
+        "thread_id": "string?",
+        "message_id": "string?",
+        "thread_name": "string?",
+        "attachment_urls": "string[]?",
+        "user_id": "string?"
+      },
+      "write_scope": "draft",
+      "rate_limit": "10/min",
+      "notes": "Internal only - the requester never sees it, which is why this is `draft` while reply_to_issue is `send`. Thread selection: thread_id posts to that thread; message_id posts to the thread holding that note; BOTH is a 400; neither falls back to the most recent Slack-backed internal thread, or creates a Pylon-only one named by thread_name. Note thread_id here is the thread's `id` field, NOT its `thread_id` field."
     }
   },
   "filters": {
@@ -169,14 +269,16 @@
     ]
   },
   "pending_operations": {
-    "note": "Pylon's reference also lists Activities, Custom Fields, Custom Objects, Feature Requests, Issues, Knowledge Base, Macros, Messages, Surveys, Tags, Tasks & Projects, Teams, Ticket Forms, Training Data and User roles. Only resources whose OpenAPI blocks were supplied are recorded above; no path in this file is inferred from the index. Issues and Messages are what a support-triage task actually needs and are the two to get next.",
+    "note": "Issues and Messages are in - the two that mattered. What is left is peripheral to a support-triage task.",
     "wanted": [
-      "issues",
-      "messages",
+      "feature-requests",
+      "knowledge-base",
       "tags",
       "teams",
-      "custom-fields",
-      "knowledge-base"
+      "macros",
+      "surveys",
+      "tasks-and-projects",
+      "webhooks and their signature scheme"
     ]
   },
   "rate_limits": {
@@ -197,7 +299,20 @@
       "GET /users/{id}": "60/min",
       "POST /users/search": "20/min",
       "GET /call-recordings/{id}": "60/min",
-      "POST /call-recordings/search": "20/min"
+      "POST /call-recordings/search": "20/min",
+      "GET /issues": "10/min",
+      "POST /issues/search": "20/min",
+      "GET /issues/{id}": "60/min",
+      "PATCH /issues/{id}": "20/min",
+      "DELETE /issues/{id}": "20/min",
+      "GET /issue-statuses": "10/min",
+      "GET /issues/{id}/followers": "60/min",
+      "GET /issues/{id}/voice-calls": "20/min",
+      "GET /issues/{id}/messages": "20/min",
+      "GET /issues/{id}/threads": "20/min",
+      "POST /issues/{id}/reply": "10/min",
+      "POST /issues/{id}/note": "10/min",
+      "POST /issues/{id}/messages/{id}/redact": "20/min"
     }
   },
   "never_expose": [
@@ -205,7 +320,12 @@
     "DELETE /accounts/{id} - permanent.",
     "PATCH /accounts - bulk-edits up to 100 accounts in one call, and tags default to replace rather than append.",
     "DELETE /contacts/{id} and DELETE /call-recordings/{id} - both permanent.",
-    "PATCH /users/{id} - can change a colleague's role_id, which is a permissions change, not a data edit."
+    "PATCH /users/{id} - can change a colleague's role_id, which is a permissions change, not a data edit.",
+    "DELETE /issues/{id} and DELETE /issues/{id}/messages/{message_id} - both permanent, and deleting a message also deletes it in the connected external system, so it reaches outside Pylon.",
+    "POST /issues/{id}/messages/{message_id}/redact - permanently overwrites the stored content and deletes attachments by default. Explicitly not undoable.",
+    "POST /issues/{id}/external-issues - besides linking, it can flip the issue's status as a side effect (see gotchas).",
+    "POST /issues/{id}/ai-response - it invokes Pylon's own AI agent to draft a customer answer. Flux is already the agent; chaining a second one to write support replies is a strange loop, and the documentation does not say where the response lands when post_as_internal_note is false.",
+    "PATCH /issues/{id} - it can reassign the issue, change its team, retag it and move its state. Legitimate for a human, too blunt for a task."
   ],
   "source": {
     "verified": "vendor-docs",
@@ -220,7 +340,9 @@
       "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/contacts",
       "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/users",
       "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/call-recordings",
-      "https://docs.usepylon.com/pylon-docs/developer/custom-apps"
+      "https://docs.usepylon.com/pylon-docs/developer/custom-apps",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/issues",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/messages"
     ],
     "notes": [
       "The base URL, the bearer scheme, every path and every rate limit above come out of the OpenAPI documents embedded in Pylon's own reference pages, which the user supplied. Nothing here is inferred from the resource index.",
@@ -232,5 +354,13 @@
     "handshake": "GET with request_type=verify and a one-time code; the endpoint must echo the code back, as JSON {\"code\":...} or as text/plain. Repeated whenever the app disconnects.",
     "fetch": "GET with request_type=fetch_data plus app_id, widget_id, issue_id, organization_id, account_id, requester_id and requester_email.",
     "response": "{ version, header, components } where components are card, text, date_time, badge, button, link or divider. Badge colours are limited to blue, green, red, orange, gray."
-  }
+  },
+  "gotchas": [
+    "Pylon threads carry BOTH an `id` and a `thread_id`, and they are different values. create_internal_note wants the `id`; `thread_id` is the external chat platform's identifier. Getting this backwards is the most likely way to fail against this API.",
+    "reply_to_issue wants the message's top-level `id` - not `thread_id`, not the nested email_info.message_id (which is the provider's own). Three plausible identifiers on one object, one correct answer.",
+    "list_issues cannot list everything: a time range is mandatory and capped at 30 days. search_issues has no such window and is the right entry point for anything open-ended.",
+    "list_messages with neither limit nor cursor returns EVERY message on the issue, by design for backwards compatibility. Always pass a limit.",
+    "Rate limits vary per endpoint from 10/min to 60/min and the cheap ones are not the ones you would guess - get_issue is 60/min, list_issues is 10/min. Read the endpoint's own figure.",
+    "Linking an external issue can silently change the issue's status, if the connected app has 'automatically change issue status when linked' enabled. A link is not a read-only annotation."
+  ]
 }

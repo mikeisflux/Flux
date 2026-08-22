@@ -2,38 +2,64 @@
   "id": "plain",
   "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
   "not_in_reference": "Plain is not one of the 38 connectors transcribed from the reference. It was added deliberately at the user's request. Do not 'correct' the catalogue by removing it.",
-  "incomplete": "The API endpoint and the auth scheme are NOT recorded. Plain publishes both on its Authentication page, which has not been supplied and which this container cannot reach. Until they are read, this connector cannot connect. See pending.",
+  "incomplete": "The endpoint and key format are now known, so this can connect. What is still missing is READS - the thread and customer queries. A support connector that can only write is the wrong shape. See pending_operations.",
   "shape": {
     "note": "GraphQL, not REST - the first in this catalogue. There is one endpoint and one HTTP method; operations below are named mutations, and what varies is the document sent, not the path. Authorisation is per-operation permission strings rather than OAuth scopes or roles.",
     "errors": "Plain returns errors INSIDE a successful response: every mutation selects an `error { message type code }` alongside its payload. A 200 with a populated error field is a failure. Code that only checks the HTTP status will read every rejection as a success - this is the single most likely way to get this connector wrong."
   },
   "auth": {
     "type": "api_key",
+    "personal_token": {
+      "label": "API key",
+      "where": "Plain > Settings > Machine Users > Add Machine User, then Add API Key on that user and tick the permissions.",
+      "prefix": "plainApiKey_",
+      "notes": [
+        "Keys belong to a MACHINE USER, not to a person. A machine user has a Name (internal, describes the job - 'Flux') and a Public name (shown to customers if it ever interacts with them - so pick something a customer seeing it would understand).",
+        "One machine user can hold several keys, explicitly so they can be rotated without downtime. Issue a second, cut over, revoke the first.",
+        "Permissions are chosen per key at creation. Tick only thread:reply, email:create and email:read. Do NOT tick customer:impersonate - see never_expose.",
+        "Shown once. Copy it before navigating away.",
+        "When a call fails for permissions, Plain's error names the permission that was missing - so a 'you need X' error is the answer, not a puzzle."
+      ]
+    },
+    "header": "Authorization: Bearer {api_key}",
     "notes": [
-      "Plain's docs list an Authentication page and a machine-users concept, so a key issued to a machine user is the expected mechanism - but the header name, the key format and the endpoint are not recorded here because the page has not been read. Do not guess them.",
-      "Permissions are granted per API key as individual strings. Grant only the ones the exposed operations need: thread:reply, email:create, email:read. Do NOT grant customer:impersonate - see never_expose."
+      "A bare bearer key. No OAuth flow is published for this API.",
+      "Because the key is attached to a machine user, everything it does is attributable to that user rather than to a person - the same consideration as DualEntry's 'API Key' audit entries. One machine user per integration keeps the history readable."
     ]
   },
   "api": {
-    "base_url": null,
-    "note": "Deliberately null. See `incomplete`."
+    "base_url": "https://core-api.uk.plain.com/graphql/v1",
+    "headers": {
+      "Authorization": "Bearer {api_key}",
+      "Content-Type": "application/json"
+    },
+    "schema": "https://core-api.uk.plain.com/graphql/v1/schema.graphql - the full SDL, worth diffing on upgrade.",
+    "region_caveat": "Note the `uk` in the host. Plain's published examples use the UK region, which implies other regional hosts exist and that a customer on a different region has a different URL. Confirm the right host for the account before hard-coding this one.",
+    "verified": "search - this URL came from documentation search, not from a page supplied verbatim, unlike the auth mechanics above."
   },
   "operations": {
     "reply_to_thread": {
       "mutation": "replyToThread",
-      "permissions": ["thread:reply"],
+      "permissions": [
+        "thread:reply"
+      ],
       "write_scope": "send",
       "notes": "Only works when the thread's `channel` is API, CHAT, EMAIL, SLACK or MS_TEAMS. Read `channel` off the thread first; otherwise the mutation fails with cannot_reply_to_thread and a message saying why."
     },
     "reply_to_email": {
       "mutation": "replyToEmail",
-      "permissions": ["email:create", "email:read"],
+      "permissions": [
+        "email:create",
+        "email:read"
+      ],
       "write_scope": "send",
       "notes": "Replies to one inbound email by inReplyToEmailId, rather than to the thread. Takes customerId plus both textContent and markdownContent - send both, they are the two renderings of the same message, not alternatives."
     },
     "send_new_email": {
       "mutation": "sendNewEmail",
-      "permissions": ["email:create"],
+      "permissions": [
+        "email:create"
+      ],
       "write_scope": "send",
       "notes": "Outbound, unprompted mail to a customer - Plain's own framing is proactively reaching out about issues. This is the highest-consequence operation exposed here: it starts a conversation with a real customer who did not ask for one, so it needs explicit per-send confirmation, not a standing approval."
     }
@@ -45,12 +71,11 @@
   "pending_operations": {
     "note": "Only the three messaging mutations whose pages were supplied are recorded. Plain's docs list considerably more, and none of it is guessed here.",
     "wanted": [
-      "Authentication - the endpoint URL, the header, and the key format. Nothing works without this.",
-      "Error handling and Error codes - the `type` and `code` vocabulary returned in that inline error object.",
+      "Reading threads, and the queries behind them - this connector is still all writes and no reads, which is the wrong shape for a support task.",
+      "Confirmation of the regional endpoint hosts, and which one a given workspace uses.",
+      "Error handling and Error codes - the `type` and `code` vocabulary in the inline error object.",
       "Pagination - how to page threads and customers.",
-      "Reading threads, and the queries behind them - this connector is currently all writes and no reads, which is the wrong shape for a support task.",
-      "Notes and Attachments.",
-      "Webhooks, including request signing, if a task ever needs to react rather than poll."
+      "Notes and Attachments."
     ]
   },
   "also_ships": {
@@ -67,12 +92,15 @@
       "https://www.plain.com/docs/graphql/messaging/send-email",
       "https://www.plain.com/docs/graphql/messaging/reply-email",
       "https://www.plain.com/docs/graphql/authentication",
-      "https://www.plain.com/docs/llms.txt"
+      "https://www.plain.com/docs/llms.txt",
+      "https://www.plain.com/docs/graphql/authentication",
+      "https://help.plain.com/article/api-quickstart"
     ],
     "notes": [
       "The three mutations, their permission strings, the repliable channel list, the inline error shape and the impersonation behaviour are taken verbatim from Plain's own messaging pages.",
       "The write_scope on each operation is Flux's judgement, not Plain's.",
-      "www.plain.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the authentication and error-handling pages need supplying the same way."
+      "www.plain.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the authentication and error-handling pages need supplying the same way.",
+      "The machine-user model, key rotation, per-key permissions and the plainApiKey_ prefix come from Plain's own authentication page. The endpoint URL and schema URL came from documentation search and are flagged as such on the api block - the two halves have different verification and the file says so rather than averaging them."
     ]
   }
 }

@@ -150,15 +150,31 @@
   "pending_operations": {
     "note": "Paths for everything above are deliberately not guessed. The pattern in what has been read is /public/v2/<resource>/ with a trailing slash, but that is an observation from two endpoints, not a documented rule.",
     "wanted": [
-      "The rate limiting page - DualEntry references it by name and it is the only place the 429 quota is described.",
       "resources-v2.json in full, or at least the accounts, customers, vendors, bills and journal-entries blocks.",
       "The webhooks topic catalogue and the delivery signature scheme, if there is one.",
       "The create/update payloads for invoices and bills, for the drafting half of the connector's description."
     ]
   },
   "rate_limits": {
-    "on_exceed": "HTTP 429.",
-    "note": "No numeric figure recorded. DualEntry documents rate limiting on a page that has not been supplied, so this is deliberately blank rather than guessed - treat a 429 as authoritative and back off with jitter."
+    "model": "Two-layer token bucket, both checked per API key. A request must pass both.",
+    "aggregate": {
+      "burst": 50,
+      "refill_per_second": 5,
+      "sustained_per_minute": 300,
+      "scope": "all endpoints together"
+    },
+    "per_endpoint": {
+      "burst": 10,
+      "refill_per_second": 1,
+      "sustained_per_minute": 60,
+      "scope": "each endpoint separately"
+    },
+    "on_exceed": "HTTP 429 with Retry-After.",
+    "headers": "X-RateLimit-Limit, X-RateLimit-Remaining and X-RateLimit-Reset always describe whichever bucket is TIGHTEST at that moment - so a low Remaining does not say which limit is about to bite.",
+    "note": "The per-endpoint bucket is the one that actually constrains a sync: one endpoint sustains 1 request per second, so paging a large table caps at 60/min even though the key is allowed 300/min overall. Interleaving different endpoints uses the budget far better than draining one. Raising a limit is a conversation with the customer's DualEntry administrator, naming the endpoint and the throughput needed.",
+    "backoff": {
+      "strategy": "Honour Retry-After; it is present on the 429."
+    }
   },
   "source": {
     "verified": "vendor-docs",
@@ -168,7 +184,8 @@
       "https://docs.dualentry.com/developers/how-to-give-an-integration-access",
       "https://docs.dualentry.com/developers/openapi/resources-v2.json",
       "https://docs.dualentry.com/developers/openapi/resources-v1.json",
-      "https://docs.dualentry.com/llms.txt"
+      "https://docs.dualentry.com/llms.txt",
+      "https://docs.dualentry.com/developers/rate-limiting"
     ],
     "notes": [
       "The header name, key prefix format, the two 403 modes, the role matrix, the three mounts, both base URLs, the pagination cap and the error shape are taken verbatim from DualEntry's own authentication and integration-access pages and from the OpenAPI 3.1 documents embedded in their reference.",
