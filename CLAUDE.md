@@ -76,6 +76,17 @@ Node and npm are available in this container, so there is no excuse for
 hand-formatting CSS to satisfy a linter, or for shipping TypeScript nobody
 compiled - install them and run the real thing.
 
+### The patch series is applied before it is handed over
+
+`tools/check-patches.sh` fetches only the files the series touches from the
+pinned tag - eighteen of them, a few seconds, cached - and applies the whole
+series in order. A rotted patch is otherwise found by the user, on their
+machine, at the start of a build they were about to spend two hours on. It is
+on the same hook as the other checks.
+
+If the fetch fails the check exits 0 and says so, which means the series is
+**unverified** - say that rather than claiming it applies.
+
 ## Layout
 
 - `src/browser/` - agent layer, junctioned into `//chrome/browser/flux`
