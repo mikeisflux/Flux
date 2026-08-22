@@ -1,0 +1,178 @@
+{
+  "id": "dualentry",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API key",
+      "where": "DualEntry dashboard > Settings > Organization > Developer access > API Keys > + . Admin role only - the tab is disabled for every other role including Controller, and the underlying endpoints reject non-admins.",
+      "prefix": "org_",
+      "notes": [
+        "The full prefix is org_{environment}_{4 hex}, where environment is production, dev, test or local - for example org_production_18e3****cSk8. That segment is the reliable way to tell two keys apart in a config file.",
+        "A key authenticates only against the environment it was created in. A production key against api-dev fails, and the reverse.",
+        "Shown once at creation and never retrievable. Losing it means revoking and issuing another.",
+        "Keys do not expire. An Active key stays valid until someone revokes it, and revocation is immediate and one-way - a revoked key cannot be reactivated and its name stays reserved, so the replacement needs a different name.",
+        "A revoked key and an unknown key return the identical error, so a sudden blanket 403 does not distinguish 'someone revoked this' from 'the header is wrong'.",
+        "The key carries its own roles and is NOT tied to the user who created it: it does not inherit their permissions or entity scoping, and it reaches every company in the organisation. An admin can change its roles later without invalidating the secret.",
+        "Actions taken with a key appear in DualEntry's audit trail attributed to 'API Key' rather than to a person. Name the key 'flux' so the history stays readable."
+      ]
+    },
+    "header": "X-API-KEY: {api_key}",
+    "notes": [
+      "A bare header. No token exchange, no refresh, no session - the same header works on the first request and the millionth.",
+      "The key identifies the organisation, so no request carries a tenant or organisation parameter, and a key can never read another organisation's data.",
+      "Note the header name: X-API-KEY, not Authorization. A bearer token here fails as though the key were missing."
+    ]
+  },
+  "permissions": {
+    "note": "DualEntry authorises in two stages - the key is valid or not, then its roles permit the endpoint or not. Both stages fail with 403 and are told apart only by the message.",
+    "roles": {
+      "View-Only": "Reads records and pulls reports. This is what Flux should ask for.",
+      "Accounts Payable": "Creates and edits bills, vendor payments, purchase orders.",
+      "Accounts Receivable": "Creates and edits invoices, customer payments, sales orders.",
+      "Accountant": "Creates journal entries and bank transfers - and is READ-ONLY on bills and invoices, despite the name.",
+      "Controller": "Edits every record type and creates none.",
+      "Admin": "Bypasses permission checks entirely rather than being granted a permission set."
+    },
+    "gotchas": [
+      "Accountant and Controller are both narrower than they sound, and DualEntry's own documentation calls this out as the thing that catches people. An integration that posts bills needs Accounts Payable, not Accountant.",
+      "A key can hold several roles; an integration spanning AP and AR takes both.",
+      "A key created with no roles authenticates successfully and then returns Access denied on every permission-guarded endpoint. An empty Roles cell in the key table is the diagnosis for a blanket 403.",
+      "The connector's catalogue description mentions creating draft transactions. That needs Accounts Receivable or Accounts Payable, not View-Only - so a read-only key is the right default and the console has to say plainly which extra role a drafting task requires rather than failing at 403."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.dualentry.com/public/v2",
+    "dev_base_url": "https://api-dev.dualentry.com/public/v2",
+    "headers": {
+      "X-API-KEY": "{api_key}",
+      "Content-Type": "application/json"
+    },
+    "mounts": {
+      "/public/v2/": "Version 2.0.0. Current - use this.",
+      "/public/v1/": "Version 1.0.0. Supported.",
+      "/public/": "Version 1.0.0, unversioned. Deprecated; kept for existing integrations only."
+    },
+    "trailing_slash": "Paths carry a trailing slash - /public/v2/invoices/, not /public/v2/invoices. This is a Django-style API; stripping it may redirect or 404.",
+    "versioning": "The same key works against every mount, so moving from v1 to v2 is a URL change and needs no new credential.",
+    "pagination": {
+      "style": "limit and offset",
+      "limit": "Defaults to 100 and is CAPPED at 100 - asking for more silently gets 100, so page on count rather than on a short page.",
+      "response": "{ items: [...], count: <total across all pages> }"
+    },
+    "errors": {
+      "shape": "{ success: false, errors: { <field>: [ \"message\", ... ] } }",
+      "note": "Field-keyed rather than a flat list. Non-field problems come back under the __all__ key.",
+      "403_auth": "\"API key authentication failed\" - header missing or empty, or the key is unknown or revoked.",
+      "403_roles": "\"Access denied\" - the key authenticated but its roles do not permit the operation. Ask an admin to widen the key; the secret keeps working.",
+      "429": "Quota exceeded. DualEntry documents rate limiting on a separate page that has not been read - see pending."
+    }
+  },
+  "operations": {
+    "list_invoices": {
+      "method": "GET",
+      "path": "/invoices/",
+      "params": {
+        "search": "string?",
+        "company_id": "integer[]?",
+        "customer_id": "integer[]?",
+        "number": "integer[]?",
+        "code": "string[]?",
+        "start_date": "date - transaction date >=",
+        "end_date": "date - transaction date <=",
+        "due_date": "date - due date >=",
+        "due_date_until": "date - due date <=",
+        "transaction_currency": "ISO 4217[]?",
+        "record_status": "draft | posted | archived",
+        "approval_status": "string[]?",
+        "amount_gte": "number?",
+        "amount_lte": "number?",
+        "amount_due_gte": "number?",
+        "amount_due_lte": "number?",
+        "amount_due_updated_at_gte": "date-time?",
+        "updated_after": "date-time?",
+        "updated_before": "date-time?",
+        "integration_sources": "slug[]?",
+        "ordering": "string, default id",
+        "limit": "integer, default 100, max 100",
+        "offset": "integer, default 0"
+      },
+      "write_scope": "readonly",
+      "notes": "amount_due_updated_at is the field to sync on for anything about who owes what: DualEntry moves it whenever the invoice is edited OR whenever a posted customer payment or prepayment application referencing it is written. updated_after alone will miss a payment that changed the balance without touching the invoice record."
+    },
+    "list_webhooks": {
+      "method": "GET",
+      "path": "/webhooks/",
+      "params": {
+        "search": "string?",
+        "is_active": "boolean?",
+        "ordering": "string, default -created_at",
+        "limit": "integer, default 100, max 100",
+        "offset": "integer, default 0"
+      },
+      "write_scope": "readonly",
+      "notes": "Documented on the v1 mount as /public/v1/webhooks/. Returns uuid, url, topics, is_active, disabled_at and disabled_reason - disabled_reason is what says why DualEntry switched a subscription off."
+    }
+  },
+  "dates": {
+    "note": "Records carry two distinct dates and confusing them misstates a period.",
+    "date": "Posting date - the GL date, when the transaction is recorded in the general ledger.",
+    "transaction_date": "Inception date - when the transaction actually occurred."
+  },
+  "money": {
+    "note": "Amounts come back as STRINGS with a two-decimal pattern, and exchange_rate as a string with up to sixteen decimals. Parse them as decimals, never as floats - this is an accounting ledger and a float rounding error here is a real defect."
+  },
+  "resources": {
+    "note": "The API is broad. Only the two endpoints whose OpenAPI blocks were supplied are recorded above; the tag list names roughly fifty resource families. These are the ones a Flux task would plausibly want next.",
+    "reads": [
+      "accounts (chart of accounts)",
+      "companies",
+      "customers",
+      "vendors",
+      "bills",
+      "journal entries and journal entry lines",
+      "purchase orders",
+      "customer and vendor payments",
+      "budgets",
+      "classifications",
+      "custom fields",
+      "inbox (pending approvals)"
+    ],
+    "v2_only": [
+      "bank match",
+      "bank connections",
+      "depreciation books",
+      "VAT rates",
+      "GST tax rates",
+      "product tax codes"
+    ]
+  },
+  "pending_operations": {
+    "note": "Paths for everything above are deliberately not guessed. The pattern in what has been read is /public/v2/<resource>/ with a trailing slash, but that is an observation from two endpoints, not a documented rule.",
+    "wanted": [
+      "The rate limiting page - DualEntry references it by name and it is the only place the 429 quota is described.",
+      "resources-v2.json in full, or at least the accounts, customers, vendors, bills and journal-entries blocks.",
+      "The webhooks topic catalogue and the delivery signature scheme, if there is one.",
+      "The create/update payloads for invoices and bills, for the drafting half of the connector's description."
+    ]
+  },
+  "rate_limits": {
+    "on_exceed": "HTTP 429.",
+    "note": "No numeric figure recorded. DualEntry documents rate limiting on a page that has not been supplied, so this is deliberately blank rather than guessed - treat a 429 as authoritative and back off with jitter."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.dualentry.com/developers/authentication",
+      "https://docs.dualentry.com/developers/how-to-give-an-integration-access",
+      "https://docs.dualentry.com/developers/openapi/resources-v2.json",
+      "https://docs.dualentry.com/developers/openapi/resources-v1.json",
+      "https://docs.dualentry.com/llms.txt"
+    ],
+    "notes": [
+      "The header name, key prefix format, the two 403 modes, the role matrix, the three mounts, both base URLs, the pagination cap and the error shape are taken verbatim from DualEntry's own authentication and integration-access pages and from the OpenAPI 3.1 documents embedded in their reference.",
+      "docs.dualentry.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining resource blocks need supplying the same way."
+    ]
+  }
+}

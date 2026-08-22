@@ -1,0 +1,216 @@
+{
+  "id": "zapier",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "shape": {
+    "note": "The single most important thing about Zapier: api.zapier.com is not one API. It is at least four, each with its own OpenAPI spec, its own auth model and its own scope vocabulary. Treating them as one is how a call ends up with the wrong scope and a 403 that looks like a permissions bug.",
+    "apis": {
+      "actions": "/actions/v1/... - stored actions and the runs that execute them. This is the one the connector's description is actually about. OAuth, scope `external`.",
+      "trigger-inbox": "/trigger-inbox/v1/... - durable queues that receive trigger events. OAuth, scope `external`.",
+      "connections": "/connections/v1/... - webhook subscriptions telling a White Label partner that a managed connection is expiring. OAuth, scopes connection:webhook:read / :write. Partner-only; not applicable to Flux.",
+      "partner": "/v1/... - the Partner (Workflow) API: app directory, categories, Zap templates, profile. Version 2026.7.0. Mixed auth - some endpoints take a query-string client_id, some take OAuth with a completely different and much finer scope list."
+    }
+  },
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://zapier.com/oauth/authorize",
+    "token_url": "https://zapier.com/oauth/token",
+    "client_auth": "post",
+    "scopes": [
+      "external"
+    ],
+    "notes": [
+      "The auth host is zapier.com; the API host is api.zapier.com.",
+      "`external` is the scope for the actions, trigger-inbox and connections APIs. Zapier describes it as giving access to all Public APIs - there is no read-only variant, so the narrowing has to happen in Flux by exposing only the operations below.",
+      "The Partner API uses a different and finer scope set on the same endpoints: profile, zap, zap:write, zap:runs, zap:all, authentication, authentication:write, action:run, connection:read, connection:write, connection:delete. `action:run` is the one that runs an action. Request the narrow scope when talking to the Partner API rather than reaching for `external`.",
+      "The Partner API spec writes the same endpoints WITH trailing slashes - https://zapier.com/oauth/authorize/ and .../token/ - and adds a refreshUrl. The other three specs write them without. Zapier normally redirects, but a strict client that refuses to follow a redirect on a POST will fail the token exchange; send the form the spec for the API being used gives.",
+      "Both authorization_code and client_credentials are offered. Flux is a desktop client acting for one person, so authorization_code is the flow; client_credentials needs a secret a binary cannot keep.",
+      "The Partner API also offers an implicit flow. Do not use it - implicit is deprecated in OAuth 2.1 and returns the token in a URL fragment.",
+      "Zapier's own note: a client_secret is generated but not provided, because the implicit grant does not need one. A confidential-client flow therefore needs credentials obtained another way.",
+      "These endpoints come out of the securitySchemes blocks of Zapier's own OpenAPI specs rather than prose, which is the most reliable form they publish."
+    ],
+    "client_id_auth": {
+      "note": "Some Partner API endpoints authenticate with nothing but an approved application's client_id, passed as a QUERY PARAMETER, not a header. /v1/apps is one. Approval is a partner-programme step Flux has not been through, so those endpoints are recorded but not exposed."
+    }
+  },
+  "api": {
+    "base_url": "https://api.zapier.com",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    },
+    "pagination": {
+      "note": "Three schemes across the four APIs. Check the endpoint rather than assuming.",
+      "limit_offset_meta": "Actions and connections: results plus meta { limit, offset, count } plus links { next }.",
+      "limit_offset_flat": "Trigger inbox inboxes: count, next, previous, results.",
+      "cursor": "Trigger inbox messages: opaque cursor, next, previous, results, no count.",
+      "page_per_page": "Partner API /v1/apps: page and per_page, returning total, page, pages, per_page, objects, prev_url, next_url."
+    },
+    "errors": {
+      "shape": "{ errors: [ { code, detail, status?, title?, source?, meta? } ] }",
+      "note": "Consistent across the actions, trigger-inbox and connections APIs - Zapier follows its own published error-handling guideline. code and detail are the only guaranteed fields. source can name a JSON pointer, a query parameter or a request header, which is usually enough to fix a 400 without guessing.",
+      "codes": {
+        "bad_request": "400.",
+        "permission_denied": "403 - the token lacks the scope, not that the object is missing.",
+        "too_many_requests": "429.",
+        "external_service_error": "500 - the failure is in the connected app, not in Zapier. Retrying the same call unchanged will usually fail the same way.",
+        "service_unavaiable": "503. Spelled that way in Zapier's own spec; match their spelling if matching on the string at all, and prefer matching on status."
+      }
+    }
+  },
+  "operations": {
+    "get_profile": {
+      "method": "GET",
+      "path": "/v1/profiles/me",
+      "scope": "profile",
+      "write_scope": "readonly",
+      "notes": "Partner API. The cheapest confirmation a token works. Returns id, names, email, email_confirmed and timezone. The response is an ARRAY containing one profile, not an object - a Partner API quirk that also applies to /v1/apps and /v1/categories."
+    },
+    "list_stored_actions": {
+      "method": "GET",
+      "path": "/actions/v1/stored-actions",
+      "scope": "external",
+      "write_scope": "readonly",
+      "notes": "A stored action binds a connection, an app, an action key and its inputs into one runnable object. This is the catalogue of what the user has already set up - Flux should offer these rather than trying to compose an action from scratch."
+    },
+    "run_stored_action": {
+      "method": "POST",
+      "path": "/actions/v1/stored-actions/{stored_action_id}/run",
+      "scope": "external",
+      "write_scope": "send",
+      "notes": "The endpoint that actually does something in a connected app. Treat every run as a write even when the stored action's action_type is `read`: Flux cannot tell from the outside what the target app does with it.",
+      "path_caveat": "The spec names this endpoint only in prose, as `POST /stored-actions/{stored_action_id}/run`, without a prefix. The /actions/v1 prefix here is taken from its sibling list path in the same spec. Confirm against the actions.yaml paths block before the first live call rather than trusting this line."
+    },
+    "list_inboxes": {
+      "method": "GET",
+      "path": "/trigger-inbox/v1/inboxes",
+      "params": {
+        "key": "string?",
+        "status": "active | paused | initializing | deleting | initialization_failure",
+        "limit": "integer?",
+        "offset": "integer?"
+      },
+      "scope": "external",
+      "write_scope": "readonly",
+      "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user."
+    },
+    "list_messages": {
+      "method": "GET",
+      "path": "/trigger-inbox/v1/inboxes/{inbox_id}/messages",
+      "params": {
+        "cursor": "string?"
+      },
+      "scope": "external",
+      "write_scope": "readonly",
+      "notes": "Message status is available, leased, acked or quarantined. message_attributes carries lease_count, error_message and possible_duplicate_data."
+    },
+    "list_categories": {
+      "method": "GET",
+      "path": "/v1/categories",
+      "params": {
+        "limit": "number, default 10",
+        "offset": "number, default 0"
+      },
+      "write_scope": "readonly",
+      "notes": "Partner API, and the spec lists no security requirement at all for this one. Useful only for populating a directory UI."
+    },
+    "list_app_actions": {
+      "method": "GET",
+      "path": "/v2/actions",
+      "params": {
+        "app": "required - canonical App UUID or app key",
+        "action_type": "READ | READ_BULK | SEARCH | SEARCH_AND_WRITE | SEARCH_OR_WRITE | WRITE"
+      },
+      "scope": "zap",
+      "write_scope": "readonly",
+      "notes": "Partner API. What a given app can do. `key` is the developer-provided stable identifier; `id` is explicitly documented as unstable and changing when the referenced app changes - never persist `id`, match on `key`. is_instant marks a real-time trigger and can only be true when the action is a READ."
+    },
+    "list_authentications": {
+      "method": "GET",
+      "path": "/v2/authentications",
+      "params": {
+        "app": "required - canonical App UUID or app key",
+        "limit": "integer, default 10",
+        "offset": "integer"
+      },
+      "scope": "connection:read",
+      "write_scope": "readonly",
+      "notes": "Partner API. The user's own connections to an app. Returns only authentications the user OWNS, never ones shared with them, because a Zap cannot be built on a borrowed connection. is_expired true means the user has to reconnect - check it before offering an action rather than letting the run fail."
+    }
+  },
+  "action_types": {
+    "note": "A stored action's action_type disambiguates same-named actions within one integration. It is descriptive, not a permission - none of these values make a run safe.",
+    "values": [
+      "read",
+      "read_bulk",
+      "write",
+      "run",
+      "search",
+      "search_or_write",
+      "search_and_write",
+      "filter",
+      "tool"
+    ]
+  },
+  "gotchas": [
+    "app identifiers accept four forms - fully versioned (SplitwiseCLIAPI@1.0.0), versionless (SlackCLIAPI), the @latest sentinel, or a service slug (slack). The last three resolve at creation time and the object then stores the fully versioned form forever, so a stored action or inbox does not follow the app forward. An ambiguous or unmatched identifier is a 400, not a silent miss.",
+    "possible_duplicate_data on a trigger message means Zapier's deduplication key changed and the payload may repeat data already delivered. Zapier's own guidance is that consumers should apply their own deduplication - so anything acting on these messages has to be idempotent, not merely careful.",
+    "An inbox can pause itself. paused_reason includes authentication, authentication_access_revoked, partner_revoked, subscribe_failed, migrate_failed, abandoned and upstream_failures. A connector that has quietly stopped producing messages should read status before concluding there is nothing to do.",
+    "A 500 with code external_service_error is the connected app failing, not Zapier. It is not a retryable transient in the usual sense.",
+    "Partner API list endpoints return a single-element ARRAY wrapping the page object, not the page object itself. Indexing straight into .objects will fail.",
+    "Two different action_type vocabularies. The Actions API (stored actions) uses lowercase and includes run, filter and tool: read, read_bulk, write, run, search, search_or_write, search_and_write, filter, tool. The Partner API /v2/actions uses UPPERCASE and a shorter set: READ, READ_BULK, SEARCH, SEARCH_AND_WRITE, SEARCH_OR_WRITE, WRITE. Same concept, different spelling, different API - do not map one onto the other by string equality.",
+    "In the Partner API's own schema, the Action object's `type` and `action_type` both $ref the same ActionTypeEnum, but that enum contains only the single value `action` while the action_type description lists READ, WRITE and the rest. The schema and the prose disagree; the example payload shows type: action alongside action_type: action. Read what comes back rather than validating against the enum.",
+    "Partner API pagination changed between versions. /v1 returns a single-element array wrapping { total, page, pages, per_page, objects, prev_url, next_url }. /v2 returns { links: { next, prev }, meta: { count, limit, offset }, data: [...] }. Same API title, two envelopes.",
+    "An action id from /v2/actions is documented as unstable and not reused. Anything that hardcodes one will break silently when the app updates - persist `key` plus the app identifier."
+  ],
+  "rate_limits": {
+    "actions_api": {
+      "window_seconds": 300,
+      "default": 200,
+      "maximum": 1000,
+      "note": "200 requests per rolling 300-second window by default, raisable to 1000 via limit_override. The only numeric figure Zapier publishes in these specs."
+    },
+    "partner_api": "Stated only as a per-hour cap in the header descriptions, with no number given.",
+    "on_exceed": "HTTP 429 with code too_many_requests and a required Retry-After in seconds.",
+    "headers": {
+      "X-RateLimit-Limit": "Ceiling for the window.",
+      "X-RateLimit-Remaining": "Requests left in the window.",
+      "X-RateLimit-Reset": "When the window resets. The actions API documents this as a unix timestamp typed as date-time; the partner API documents it as UTC epoch seconds. Parse defensively."
+    },
+    "backoff": {
+      "strategy": "Honour Retry-After exactly - it is marked required on every 429 and 503. Pace against X-RateLimit-Remaining rather than waiting to be told."
+    }
+  },
+  "not_applicable": {
+    "connections_api": "/connections/v1/webhooks exists for White Label partner accounts to be told, via a signed callback, that a connection they manage is expiring (the only event is connection.expiry_scheduled; the payload carries connection_id, account_id, app as app_key@version, title and expires_at). Registration is POST /connections/v1/webhooks with scope connection:webhook:write, and returns a whsec_ secret ONCE - never again, and never in the list response. 409 means an active webhook for that event type already exists. Deliveries follow Standard Webhooks: webhook-id (stable across retries, use it to deduplicate), webhook-timestamp, and webhook-signature as a space-delimited list of v1,<base64 HMAC-SHA256> over {webhook-id}.{webhook-timestamp}.{body}. Flux is not a White Label partner and has no public callback URL, so none of it applies. Recorded so it is not mistaken for a way to watch the user's own connections.",
+    "partner_app_directory": "/v1/apps authenticates with an approved partner client_id in the query string. Flux has not been through that approval, so the app-directory endpoints are not exposed even though they need no user token."
+  },
+  "also_ships": {
+    "specs": "Every API's OpenAPI spec is at https://api.zapier.com/api-reference/specs/<api-name>.yaml - actions.yaml, trigger-inbox.yaml, connections.yaml - and the Partner API spec at https://api.zapier.com/schema. Any docs page can be fetched as markdown by appending .md. docs.zapier.com/llms.txt indexes the lot.",
+    "mcp": "Zapier serves a docs MCP server at docs.zapier.com/mcp. That is documentation search, not action invocation - do not confuse the two."
+  },
+  "pending_operations": {
+    "note": "Only endpoints whose OpenAPI blocks were supplied are recorded. Their specs name more that has not been read, and no path for any of it is guessed here.",
+    "wanted": [
+      "actions.yaml in full - the create / update / delete stored-action paths, and above all the run endpoint's own paths block, to confirm the prefix noted on run_stored_action.",
+      "trigger-inbox lease / acknowledge / release message paths, and create / pause / resume / delete inbox paths.",
+      "The Partner API's Zaps, Zap Templates, Inputs and Outputs tags - what the user has automated, and how to prefill a Zap."
+    ]
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.zapier.com/api-reference",
+      "https://api.zapier.com/api-reference/specs/actions.yaml",
+      "https://api.zapier.com/api-reference/specs/trigger-inbox.yaml",
+      "https://api.zapier.com/api-reference/specs/connections.yaml",
+      "https://api.zapier.com/schema",
+      "https://docs.zapier.com/llms.txt",
+      "https://docs.zapier.com/powered-by-zapier/api-reference/authentication"
+    ],
+    "notes": [
+      "Every host, path, scope, pagination scheme, error code and rate-limit figure above is taken verbatim from the OpenAPI 3.1 specs embedded in Zapier's own reference pages.",
+      "The one exception is the run_stored_action path prefix, which the spec gives only in prose. It is flagged in place rather than presented as verified.",
+      "docs.zapier.com and api.zapier.com are not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining specs need supplying the same way."
+    ]
+  }
+}

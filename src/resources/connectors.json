@@ -136,7 +136,7 @@
       "description": "Trigger automations across 9,000+ connected apps",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "webflow",
@@ -280,7 +280,7 @@
       "description": "Search accounting records and create validated draft transactions and entities",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "google_analytics",

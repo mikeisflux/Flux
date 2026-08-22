@@ -55,6 +55,48 @@
     "refs": [
       "https://coda.io/developers/apis/v1",
       "https://github.com/licht1stein/codaio"
+    ],
+    "notes": [
+      "The doc API above is still search-verified - it was corroborated from documentation rather than read out of Coda's own reference.",
+      "The admin_api block has its own source and is vendor-docs: it was read directly from the reference. The two are separate surfaces and separate verification levels on purpose."
     ]
+  },
+  "rebrand": "Coda is now branded Superhuman Docs. The product renamed; the API did not - the host is still coda.io, IDs still look like d-, fl-, ws-, org-, and the docs still say coda.io/apis. Do not confuse it with Superhuman Mail, which is a different product with a different connector.",
+  "admin_api": {
+    "note": "A separate surface from the doc API above, for organisation administration rather than reading content. Flux does not use it and should not: it is enterprise-only, admin-only, and every useful call needs an organizationId the personal token above cannot produce. Recorded so nobody re-derives it or mistakes it for the doc API.",
+    "base_url": "https://coda.io/apis/admin/v1",
+    "auth": "Same bearer token header. Access is limited to enterprise organisations, and only organisation admins can call it for their own org.",
+    "shape": {
+      "hierarchy": "organization > workspace > folder > doc > page. Most paths are nested under /organizations/{organizationId}, and the newer doc routes additionally nest under /workspaces/{workspaceId} - the un-nested equivalents still exist but are marked deprecated.",
+      "pagination": "items, nextPageToken and nextPageLink. limit is 1-500 and defaults to 100, but the maximum can change and can differ per endpoint - page on the presence of nextPageToken, never on the result count matching the limit requested.",
+      "page_token": "A pageToken implies every parameter from the original request. Any other parameter sent alongside one is ignored."
+    },
+    "reads_worth_knowing": {
+      "audit_events": "GET /organizations/{org}/audit/events - login/logout and essentially every mutation, filterable by action, entityType, entityId, user, container and time. The entity types now include agentInstance and agentToolCall, so AI agent activity is audited alongside everything else.",
+      "docs": "GET /organizations/{org}/docs - searchable, with sharing filters (sharedWithAnyone, sharedWithExternalDomain, sharedWithDomains) that are the fastest way to find over-shared docs.",
+      "page_content": "GET .../pages/{pageId}?outputFormat=LossyPlainText - the only way this API returns actual page text. Anything richer goes through the export flow.",
+      "export": "POST .../export then poll GET .../export/{exportId}. PDF, Plaintext or HTML. Download links last about 5 minutes and a fresh one is issued on each status call, so fetch immediately or re-poll."
+    },
+    "webhooks": {
+      "resource": "auditEvents only.",
+      "handshake": "On create, and again whenever the target URL changes, Coda GETs the target with an X-Webhook-Code header. The target must answer 200 or 204 and echo that header back. POST .../webhooks/{id}/reset re-runs it.",
+      "signature": "X-Webhook-Signature is a hex HMAC-SHA256 of the stringified POST body, keyed with the signatureKey on the webhook object. Note the differences from most vendors: hex not base64, the body alone with no id or timestamp prefix, and therefore no replay protection from the signature at all.",
+      "delivery": "10-second timeout, exponential backoff, disabled after 8 hours of consecutive failures. Deliveries can repeat, and once delivered they cannot be replayed - so a receiver must deduplicate and a gap must be backfilled through the events endpoint."
+    },
+    "never_expose": [
+      "Everything under /legalHolds - creating a hold changes what an organisation is legally obliged to retain.",
+      "The permission endpoints on docs and folders. bypassOrgExternalSharingRestrictions on the add-permission call does exactly what it says.",
+      "Organization user activate/deactivate, and its bypassScim flag, which deliberately desynchronises Coda from the customer's identity provider.",
+      "Transfer user resources, delete doc, delete folder, and the workspace role endpoints."
+    ],
+    "source": {
+      "verified": "vendor-docs",
+      "checked": "2026-08-22",
+      "refs": [
+        "https://coda.io/developers/apis/admin/v1",
+        "https://superhuman.com/developers"
+      ],
+      "note": "Taken verbatim from the Superhuman Docs Admin API reference (version 0.0.2) the user supplied. Coda publishes an OpenAPI 3.0 spec for it, which is the thing to fetch if this is ever actually implemented."
+    }
   }
 }
