@@ -118,6 +118,75 @@ if used > reserved:
 print(f'  grit IDs: {used}/{reserved} used')
 GRITPY
 
+# The mojom stub is transcribed by hand, so it can silently fall behind the
+# mojom it stands in for - and a stub that is behind is worse than no stub: it
+# type-checks clean and the build fails anyway. Adding OnConnectorChanged and
+# forgetting one observer implementation cost a build exactly this way.
+python3 - src/browser/mojom/flux.mojom \
+    tools/webui-typecheck/stubs/flux.mojom-webui.d.ts <<'MOJOPY' || status=1
+import re, sys
+
+mojom = open(sys.argv[1], encoding='utf-8').read()
+stub = open(sys.argv[2], encoding='utf-8').read()
+
+
+def mojom_methods(interface):
+    m = re.search(r'^interface ' + interface + r'\s*\{(.*?)^\};',
+                  mojom, re.S | re.M)
+    if not m:
+        return None
+    # A method is a name at the start of a statement followed by '('. Comment
+    # lines are skipped so a name inside prose is not mistaken for one.
+    body = re.sub(r'//[^\n]*', '', m.group(1))
+    return set(re.findall(r'(?:^|\n)\s*([A-Z]\w*)\s*\(', body))
+
+
+def stub_methods(block_name, kind):
+    m = re.search(kind + r'\s+' + block_name + r'\b[^{]*\{(.*?)^\}',
+                  stub, re.S | re.M)
+    if not m:
+        return None
+    body = re.sub(r'//[^\n]*', '', m.group(1))
+    # The `$: { ... }` block is mojo plumbing the generator adds, not a method
+    # the mojom declares. Left in, it reports bindNewPipeAndPassReceiver as
+    # drift on every run.
+    body = re.sub(r'\$:\s*\{.*?\};', '', body, flags=re.S)
+    return set(re.findall(r'(?:^|\n)\s*(\w+)\s*\(', body))
+
+
+def lower_camel(name):
+    return name[0].lower() + name[1:]
+
+
+bad = 0
+for interface, block, kind in (
+        ('FluxPageHandler', 'FluxPageHandlerRemote', 'class'),
+        ('FluxPageHandlerObserver', 'FluxPageHandlerObserverInterface',
+         'interface')):
+    declared = mojom_methods(interface)
+    stubbed = stub_methods(block, kind)
+    if declared is None:
+        print(f'flux.mojom: cannot find interface {interface}')
+        bad += 1
+        continue
+    if stubbed is None:
+        print(f'stub: cannot find {kind} {block}')
+        bad += 1
+        continue
+    for name in sorted(declared):
+        if lower_camel(name) not in stubbed:
+            print(f'stub: {block} is missing {lower_camel(name)}() - '
+                  f'flux.mojom declares {interface}.{name}')
+            bad += 1
+    for name in sorted(stubbed):
+        if name[0].upper() + name[1:] not in declared:
+            print(f'stub: {block}.{name}() is not in flux.mojom - '
+                  'the stub is ahead of, or out of step with, the real thing')
+            bad += 1
+
+sys.exit(1 if bad else 0)
+MOJOPY
+
 # Type-check the console under the same strict settings build_webui compiles
 # it with. This is the difference between a typo costing ten seconds and
 # costing a ninety-minute build, so it is worth the one-time npm install.

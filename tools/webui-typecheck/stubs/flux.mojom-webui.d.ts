@@ -159,8 +159,26 @@ export declare class FluxPageHandlerRemote {
   setSidebarCollapsed(collapsed: boolean): void;
 }
 
+// Every method the observer must implement, so that a class handed to the
+// receiver below is checked against the whole interface.
+//
+// Typing the receiver's constructor as `object` instead was a real build
+// break: adding OnConnectorChanged to the mojom left FluxSidebar not
+// implementing it, tsc here was happy, and the failure surfaced 28 targets
+// into a Chromium build. mojom generates exactly this interface - keep every
+// FluxPageHandlerObserver method in it.
+export interface FluxPageHandlerObserverInterface {
+  onRunProgress(progress: RunProgress): void;
+  onAction(runId: string, action: ActionRecord): void;
+  onApprovalRequested(request: ApprovalRequest): void;
+  onRunFinished(runId: string, finalState: RunState,
+                summary: string|null): void;
+  onLearnedFact(fact: string, sourceRunId: string): void;
+  onConnectorChanged(status: ConnectorStatus, error: string|null): void;
+}
+
 export declare class FluxPageHandlerObserverReceiver {
-  constructor(impl: object);
+  constructor(impl: FluxPageHandlerObserverInterface);
   $: {
     bindNewPipeAndPassRemote(): unknown,
   };

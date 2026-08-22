@@ -9,6 +9,7 @@ import {
 import type {
   ActionRecord,
   ApprovalRequest,
+  ConnectorStatus,
   RunProgress,
 } from './flux.mojom-webui.js';
 
@@ -127,6 +128,13 @@ class FluxSidebar {
 
   onLearnedFact(fact: string, sourceRunId: string) {
     this.runs.noteLearned(fact, sourceRunId);
+  }
+
+  onConnectorChanged(_status: ConnectorStatus, _error: string|null) {
+    // The rail shows runs, not connectors. Implemented because every observer
+    // has to implement the whole interface, and doing nothing is the honest
+    // behaviour here rather than an oversight - the connectors screen lives in
+    // the tab and redraws itself.
   }
 }
 
