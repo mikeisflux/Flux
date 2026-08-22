@@ -1,0 +1,76 @@
+{
+  "id": "stripe",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://connect.stripe.com/oauth/authorize",
+    "token_url": "https://connect.stripe.com/oauth/token",
+    "client_auth": "post",
+    "scopes": [
+      "read_only"
+    ],
+    "notes": [
+      "A personal token is the simpler path for one workspace and is what Flux offers first; OAuth is for connecting more than one account or for a build shared with other people.",
+      "read_only is requested deliberately. read_write on a payments account means an agent could create charges and refunds, and no task in the catalogue needs that.",
+      "The token endpoint is on connect.stripe.com, not api.stripe.com. The api.stripe.com/v1/oauth/token form appears in older material and is the wrong host.",
+      "This is Stripe Connect OAuth, for reaching an account you do not own. Reading your own account only needs a restricted API key."
+    ],
+    "personal_token": {
+      "label": "Restricted API key",
+      "where": "dashboard.stripe.com/apikeys - create a restricted key with read permissions only on customers, invoices, payments and subscriptions.",
+      "prefix": "rk_",
+      "notes": [
+        "Use a restricted key, never the secret key. A restricted key with read-only permissions cannot move money even if it leaks."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.stripe.com/v1",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Stripe-Version": "2024-06-20"
+    }
+  },
+  "operations": {
+    "list_customers": {
+      "method": "GET",
+      "path": "/customers",
+      "write_scope": "readonly"
+    },
+    "list_invoices": {
+      "method": "GET",
+      "path": "/invoices",
+      "write_scope": "readonly"
+    },
+    "list_payment_intents": {
+      "method": "GET",
+      "path": "/payment_intents",
+      "write_scope": "readonly"
+    },
+    "list_subscriptions": {
+      "method": "GET",
+      "path": "/subscriptions",
+      "write_scope": "readonly"
+    },
+    "search_customers": {
+      "method": "GET",
+      "path": "/customers/search",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Around 100 read requests per second in live mode, less in test. Search endpoints are lower. Returns 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.stripe.com/connect/oauth-standard-accounts",
+      "https://stripe.com/docs/connect/reference",
+      "https://logto.io/oauth-providers-explorer/stripe"
+    ],
+    "notes": [
+      "The search corrected an assumption: the token endpoint is connect.stripe.com/oauth/token, not api.stripe.com/v1/oauth/token."
+    ]
+  }
+}

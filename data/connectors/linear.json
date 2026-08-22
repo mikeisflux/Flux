@@ -1,0 +1,74 @@
+{
+  "id": "linear",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://linear.app/oauth/authorize",
+    "token_url": "https://api.linear.app/oauth/token",
+    "client_auth": "post",
+    "scopes": [
+      "read",
+      "write",
+      "issues:create",
+      "comments:create"
+    ],
+    "notes": [
+      "A personal token is the simpler path for one workspace and is what Flux offers first; OAuth is for connecting more than one account or for a build shared with other people.",
+      "Scopes are comma-separated in the authorize URL, not space-separated.",
+      "admin is deliberately not requested. Nothing Flux does needs admin endpoints, and a token that carries it can reconfigure the workspace.",
+      "Linear is GraphQL-only: one endpoint, and the operation is the query."
+    ],
+    "personal_token": {
+      "label": "Personal API key",
+      "where": "linear.app > Settings > Security & access > Personal API keys.",
+      "prefix": "lin_api_",
+      "notes": [
+        "Sent as the Authorization header value directly, without a Bearer prefix - unlike the OAuth token."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.linear.app/graphql",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Content-Type": "application/json"
+    }
+  },
+  "operations": {
+    "query_issues": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "readonly",
+      "notes": "GraphQL query. Everything read goes through this one endpoint."
+    },
+    "create_issue": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "draft",
+      "notes": "issueCreate mutation. Draft rather than send: an issue is visible internally but is not an outbound message."
+    },
+    "create_comment": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "draft",
+      "notes": "commentCreate mutation."
+    },
+    "update_issue": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "draft",
+      "notes": "issueUpdate mutation."
+    }
+  },
+  "rate_limits": {
+    "note": "Complexity-based rather than request-based: a deeply nested GraphQL query costs more than several shallow ones. Request only the fields you need."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://linear.app/developers/oauth-2-0-authentication",
+      "https://linear.app/developers/graphql"
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "id": "outlook",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "discovery_url": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+    "authorize_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    "token_url": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    "client_auth": "post",
+    "pkce": true,
+    "scopes": [
+      "offline_access",
+      "Mail.ReadWrite",
+      "Calendars.ReadWrite",
+      "Tasks.ReadWrite",
+      "User.Read"
+    ],
+    "notes": [
+      "offline_access is what produces a refresh token. Microsoft does not issue one without it.",
+      "Mail.ReadWrite allows reading and saving drafts. Mail.Send is a separate scope and is deliberately not requested.",
+      "The common tenant works for personal and work accounts; a tenant-locked app should substitute the tenant id for \"common\" in both URLs."
+    ]
+  },
+  "api": {
+    "base_url": "https://graph.microsoft.com/v1.0",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "list_messages": {
+      "method": "GET",
+      "path": "/me/messages",
+      "write_scope": "readonly"
+    },
+    "get_message": {
+      "method": "GET",
+      "path": "/me/messages/{id}",
+      "write_scope": "readonly"
+    },
+    "create_draft": {
+      "method": "POST",
+      "path": "/me/messages",
+      "write_scope": "draft"
+    },
+    "list_events": {
+      "method": "GET",
+      "path": "/me/calendar/events",
+      "write_scope": "readonly"
+    },
+    "create_event": {
+      "method": "POST",
+      "path": "/me/calendar/events",
+      "write_scope": "send",
+      "notes": "Creating an event with attendees sends invitations."
+    },
+    "list_tasks": {
+      "method": "GET",
+      "path": "/me/todo/lists",
+      "write_scope": "readonly"
+    },
+    "create_task": {
+      "method": "POST",
+      "path": "/me/todo/lists/{listId}/tasks",
+      "write_scope": "draft"
+    }
+  },
+  "rate_limits": {
+    "note": "Graph throttles per app per tenant and returns 429 with Retry-After. Honour the header rather than backing off blindly."
+  },
+  "source": {
+    "verified": "discovery",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+    ],
+    "notes": [
+      "Endpoints read out of Microsoft's own OIDC discovery document for the common tenant."
+    ]
+  }
+}

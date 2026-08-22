@@ -1,0 +1,119 @@
+{
+  "id": "google",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "discovery_url": "https://accounts.google.com/.well-known/openid-configuration",
+    "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "revoke_url": "https://oauth2.googleapis.com/revoke",
+    "client_auth": "post",
+    "pkce": true,
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/gmail.compose",
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/calendar"
+    ],
+    "extra_authorize_params": {
+      "access_type": "offline",
+      "prompt": "consent"
+    },
+    "notes": [
+      "access_type=offline is what produces a refresh token; without it the grant dies in an hour and every scheduled workflow fails overnight.",
+      "Google only re-issues a refresh token when the user is re-prompted, so prompt=consent is required on re-authorisation, not just first grant.",
+      "gmail.modify covers reading, labelling and saving drafts but NOT sending. Sending needs gmail.send, which is deliberately not requested: a connector that can send is a connector that can send by accident.",
+      "These scopes are restricted and need Google verification before the app leaves testing mode."
+    ]
+  },
+  "api": {
+    "base_url": "https://www.googleapis.com",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "gmail_list": {
+      "method": "GET",
+      "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+      "write_scope": "readonly"
+    },
+    "gmail_get": {
+      "method": "GET",
+      "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}",
+      "write_scope": "readonly"
+    },
+    "gmail_create_draft": {
+      "method": "POST",
+      "path": "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
+      "write_scope": "draft",
+      "notes": "Saves a draft. Sending a draft is a separate endpoint and a separate scope Flux does not hold."
+    },
+    "gmail_modify_labels": {
+      "method": "POST",
+      "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}/modify",
+      "write_scope": "draft"
+    },
+    "drive_list": {
+      "method": "GET",
+      "path": "https://www.googleapis.com/drive/v3/files",
+      "write_scope": "readonly"
+    },
+    "drive_upload": {
+      "method": "POST",
+      "path": "https://www.googleapis.com/upload/drive/v3/files",
+      "write_scope": "draft"
+    },
+    "docs_get": {
+      "method": "GET",
+      "path": "https://docs.googleapis.com/v1/documents/{documentId}",
+      "write_scope": "readonly"
+    },
+    "docs_update": {
+      "method": "POST",
+      "path": "https://docs.googleapis.com/v1/documents/{documentId}:batchUpdate",
+      "write_scope": "draft"
+    },
+    "sheets_read": {
+      "method": "GET",
+      "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
+      "write_scope": "readonly"
+    },
+    "sheets_write": {
+      "method": "PUT",
+      "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
+      "write_scope": "draft"
+    },
+    "calendar_list_events": {
+      "method": "GET",
+      "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
+      "write_scope": "readonly"
+    },
+    "calendar_create_event": {
+      "method": "POST",
+      "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
+      "write_scope": "send",
+      "notes": "Creating an event notifies attendees, which is an outbound message to other people. Scoped as send, not draft."
+    }
+  },
+  "rate_limits": {
+    "note": "Per-API quotas, published per service in the Google Cloud console for the project. A 429 means back off and retry with jitter; it is not a permanent failure."
+  },
+  "why_prefer_this": [
+    "Structured errors instead of guessing whether a page silently discarded the action.",
+    "Survives the interface redesigns that break DOM-driven automation.",
+    "No account-risk exposure, unlike driving a signed-in session."
+  ],
+  "source": {
+    "verified": "discovery",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://accounts.google.com/.well-known/openid-configuration"
+    ],
+    "notes": [
+      "Endpoints read out of Google's own OIDC discovery document, not from documentation about it."
+    ]
+  }
+}

@@ -63,5 +63,16 @@
     "Stable: survives site redesigns that break DOM-driven posting.",
     "Native scheduling: no machine needs to be awake at post time.",
     "Structured errors instead of guessing from a page that may have silently discarded the post."
-  ]
+  ],
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow",
+      "https://developers.facebook.com/docs/graph-api/reference/page/feed/"
+    ],
+    "notes": [
+      "Authored before the source field existed; endpoints corroborated from Meta documentation rather than fetched from Meta."
+    ]
+  }
 }

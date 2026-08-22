@@ -1,0 +1,65 @@
+{
+  "id": "google_analytics",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "discovery_url": "https://accounts.google.com/.well-known/openid-configuration",
+    "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "revoke_url": "https://oauth2.googleapis.com/revoke",
+    "client_auth": "post",
+    "pkce": true,
+    "scopes": [
+      "https://www.googleapis.com/auth/analytics.readonly"
+    ],
+    "extra_authorize_params": {
+      "access_type": "offline",
+      "prompt": "consent"
+    },
+    "notes": [
+      "Read-only by design. Nothing Flux does with analytics needs write access, and the write scope would let a task alter reporting config.",
+      "GA4 only. The Universal Analytics endpoints are retired and a property id that looks numeric-only is a UA property, not a GA4 one."
+    ]
+  },
+  "api": {
+    "base_url": "https://analyticsdata.googleapis.com",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "run_report": {
+      "method": "POST",
+      "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runReport",
+      "write_scope": "readonly"
+    },
+    "run_realtime_report": {
+      "method": "POST",
+      "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runRealtimeReport",
+      "write_scope": "readonly"
+    },
+    "list_accounts": {
+      "method": "GET",
+      "path": "https://analyticsadmin.googleapis.com/v1beta/accounts",
+      "write_scope": "readonly"
+    },
+    "list_properties": {
+      "method": "GET",
+      "path": "https://analyticsadmin.googleapis.com/v1beta/properties",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "GA4 enforces per-property token buckets per hour and per day. Large date ranges with many dimensions spend tokens fast; narrow the request rather than retrying."
+  },
+  "source": {
+    "verified": "discovery",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://accounts.google.com/.well-known/openid-configuration"
+    ],
+    "notes": [
+      "Endpoints read out of Google's own OIDC discovery document, not from documentation about it."
+    ]
+  }
+}

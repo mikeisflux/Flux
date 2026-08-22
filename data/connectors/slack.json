@@ -1,0 +1,90 @@
+{
+  "id": "slack",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://slack.com/oauth/v2/authorize",
+    "token_url": "https://slack.com/api/oauth.v2.access",
+    "client_auth": "basic",
+    "scopes": [
+      "channels:history",
+      "channels:read",
+      "groups:history",
+      "groups:read",
+      "search:read",
+      "users:read",
+      "chat:write"
+    ],
+    "notes": [
+      "A personal token is the simpler path for one workspace and is what Flux offers first; OAuth is for connecting more than one account or for a build shared with other people.",
+      "Slack splits bot and user scopes. The list above is bot scopes, sent as `scope`; anything that must act as the human goes in `user_scope` and comes back as a separate authed_user token in the same response.",
+      "Send client_id and client_secret with HTTP Basic rather than as form parameters - Slack recommends it explicitly.",
+      "oauth.v2.access returns HTTP 200 on failure with {\"ok\": false, \"error\": ...}. Checking the status code alone will treat a rejected exchange as a success.",
+      "chat:write is the only write scope requested and it is what makes posting possible at all; a read-only task must not be given a token carrying it."
+    ],
+    "personal_token": {
+      "label": "Bot User OAuth Token",
+      "where": "api.slack.com/apps > your app > OAuth & Permissions. Add the scopes first, then Install to Workspace; the token appears at the top of that page afterwards.",
+      "prefix": "xoxb-",
+      "notes": [
+        "A User OAuth Token (xoxp-) is also issued and is the one that can search - search.messages does not work with a bot token.",
+        "The \"Generate Token\" button on the Your Apps index is an App Configuration Token for managing apps programmatically. It is not this, and it will not work here."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://slack.com/api",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "search_messages": {
+      "method": "GET",
+      "path": "/search.messages",
+      "write_scope": "readonly",
+      "notes": "Requires a user token, not a bot token - bots cannot search."
+    },
+    "list_channels": {
+      "method": "GET",
+      "path": "/conversations.list",
+      "write_scope": "readonly"
+    },
+    "channel_history": {
+      "method": "GET",
+      "path": "/conversations.history",
+      "write_scope": "readonly"
+    },
+    "list_users": {
+      "method": "GET",
+      "path": "/users.list",
+      "write_scope": "readonly"
+    },
+    "lookup_user_by_email": {
+      "method": "GET",
+      "path": "/users.lookupByEmail",
+      "write_scope": "readonly"
+    },
+    "post_message": {
+      "method": "POST",
+      "path": "/chat.postMessage",
+      "write_scope": "send",
+      "notes": "Visible to other people the moment it succeeds. Never reachable from a readonly or draft task."
+    }
+  },
+  "rate_limits": {
+    "note": "Tiered per method, roughly 1/min to 100/min, returned as 429 with Retry-After. conversations.history is Tier 3; search.messages is Tier 2 and is the one that bites."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://api.slack.com/authentication/oauth-v2",
+      "https://api.slack.com/methods/oauth.v2.access",
+      "https://docs.slack.dev/reference/methods/oauth.v2.user.access/"
+    ],
+    "notes": [
+      "Corroborated across Slack's OAuth guide and the oauth.v2.access method reference. Not fetched from Slack directly - this container cannot reach api.slack.com."
+    ]
+  }
+}

@@ -8,7 +8,7 @@
       "description": "Read and write Gmail, Drive, Docs, Sheets, and Calendar (powered by Composio)",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "slack",
@@ -16,7 +16,7 @@
       "description": "Search messages, post updates, and find people",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "imessage",
@@ -32,7 +32,7 @@
       "description": "Read and send email, manage calendars, and work with Microsoft To Do",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "apollo",
@@ -64,7 +64,7 @@
       "description": "Search, read, and update pages and databases",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "linear",
@@ -72,7 +72,7 @@
       "description": "Triage issues and manage projects & team workflows",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "attio",
@@ -88,7 +88,7 @@
       "description": "Search customers, invoices, payments, and subscriptions",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "atlassian",
@@ -152,7 +152,7 @@
       "description": "Search code, review pull requests, and triage issues",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "hubspot",
@@ -288,7 +288,7 @@
       "description": "Inspect GA4 properties, audiences, reports, funnels, and realtime activity",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "instagram",

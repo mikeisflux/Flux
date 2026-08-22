@@ -1,0 +1,90 @@
+{
+  "id": "notion",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://api.notion.com/v1/oauth/authorize",
+    "token_url": "https://api.notion.com/v1/oauth/token",
+    "client_auth": "basic",
+    "scopes": [],
+    "extra_authorize_params": {
+      "owner": "user",
+      "response_type": "code"
+    },
+    "notes": [
+      "A personal token is the simpler path for one workspace and is what Flux offers first; OAuth is for connecting more than one account or for a build shared with other people.",
+      "Notion has no scope parameter. Access is granted per page and per database by the user during the authorisation flow, so what the token can reach is decided in Notion's own picker and not by us.",
+      "owner=user is required on the authorize URL.",
+      "The token exchange is JSON, not form-encoded, and needs the Notion-Version header like every other call.",
+      "Because access is page-scoped, a 404 usually means the integration was never shared that page - not that the page is missing."
+    ],
+    "personal_token": {
+      "label": "Internal integration secret",
+      "where": "notion.so/profile/integrations - create an internal integration, then share each page or database with it from the page's own Connections menu.",
+      "prefix": "ntn_",
+      "notes": [
+        "Nothing is reachable until the page is explicitly shared with the integration. A 404 on a page that exists means it was not shared."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.notion.com/v1",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Notion-Version": "2022-06-28"
+    }
+  },
+  "operations": {
+    "search": {
+      "method": "POST",
+      "path": "/search",
+      "write_scope": "readonly"
+    },
+    "get_page": {
+      "method": "GET",
+      "path": "/pages/{page_id}",
+      "write_scope": "readonly"
+    },
+    "get_block_children": {
+      "method": "GET",
+      "path": "/blocks/{block_id}/children",
+      "write_scope": "readonly"
+    },
+    "query_database": {
+      "method": "POST",
+      "path": "/databases/{database_id}/query",
+      "write_scope": "readonly"
+    },
+    "create_page": {
+      "method": "POST",
+      "path": "/pages",
+      "write_scope": "draft"
+    },
+    "update_page": {
+      "method": "PATCH",
+      "path": "/pages/{page_id}",
+      "write_scope": "draft"
+    },
+    "append_blocks": {
+      "method": "PATCH",
+      "path": "/blocks/{block_id}/children",
+      "write_scope": "draft"
+    }
+  },
+  "rate_limits": {
+    "requests_per_second": 3,
+    "note": "Averaged, with bursts allowed. Returns 429 with Retry-After."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.notion.com/reference/create-a-token",
+      "https://developers.notion.com/docs/authorization",
+      "https://logto.io/oauth-providers-explorer/notion"
+    ],
+    "notes": [
+      "Notion-Version pinned to 2022-06-28 deliberately: it is the long-stable version, and a newer one changes response shapes."
+    ]
+  }
+}
