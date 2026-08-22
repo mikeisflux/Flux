@@ -122,14 +122,45 @@ on the same hook as the other checks.
 If the fetch fails the check exits 0 and says so, which means the series is
 **unverified** - say that rather than claiming it applies.
 
-### Reading the log: filter the noise OUT, not the signal IN
+### Reading the log: turn the noise off, do not filter it out
 
-`chrome_debug.log` is ten thousand lines of `VERBOSE1` field-trial output with
-the real content scattered through it. Filtering *in* on keywords
-(`ERROR|FATAL|flux`) is how a crash gets found and everything around it gets
-missed. Filter the verbose lines out instead and read what is left:
+Two filtering mistakes, in order of how much time each has cost:
+
+**Filtering *in* on keywords** (`ERROR|FATAL|CHECK|flux`) finds the crash and
+hides everything around it. Warnings that name no keyword, and the whole
+positive record of what *did* load, never appear.
+
+**Filtering *out* on `:VERBOSE\d:` leaks.** A multi-line `VLOG` writes the
+`[pid:tid:...:VERBOSE1:file.cc:NN]` prefix on the FIRST line only; the body
+lines carry no prefix and survive the filter. That is where the orphaned
+`extension id: / context_type: WEBUI` blocks come from - they are the tail of
+`VLOG(1) << "Created context:\n" << GetDebugString()` in
+`extensions/renderer/script_context.cc`, with their header stripped away.
+
+So do not generate the noise in the first place. `--v=1` is what turns ~9,800
+lines of field-trial and module-loader `VERBOSE1` on; drop it and the log is
+short enough to read end to end:
+
+    Get-Content 'C:\flux-build\flux-test\chrome_debug.log' | Select-Object -Last 200
+
+Add `--v=1` back only when chasing something that needs it, and then filter:
 
     Get-Content 'C:\flux-build\flux-test\chrome_debug.log' | Where-Object { $_ -notmatch ':VERBOSE\d:' } | Select-Object -Last 200
+
+Chromium noise that is NOT a Flux bug, confirmed against the M152 source and
+not worth re-diagnosing:
+
+- `ERROR:direct_composition_support.cc` `AMD VideoProcessorGetOutputExtension
+  failed` - a driver capability probe, every run, on this GPU.
+- `VERBOSE1 ... QUIC_DECRYPTION_FAILURE ... (missing key)` - packets that
+  arrive before key negotiation finishes. Normal QUIC.
+- `WARNING:runtime_features.cc` `SharedStorage / AttributionReporting cannot be
+  enabled in this configuration` - those APIs need an explicit
+  `--enable-features`, and no field-trial config ships in this fork.
+- `INFO:paint_property_tree_printer.cc:231/236/240/244` - Blink dumping its
+  transform/clip/effect/scroll trees on every layout. The whole file is
+  `#if DCHECK_IS_ON()`, so this exists **only** because `dev.gn` sets
+  `dcheck_always_on = true`. Noise, not a signal.
 
 ### Running it, when it will not run
 
@@ -141,13 +172,11 @@ looks like nothing happened at all.
 Get the reason rather than guessing. One line, and the exit code matters as
 much as the log:
 
-    (Start-Process 'C:\flux-build\chromium\src\out\Dev\chrome.exe' -ArgumentList '--user-data-dir=C:\flux-build\fluxprofile','--enable-logging','--v=1' -PassThru -Wait).ExitCode
+    (Start-Process 'C:\flux-build\chromium\src\out\Dev\flux.exe' -ArgumentList '--user-data-dir=C:\flux-build\flux-test','--enable-logging' -PassThru -Wait).ExitCode
 
-    Select-String -Path 'C:\flux-build\fluxprofile\chrome_debug.log' -Pattern 'ERROR|FATAL|CHECK|flux' | Select-Object -Last 60
+    Get-Content 'C:\flux-build\flux-test\chrome_debug.log' | Select-Object -Last 200
 
-`--enable-logging` writes `chrome_debug.log` into the user-data dir, and the
-filter is necessary - the log is tens of thousands of field-trial lines and a
-plain `-Tail` lands in the GPU process's noise every time. A separate
+`--enable-logging` writes `chrome_debug.log` into the user-data dir. A separate
 `--user-data-dir` keeps test tokens out of a real profile and makes a clean
 first run a matter of deleting the folder.
 
