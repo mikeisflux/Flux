@@ -11,6 +11,7 @@
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -214,7 +215,7 @@ void AnthropicProvider::OnResponse(CompletionCallback callback,
     return;
   }
 
-  std::optional<base::Value> parsed = base::JSONReader::Read(*body);
+  std::optional<base::Value> parsed = base::JSONReader::Read(*body, base::JSON_PARSE_RFC);
   if (!parsed || !parsed->is_dict()) {
     result.error = "Malformed response from Anthropic.";
     result.retryable = true;

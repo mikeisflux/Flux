@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -216,7 +217,7 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
     return;
   }
 
-  std::optional<base::Value> parsed = base::JSONReader::Read(*body);
+  std::optional<base::Value> parsed = base::JSONReader::Read(*body, base::JSON_PARSE_RFC);
   if (!parsed || !parsed->is_dict()) {
     result.error = "Malformed response from OpenAI.";
     result.retryable = true;
@@ -276,7 +277,7 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
       // Arguments arrive as a JSON string; a model can emit malformed JSON
       // here, so a parse failure is a tool error rather than a crash.
       if (const std::string* args = fn->FindString("arguments")) {
-        std::optional<base::Value> parsed_args = base::JSONReader::Read(*args);
+        std::optional<base::Value> parsed_args = base::JSONReader::Read(*args, base::JSON_PARSE_RFC);
         if (parsed_args && parsed_args->is_dict())
           tc.input = parsed_args->GetDict().Clone();
       }

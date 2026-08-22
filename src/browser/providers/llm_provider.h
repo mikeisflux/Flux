@@ -24,6 +24,11 @@ struct ToolCall {
   std::string id;
   std::string name;
   base::DictValue input;
+
+  // base::DictValue is move-only, which makes ToolCall move-only too. That is
+  // worth keeping rather than working around: copying a tool call duplicates
+  // its whole argument tree, and that should be visible at the call site.
+  ToolCall Clone() const { return ToolCall{id, name, input.Clone()}; }
 };
 
 struct ToolResult {
@@ -36,11 +41,35 @@ struct ToolResult {
 // onto its own message format.
 struct Message {
   enum class Role { kUser, kAssistant, kSystem };
-  Role role;
+  Role role = Role::kUser;
   std::string text;
   std::vector<ToolCall> tool_calls;      // assistant turns
   std::vector<ToolResult> tool_results;  // user turns
+
+  // Move-only for the same reason as ToolCall, which it contains.
+  Message Clone() const {
+    Message out;
+    out.role = role;
+    out.text = text;
+    out.tool_results = tool_results;  // no DictValue; copyable
+    out.tool_calls.reserve(tool_calls.size());
+    for (const ToolCall& call : tool_calls) {
+      out.tool_calls.push_back(call.Clone());
+    }
+    return out;
+  }
 };
+
+// The conversation has to outlive each request built from it, so the history
+// is cloned per turn rather than moved.
+inline std::vector<Message> CloneMessages(const std::vector<Message>& messages) {
+  std::vector<Message> out;
+  out.reserve(messages.size());
+  for (const Message& message : messages) {
+    out.push_back(message.Clone());
+  }
+  return out;
+}
 
 struct CompletionRequest {
   std::string system_prompt;

@@ -79,7 +79,7 @@ void AgentRunner::Step() {
   CompletionRequest request;
   request.model = spec_->model->model;
   request.max_output_tokens = spec_->model->max_output_tokens;
-  request.messages = history_;
+  request.messages = CloneMessages(history_);
   // Only tools within the task's declared scope are ever shown to the model.
   // A model that cannot see a send tool does not spend turns trying to use it.
   request.tools = tools_->DefinitionsForScope(spec_->write_scope);
