@@ -68,9 +68,10 @@ class FluxApp {
     this.customize = new CustomizeView(this.handler);
     this.welcome = new WelcomeView(this.handler);
 
-    // Ctrl+K reaches the panel from any console screen. Reaching it from a
-    // web page needs a browser accelerator, which is a frame change, not a
-    // page one - the sidebar's magnifier covers that case in the meantime.
+    // Ctrl+K reaches the panel from any console screen. The same chord over a
+    // web page is handled in the frame - see patches/0013 - because a page that
+    // binds Ctrl+K itself would otherwise swallow it, and the sites worth
+    // automating (Slack, Linear, GitHub) all do. Both paths land here.
     window.addEventListener('keydown', event => {
       if (event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();

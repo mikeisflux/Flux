@@ -30,6 +30,14 @@ GURL SidebarURL() {
   return GURL(chrome::kChromeUIFluxURL).Resolve("sidebar.html");
 }
 
+// The palette is a console screen, reached by fragment. It deliberately is not
+// an overlay drawn over the page: an overlay over arbitrary web content is a
+// separate always-on-top widget with its own focus and z-order problems, and
+// the palette is a launcher - going to it is the point.
+GURL PaletteURL() {
+  return GURL(chrome::kChromeUIFluxURL).Resolve("#search");
+}
+
 }  // namespace
 
 FluxSidebarView::FluxSidebarView(BrowserWindowInterface* browser)
@@ -106,6 +114,14 @@ bool FluxSidebarView::HandleKeyboardEvent(
     const input::NativeWebKeyboardEvent& event) {
   return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
       event, GetFocusManager());
+}
+
+void FluxSidebarView::OpenCommandPalette() {
+  // SINGLETON_TAB rather than a new tab: pressing Ctrl+K four times should
+  // leave one console tab, not four. Chromium matches on the URL ignoring the
+  // fragment, so an existing console tab is reused and re-navigated to the
+  // palette wherever in the console it happened to be.
+  browser_->OpenGURL(PaletteURL(), WindowOpenDisposition::SINGLETON_TAB);
 }
 
 content::WebContents* FluxSidebarView::OpenURLFromTab(

@@ -40,6 +40,7 @@ enum MenuCommand {
   kPasswords,
   kExtensions,
   kFeedback,
+  kSource,
   kSettings,
 };
 
@@ -60,6 +61,8 @@ const char* CommandUrl(int command_id) {
       return chrome::kChromeUIExtensionsURL;
     case kFeedback:
       return "https://github.com/mikeisflux/Flux/issues";
+    case kSource:
+      return "https://github.com/mikeisflux/Flux";
     case kSettings:
       return "chrome://flux/#settings";
     default:
@@ -88,12 +91,15 @@ FluxAvatarButton::FluxAvatarButton(BrowserWindowInterface* browser)
   menu_model_.AddItem(kPasswords, u"Passwords");
   menu_model_.AddItem(kExtensions, u"Extensions");
 
-  // The reference also lists Refer a Friend and a Slack community. Those are
-  // links to things that do not exist yet, and a menu row that goes nowhere is
-  // worse than a shorter menu, so only the one with a real destination is here.
+  // The reference also lists Refer a Friend and Join Slack. Refer a Friend
+  // needs a referral system that does not exist, and a Slack invite needs a
+  // workspace that does not exist; a menu row that goes nowhere is worse than
+  // a shorter menu, so neither is here. The section is filled out instead with
+  // the destinations that are real today.
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddTitle(u"Community");
   menu_model_.AddItem(kFeedback, u"Feedback and bugs");
+  menu_model_.AddItem(kSource, u"Flux on GitHub");
 
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItem(kSettings, u"Settings");

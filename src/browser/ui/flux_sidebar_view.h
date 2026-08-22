@@ -44,6 +44,12 @@ class FluxSidebarView : public views::WebView,
   // What the layout should reserve right now.
   int CurrentWidth() const;
 
+  // Ctrl+K, from anywhere in the window including over a web page. The frame
+  // routes the accelerator here rather than opening the URL itself, so the
+  // Chromium patch stays a two-line intercept and the product decision - which
+  // surface the palette is, and how it is reached - lives in Flux's own source.
+  void OpenCommandPalette();
+
   explicit FluxSidebarView(BrowserWindowInterface* browser);
   FluxSidebarView(const FluxSidebarView&) = delete;
   FluxSidebarView& operator=(const FluxSidebarView&) = delete;

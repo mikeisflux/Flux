@@ -1,0 +1,40 @@
+Ctrl+K reaches the palette from inside the console already; this is the
+same chord over a web page. It has to be intercepted before the renderer
+rather than left to the unhandled-key path, because the sites the product
+exists to automate - Slack, Linear, GitHub - bind Ctrl+K themselves and
+would swallow it. That would leave the shortcut working everywhere except
+where it is wanted.
+
+The intercept only routes. Which surface the palette is, and how it opens,
+is decided in FluxSidebarView::OpenCommandPalette so that this patch stays
+a small intercept and the product decision stays in Flux's own source.
+
+This does displace Chromium's own Ctrl+K, which focuses the omnibox in
+search mode. Ctrl+E remains bound to that.
+
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -3194,6 +3194,23 @@
+     return content::KeyboardEventProcessingResult::NOT_HANDLED;
+   }
+ 
++  // Flux: Ctrl+K opens the console's command palette, and has to win over the
++  // page. Left to the unhandled-key path it would work everywhere except the
++  // sites worth automating - Slack, Linear and GitHub all bind Ctrl+K
++  // themselves - which is the wrong way round for a launcher.
++  //
++  // Compared field by field rather than against an Accelerator built here:
++  // Accelerator::operator== includes key_state_, and one built inline defaults
++  // to PRESSED, so it would match the key-down and let the key-up fall through
++  // to the page as a release for a chord it never received.
++  if (flux_sidebar_ && accelerator.key_code() == ui::VKEY_K &&
++      accelerator.modifiers() == ui::EF_PLATFORM_ACCELERATOR) {
++    if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown) {
++      flux_sidebar_->OpenCommandPalette();
++    }
++    return content::KeyboardEventProcessingResult::HANDLED;
++  }
++
+ #if BUILDFLAG(IS_CHROMEOS)
+   if (ash::AcceleratorController::Get()->IsDeprecated(accelerator)) {
+     return (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown)
