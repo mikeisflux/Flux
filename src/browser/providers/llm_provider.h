@@ -17,13 +17,13 @@ namespace flux {
 struct ToolDefinition {
   std::string name;
   std::string description;
-  base::Value::Dict input_schema;  // JSON Schema
+  base::DictValue input_schema;  // JSON Schema
 };
 
 struct ToolCall {
   std::string id;
   std::string name;
-  base::Value::Dict input;
+  base::DictValue input;
 };
 
 struct ToolResult {

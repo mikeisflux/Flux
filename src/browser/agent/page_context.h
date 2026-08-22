@@ -82,7 +82,7 @@ class PageContext {
   // Renders only the fields named in `request`, as JSON rows. Used by the
   // extract tool so tabular pages don't cost a full-page snapshot.
   static std::string FormatForExtraction(const Snapshot& snapshot,
-                                         const base::Value::Dict& request);
+                                         const base::DictValue& request);
 
   using ActionCallback = base::OnceCallback<void(bool success)>;
 

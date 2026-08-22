@@ -1,25 +1,28 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-#include "chrome/browser/flux/agent/page_context.h"
-
-#include <utility>
-
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/values.h"
+#include "chrome/browser/flux/agent/page_context.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "components/input/native_web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace flux {
 namespace {
@@ -159,13 +162,14 @@ void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
   }
   snapshot.is_stable = true;
 
-  ui::AXTree tree;
-  if (!tree.Unserialize(update)) {
+  // Unserialize into the member rather than building a local and assigning:
+  // AXTree deletes both copy and move assignment, and Unserialize already
+  // replaces the tree's contents in place.
+  if (!tree_.Unserialize(update)) {
     snapshot.content = "(could not read the page structure)";
     std::move(callback).Run(std::move(snapshot));
     return;
   }
-  tree_ = std::move(tree);
 
   std::string content;
   std::vector<const ui::AXNode*> stack{tree_.root()};
@@ -245,11 +249,11 @@ std::string PageContext::Format(const Snapshot& snapshot) {
 // static
 std::string PageContext::FormatForExtraction(
     const Snapshot& snapshot,
-    const base::Value::Dict& request) {
-  base::Value::Dict root;
+    const base::DictValue& request) {
+  base::DictValue root;
   root.Set("url", snapshot.url);
   root.Set("title", snapshot.title);
-  if (const base::Value::List* fields = request.FindList("fields"))
+  if (const base::ListValue* fields = request.FindList("fields"))
     root.Set("requested_fields", fields->Clone());
   // Extraction runs against the accessibility snapshot rather than the DOM, so
   // it survives markup changes that break selector-based scrapers.

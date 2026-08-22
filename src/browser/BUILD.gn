@@ -65,6 +65,8 @@ source_set("flux") {
     "//services/network/public/mojom",
     "//third_party/blink/public/common",
     "//ui/accessibility",
+    "//ui/base",
+    "//ui/events:events_base",
     "//ui/gfx/geometry",
     "//ui/webui",
     "//url",

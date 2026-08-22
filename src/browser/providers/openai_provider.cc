@@ -1,13 +1,11 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-#include "chrome/browser/flux/providers/openai_provider.h"
-
-#include <utility>
-
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
+#include "base/values.h"
+#include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/net_errors.h"
@@ -41,7 +39,9 @@ double LookupPrice(const std::string& model, bool output) {
 }
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("flux_openai_completion", R"(
+        // Custom delimiter: the annotation body contains `)"` inside
+    // destination_other, which ends a plain R"( ... )" literal early.
+    net::DefineNetworkTrafficAnnotation("flux_openai_completion", R"FLUX(
       semantics {
         sender: "Flux Agent"
         description:
@@ -63,7 +63,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         setting:
           "Disabled unless the user configures an OpenAI API key and starts an "
           "agent task."
-      })");
+      })FLUX");
 
 }  // namespace
 
@@ -84,14 +84,14 @@ double OpenAIProvider::OutputCostPerMillion(const std::string& m) const {
 
 std::string OpenAIProvider::BuildRequestBody(
     const CompletionRequest& request) const {
-  base::Value::Dict root;
+  base::DictValue root;
   root.Set("model", request.model);
   root.Set("max_completion_tokens",
            static_cast<int>(request.max_output_tokens));
 
-  base::Value::List messages;
+  base::ListValue messages;
   if (!request.system_prompt.empty()) {
-    base::Value::Dict sys;
+    base::DictValue sys;
     sys.Set("role", "system");
     sys.Set("content", request.system_prompt);
     messages.Append(std::move(sys));
@@ -101,7 +101,7 @@ std::string OpenAIProvider::BuildRequestBody(
     // Tool results are separate top-level messages here, and each must
     // reference the call it answers.
     for (const ToolResult& tr : m.tool_results) {
-      base::Value::Dict msg;
+      base::DictValue msg;
       msg.Set("role", "tool");
       msg.Set("tool_call_id", tr.tool_call_id);
       msg.Set("content", tr.content);
@@ -111,18 +111,18 @@ std::string OpenAIProvider::BuildRequestBody(
     if (m.text.empty() && m.tool_calls.empty())
       continue;
 
-    base::Value::Dict msg;
+    base::DictValue msg;
     msg.Set("role",
             m.role == Message::Role::kAssistant ? "assistant" : "user");
     msg.Set("content", m.text);
 
     if (!m.tool_calls.empty()) {
-      base::Value::List calls;
+      base::ListValue calls;
       for (const ToolCall& tc : m.tool_calls) {
-        base::Value::Dict call;
+        base::DictValue call;
         call.Set("id", tc.id);
         call.Set("type", "function");
-        base::Value::Dict fn;
+        base::DictValue fn;
         fn.Set("name", tc.name);
         // Arguments go over the wire as a JSON string, not an object.
         std::string args;
@@ -138,11 +138,11 @@ std::string OpenAIProvider::BuildRequestBody(
   root.Set("messages", std::move(messages));
 
   if (!request.tools.empty()) {
-    base::Value::List tools;
+    base::ListValue tools;
     for (const ToolDefinition& t : request.tools) {
-      base::Value::Dict tool;
+      base::DictValue tool;
       tool.Set("type", "function");
-      base::Value::Dict fn;
+      base::DictValue fn;
       fn.Set("name", t.name);
       fn.Set("description", t.description);
       fn.Set("parameters", t.input_schema.Clone());
@@ -223,9 +223,9 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
     std::move(callback).Run(std::move(result));
     return;
   }
-  const base::Value::Dict& root = parsed->GetDict();
+  const base::DictValue& root = parsed->GetDict();
 
-  if (const base::Value::Dict* error = root.FindDict("error")) {
+  if (const base::DictValue* error = root.FindDict("error")) {
     const std::string* message = error->FindString("message");
     result.error = message ? *message : "Unknown OpenAI error.";
     result.retryable = false;
@@ -233,12 +233,12 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
     return;
   }
 
-  if (const base::Value::Dict* usage = root.FindDict("usage")) {
+  if (const base::DictValue* usage = root.FindDict("usage")) {
     result.input_tokens = usage->FindInt("prompt_tokens").value_or(0);
     result.output_tokens = usage->FindInt("completion_tokens").value_or(0);
   }
 
-  const base::Value::List* choices = root.FindList("choices");
+  const base::ListValue* choices = root.FindList("choices");
   if (!choices || choices->empty()) {
     result.error = "OpenAI returned no choices.";
     result.retryable = true;
@@ -246,8 +246,8 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
     return;
   }
 
-  const base::Value::Dict* choice = choices->front().GetIfDict();
-  const base::Value::Dict* message =
+  const base::DictValue* choice = choices->front().GetIfDict();
+  const base::DictValue* message =
       choice ? choice->FindDict("message") : nullptr;
   if (!message) {
     result.error = "OpenAI response missing message.";
@@ -259,12 +259,12 @@ void OpenAIProvider::OnResponse(CompletionCallback callback,
   if (const std::string* content = message->FindString("content"))
     result.text = *content;
 
-  if (const base::Value::List* calls = message->FindList("tool_calls")) {
+  if (const base::ListValue* calls = message->FindList("tool_calls")) {
     for (const base::Value& call_value : *calls) {
-      const base::Value::Dict* call = call_value.GetIfDict();
+      const base::DictValue* call = call_value.GetIfDict();
       if (!call)
         continue;
-      const base::Value::Dict* fn = call->FindDict("function");
+      const base::DictValue* fn = call->FindDict("function");
       if (!fn)
         continue;
 

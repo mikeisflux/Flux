@@ -1,13 +1,11 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-#include "chrome/browser/flux/providers/anthropic_provider.h"
-
-#include <utility>
-
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
+#include "base/values.h"
+#include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/load_flags.h"
@@ -44,7 +42,9 @@ double LookupPrice(const std::string& model, bool output) {
 }
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("flux_anthropic_completion", R"(
+        // Custom delimiter: the annotation body contains `)"` inside
+    // destination_other, which ends a plain R"( ... )" literal early.
+    net::DefineNetworkTrafficAnnotation("flux_anthropic_completion", R"FLUX(
       semantics {
         sender: "Flux Agent"
         description:
@@ -65,7 +65,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         setting:
           "Disabled unless the user configures an Anthropic API key and starts "
           "an agent task."
-      })");
+      })FLUX");
 
 }  // namespace
 
@@ -86,21 +86,21 @@ double AnthropicProvider::OutputCostPerMillion(const std::string& m) const {
 
 std::string AnthropicProvider::BuildRequestBody(
     const CompletionRequest& request) const {
-  base::Value::Dict root;
+  base::DictValue root;
   root.Set("model", request.model);
   root.Set("max_tokens", static_cast<int>(request.max_output_tokens));
   if (!request.system_prompt.empty())
     root.Set("system", request.system_prompt);
 
-  base::Value::List messages;
+  base::ListValue messages;
   for (const Message& m : request.messages) {
-    base::Value::Dict msg;
-    base::Value::List content;
+    base::DictValue msg;
+    base::ListValue content;
 
     // Tool results must lead the user turn. Emitting them after text is
     // accepted by the API but degrades adherence noticeably.
     for (const ToolResult& tr : m.tool_results) {
-      base::Value::Dict block;
+      base::DictValue block;
       block.Set("type", "tool_result");
       block.Set("tool_use_id", tr.tool_call_id);
       block.Set("content", tr.content);
@@ -110,14 +110,14 @@ std::string AnthropicProvider::BuildRequestBody(
     }
 
     if (!m.text.empty()) {
-      base::Value::Dict block;
+      base::DictValue block;
       block.Set("type", "text");
       block.Set("text", m.text);
       content.Append(std::move(block));
     }
 
     for (const ToolCall& tc : m.tool_calls) {
-      base::Value::Dict block;
+      base::DictValue block;
       block.Set("type", "tool_use");
       block.Set("id", tc.id);
       block.Set("name", tc.name);
@@ -135,9 +135,9 @@ std::string AnthropicProvider::BuildRequestBody(
   root.Set("messages", std::move(messages));
 
   if (!request.tools.empty()) {
-    base::Value::List tools;
+    base::ListValue tools;
     for (const ToolDefinition& t : request.tools) {
-      base::Value::Dict tool;
+      base::DictValue tool;
       tool.Set("name", t.name);
       tool.Set("description", t.description);
       tool.Set("input_schema", t.input_schema.Clone());
@@ -221,9 +221,9 @@ void AnthropicProvider::OnResponse(CompletionCallback callback,
     std::move(callback).Run(std::move(result));
     return;
   }
-  const base::Value::Dict& root = parsed->GetDict();
+  const base::DictValue& root = parsed->GetDict();
 
-  if (const base::Value::Dict* error = root.FindDict("error")) {
+  if (const base::DictValue* error = root.FindDict("error")) {
     const std::string* message = error->FindString("message");
     result.error = message ? *message : "Unknown Anthropic error.";
     result.retryable = false;
@@ -231,14 +231,14 @@ void AnthropicProvider::OnResponse(CompletionCallback callback,
     return;
   }
 
-  if (const base::Value::Dict* usage = root.FindDict("usage")) {
+  if (const base::DictValue* usage = root.FindDict("usage")) {
     result.input_tokens = usage->FindInt("input_tokens").value_or(0);
     result.output_tokens = usage->FindInt("output_tokens").value_or(0);
   }
 
-  if (const base::Value::List* content = root.FindList("content")) {
+  if (const base::ListValue* content = root.FindList("content")) {
     for (const base::Value& block_value : *content) {
-      const base::Value::Dict* block = block_value.GetIfDict();
+      const base::DictValue* block = block_value.GetIfDict();
       if (!block)
         continue;
       const std::string* type = block->FindString("type");
@@ -254,7 +254,7 @@ void AnthropicProvider::OnResponse(CompletionCallback callback,
           call.id = *id;
         if (const std::string* name = block->FindString("name"))
           call.name = *name;
-        if (const base::Value::Dict* input = block->FindDict("input"))
+        if (const base::DictValue* input = block->FindDict("input"))
           call.input = input->Clone();
         result.tool_calls.push_back(std::move(call));
       }

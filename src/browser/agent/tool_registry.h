@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/values.h"
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "chrome/browser/flux/providers/llm_provider.h"
 
@@ -37,7 +38,7 @@ class Tool {
 
   virtual std::string name() const = 0;
   virtual std::string description() const = 0;
-  virtual base::Value::Dict InputSchema() const = 0;
+  virtual base::DictValue InputSchema() const = 0;
 
   // The strongest effect this tool can have. The runner compares this against
   // the task's declared WriteScope and gates on approval when it exceeds it.
@@ -50,10 +51,10 @@ class Tool {
   // Plain-language description of what invoking with `input` will do, shown in
   // the approval prompt. Must be specific - "Send email to 12 recipients", not
   // "Perform an action".
-  virtual std::string DescribeEffect(const base::Value::Dict& input) const = 0;
+  virtual std::string DescribeEffect(const base::DictValue& input) const = 0;
 
   virtual void Run(const ToolContext& context,
-                   base::Value::Dict input,
+                   base::DictValue input,
                    ResultCallback callback) = 0;
 };
 

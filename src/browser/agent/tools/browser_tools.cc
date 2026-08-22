@@ -1,43 +1,42 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-#include "chrome/browser/flux/agent/tools/browser_tools.h"
-
-#include <memory>
-#include <string>
-#include <utility>
-
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/flux/agent/page_context.h"
 #include "chrome/browser/flux/agent/tool_registry.h"
+#include "chrome/browser/flux/agent/tools/browser_tools.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace flux {
 namespace {
 
-base::Value::Dict StringProp(const std::string& description) {
-  base::Value::Dict d;
+base::DictValue StringProp(const std::string& description) {
+  base::DictValue d;
   d.Set("type", "string");
   d.Set("description", description);
   return d;
 }
 
-base::Value::Dict IntProp(const std::string& description) {
-  base::Value::Dict d;
+base::DictValue IntProp(const std::string& description) {
+  base::DictValue d;
   d.Set("type", "integer");
   d.Set("description", description);
   return d;
 }
 
-base::Value::Dict ObjectSchema(base::Value::Dict properties,
+base::DictValue ObjectSchema(base::DictValue properties,
                                std::vector<std::string> required) {
-  base::Value::Dict schema;
+  base::DictValue schema;
   schema.Set("type", "object");
   schema.Set("properties", std::move(properties));
-  base::Value::List req;
+  base::ListValue req;
   for (auto& r : required)
     req.Append(std::move(r));
   schema.Set("required", std::move(req));
@@ -70,18 +69,18 @@ class NavigateTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict props;
+  base::DictValue InputSchema() const override {
+    base::DictValue props;
     props.Set("url", StringProp("Absolute URL to load."));
     return ObjectSchema(std::move(props), {"url"});
   }
-  std::string DescribeEffect(const base::Value::Dict& input) const override {
+  std::string DescribeEffect(const base::DictValue& input) const override {
     const std::string* url = input.FindString("url");
     return base::StrCat({"Open ", url ? *url : "(missing url)"});
   }
 
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     const std::string* url_str = input.FindString("url");
     if (!url_str) {
@@ -122,14 +121,14 @@ class ReadPageTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
+  base::DictValue InputSchema() const override {
     return ObjectSchema({}, {});
   }
-  std::string DescribeEffect(const base::Value::Dict&) const override {
+  std::string DescribeEffect(const base::DictValue&) const override {
     return "Read the current page";
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict,
+           base::DictValue,
            ResultCallback callback) override {
     if (!ctx.page) {
       std::move(callback).Run(Err("No page context."));
@@ -155,17 +154,17 @@ class ClickTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict props;
+  base::DictValue InputSchema() const override {
+    base::DictValue props;
     props.Set("node_id", IntProp("Node id from the page snapshot."));
     return ObjectSchema(std::move(props), {"node_id"});
   }
-  std::string DescribeEffect(const base::Value::Dict& input) const override {
+  std::string DescribeEffect(const base::DictValue& input) const override {
     std::optional<int> id = input.FindInt("node_id");
     return base::StrCat({"Click element ", base::NumberToString(id.value_or(-1))});
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     std::optional<int> node_id = input.FindInt("node_id");
     if (!node_id) {
@@ -204,18 +203,18 @@ class TypeTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict props;
+  base::DictValue InputSchema() const override {
+    base::DictValue props;
     props.Set("node_id", IntProp("Node id of the text field."));
     props.Set("text", StringProp("Text to enter."));
     return ObjectSchema(std::move(props), {"node_id", "text"});
   }
-  std::string DescribeEffect(const base::Value::Dict& input) const override {
+  std::string DescribeEffect(const base::DictValue& input) const override {
     const std::string* text = input.FindString("text");
     return base::StrCat({"Type \"", text ? *text : "", "\""});
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     std::optional<int> node_id = input.FindInt("node_id");
     const std::string* text = input.FindString("text");
@@ -243,28 +242,28 @@ class ExtractTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict fields;
+  base::DictValue InputSchema() const override {
+    base::DictValue fields;
     fields.Set("type", "array");
-    base::Value::Dict items;
+    base::DictValue items;
     items.Set("type", "string");
     fields.Set("items", std::move(items));
     fields.Set("description", "Field names to extract for each row.");
 
-    base::Value::Dict props;
+    base::DictValue props;
     props.Set("fields", std::move(fields));
     return ObjectSchema(std::move(props), {"fields"});
   }
-  std::string DescribeEffect(const base::Value::Dict&) const override {
+  std::string DescribeEffect(const base::DictValue&) const override {
     return "Extract structured data from the page";
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     // Extraction runs against the accessibility snapshot rather than the DOM,
     // so it survives markup changes that would break a selector-based scraper.
     ctx.page->CaptureWhenStable(base::BindOnce(
-        [](ResultCallback cb, base::Value::Dict in, PageContext::Snapshot s) {
+        [](ResultCallback cb, base::DictValue in, PageContext::Snapshot s) {
           std::move(cb).Run(Ok(PageContext::FormatForExtraction(s, in)));
         },
         std::move(callback), std::move(input)));
@@ -281,19 +280,19 @@ class SubmitTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kSend;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict props;
+  base::DictValue InputSchema() const override {
+    base::DictValue props;
     props.Set("node_id", IntProp("Node id of the form or submit control."));
     return ObjectSchema(std::move(props), {"node_id"});
   }
-  std::string DescribeEffect(const base::Value::Dict& input) const override {
+  std::string DescribeEffect(const base::DictValue& input) const override {
     std::optional<int> id = input.FindInt("node_id");
     return base::StrCat({"Submit the form at element ",
                          base::NumberToString(id.value_or(-1)),
                          " - this transmits data and cannot be undone"});
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     std::optional<int> node_id = input.FindInt("node_id");
     if (!node_id) {
@@ -319,18 +318,18 @@ class WaitForTool : public Tool {
   mojom::WriteScope RequiredScope() const override {
     return mojom::WriteScope::kReadOnly;
   }
-  base::Value::Dict InputSchema() const override {
-    base::Value::Dict props;
+  base::DictValue InputSchema() const override {
+    base::DictValue props;
     props.Set("text", StringProp("Text to wait for."));
     props.Set("timeout_seconds", IntProp("Max seconds to wait (default 30)."));
     return ObjectSchema(std::move(props), {"text"});
   }
-  std::string DescribeEffect(const base::Value::Dict& input) const override {
+  std::string DescribeEffect(const base::DictValue& input) const override {
     const std::string* t = input.FindString("text");
     return base::StrCat({"Wait for \"", t ? *t : "", "\" to appear"});
   }
   void Run(const ToolContext& ctx,
-           base::Value::Dict input,
+           base::DictValue input,
            ResultCallback callback) override {
     const std::string* text = input.FindString("text");
     const int timeout = input.FindInt("timeout_seconds").value_or(30);
