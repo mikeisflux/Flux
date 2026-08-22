@@ -92,5 +92,61 @@ for path in sorted(ROOT.rglob('*')):
 sys.exit(1 if bad else 0)
 PY
 
+# A source file that exists but is not in BUILD.gn compiles nowhere, so the
+# error is not a compile error at all - it is an undefined symbol at LINK, at
+# the very end of the build, after everything else has been paid for. Adding
+# oauth_redirect_watcher.cc and forgetting the build entry cost exactly that.
+#
+# check-webui.sh has had this rule for src/resources since the same thing
+# happened there; src/browser had nothing.
+python3 - <<'GNPY' || status=1
+import pathlib
+import re
+import sys
+
+build_path = pathlib.Path('src/browser/BUILD.gn')
+build = build_path.read_text(encoding='utf-8')
+
+# Every sources list in the file, unioned. There is more than one target here
+# - the mojom() one comes first - and matching only the first finds
+# "mojom/flux.mojom" and reports every real source as missing.
+#
+# Only sources lists: deps and public_deps are full of quoted strings too, and
+# a target label is not a file.
+listed = set()
+for block in re.findall(r'sources\s*=\s*\[(.*?)\]', build, re.S):
+    listed.update(re.findall(r'"([^"]+)"', block))
+
+# Some sources are compiled by Chromium's own target instead, added there by
+# the patch series - the views subclasses under ui/ are, because depending on
+# //chrome/browser/ui from the flux source_set would be circular. Those count
+# as built, so the patches are scanned too: a line the series ADDS naming
+# //chrome/browser/flux/<path>.
+for patch in sorted(pathlib.Path('patches').glob('*.patch')):
+    text = patch.read_text(encoding='utf-8')
+    for added in re.findall(r'^\+.*?"//chrome/browser/flux/([^"]+)"', text,
+                            re.M):
+        listed.add(added)
+
+root = pathlib.Path('src/browser')
+on_disk = {
+    str(p.relative_to(root)).replace('\\', '/')
+    for p in root.rglob('*')
+    if p.suffix in ('.h', '.cc')
+}
+
+bad = 0
+for name in sorted(on_disk - listed):
+    print(f'src/browser/{name}: not in src/browser/BUILD.gn - it will not be '
+          'compiled, and anything referencing it fails at LINK')
+    bad += 1
+for name in sorted(listed - on_disk):
+    if name.endswith(('.h', '.cc')):
+        print(f'src/browser/BUILD.gn lists {name}, which does not exist')
+        bad += 1
+
+sys.exit(1 if bad else 0)
+GNPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

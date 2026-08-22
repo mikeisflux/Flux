@@ -88,6 +88,10 @@ each broken a real build once, as greps over `src/browser`:
 - A reference-typed field is rejected outright by the `chromium-rawref`
   plugin. Use `raw_ref<T>`.
 - A raw pointer field is rejected by the raw-ptr plugin. Use `raw_ptr<T>`.
+- Every `.cc`/`.h` under `src/browser` must be listed in `src/browser/BUILD.gn`
+  - or added to a Chromium target by the patch series, as the views subclasses
+  under `ui/` are. A file that is in neither compiles nowhere, and the error is
+  an undefined symbol at LINK, at the very end of the build.
 
 Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already

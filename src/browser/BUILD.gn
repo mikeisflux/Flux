@@ -27,6 +27,8 @@ source_set("flux") {
     "connectors/connector_tokens.h",
     "connectors/oauth_flow.cc",
     "connectors/oauth_flow.h",
+    "connectors/oauth_redirect_watcher.cc",
+    "connectors/oauth_redirect_watcher.h",
     "flux_agent_service.cc",
     "flux_agent_service.h",
     "flux_agent_service_factory.cc",
