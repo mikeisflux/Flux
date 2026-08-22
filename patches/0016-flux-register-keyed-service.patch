@@ -1,0 +1,45 @@
+Subject: [flux] Register FluxAgentServiceFactory before profiles are built
+
+Flux opened a window for the first time and then died the moment the console
+loaded:
+
+  FATAL:components/keyed_service/core/dependency_manager.cc:76] DCHECK failed:
+  Trying to register KeyedService Factory: `FluxAgentService` after the call to
+  the main registration function
+  ChromeBrowserMainExtraPartsProfiles::EnsureBrowserContextKeyedServiceFactoriesBuilt()
+
+  flux::FluxAgentServiceFactory::GetForProfile
+  flux::FluxPageHandler::FluxPageHandler
+  flux::FluxUI::CreatePageHandler
+
+Every BrowserContextKeyedServiceFactory has to exist before any profile does,
+so that the dependency graph is complete when one is created. The factory is a
+base::NoDestructor singleton constructed on first use, and its first use was
+the console asking for the agent service - long after profiles were built.
+
+Nothing about the fork made this happen; it is the ordinary registration step
+every keyed service in Chromium performs, and the fork simply never did it. It
+could not surface until the browser got far enough to open chrome://flux,
+which is why it waited behind the syncable-prefs crash.
+
+Registered in the common alphabetical block, between FirstRunServiceFactory
+and FontPrefChangeNotifierFactory.
+
+--- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
++++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+@@ -101,6 +101,7 @@
+ #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
+ #include "chrome/browser/finds/finds_service_factory.h"
+ #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
++#include "chrome/browser/flux/flux_agent_service_factory.h"
+ #include "chrome/browser/font_pref_change_notifier_factory.h"
+ #include "chrome/browser/glic/public/glic_enabling.h"
+ #include "chrome/browser/glic/public/glic_keyed_service_factory.h"
+@@ -1086,6 +1087,7 @@
+     ash::floating_sso::FloatingSsoServiceFactory::GetInstance();
+   }
+ #endif
++  flux::FluxAgentServiceFactory::GetInstance();
+   FontPrefChangeNotifierFactory::GetInstance();
+   FromGWSNavigationAndKeepAliveRequestTrackerFactory::GetInstance();
+ #if !BUILDFLAG(IS_CHROMEOS)

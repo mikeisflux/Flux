@@ -88,6 +88,11 @@ each broken a real build once, as greps over `src/browser`:
 - A reference-typed field is rejected outright by the `chromium-rawref`
   plugin. Use `raw_ref<T>`.
 - A raw pointer field is rejected by the raw-ptr plugin. Use `raw_ptr<T>`.
+- A KeyedService factory must be registered in
+  `EnsureBrowserContextKeyedServiceFactoriesBuilt()` before any profile
+  exists. A `NoDestructor` factory constructed lazily on first use is fatal:
+  the console asking for `FluxAgentService` was the first use, and it happened
+  long after profiles were built (`0016`).
 - A pref registered `SYNCABLE_PREF` must also be in Chromium's central
   `SyncablePrefsDatabase`. It is a DCHECK, `dcheck_always_on` is on in
   `dev.gn`, and it is fatal at profile creation - the browser dies before
@@ -116,6 +121,15 @@ on the same hook as the other checks.
 
 If the fetch fails the check exits 0 and says so, which means the series is
 **unverified** - say that rather than claiming it applies.
+
+### Reading the log: filter the noise OUT, not the signal IN
+
+`chrome_debug.log` is ten thousand lines of `VERBOSE1` field-trial output with
+the real content scattered through it. Filtering *in* on keywords
+(`ERROR|FATAL|flux`) is how a crash gets found and everything around it gets
+missed. Filter the verbose lines out instead and read what is left:
+
+    Get-Content 'C:\flux-build\flux-test\chrome_debug.log' | Where-Object { $_ -notmatch ':VERBOSE\d:' } | Select-Object -Last 200
 
 ### Running it, when it will not run
 
