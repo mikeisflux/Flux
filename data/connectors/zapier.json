@@ -53,8 +53,12 @@
         "permission_denied": "403 - the token lacks the scope, not that the object is missing.",
         "too_many_requests": "429.",
         "external_service_error": "500 - the failure is in the connected app, not in Zapier. Retrying the same call unchanged will usually fail the same way.",
-        "service_unavaiable": "503. Spelled that way in Zapier's own spec; match their spelling if matching on the string at all, and prefer matching on status."
-      }
+        "service_unavaiable": "503. Spelled that way in Zapier's own spec; match their spelling if matching on the string at all, and prefer matching on status.",
+        "payment_required": "402 - the run was billable and the account has no tasks left.",
+        "partner_api_unhealthy": "424 - the connected app's own API is temporarily down. Retryable, unlike the 500.",
+        "not_found": "404."
+      },
+      "run_status_vs_http": "Three independent layers: the HTTP status of the call, the run's `status` field, and the per-error `code` in the errors array. Checking only the first is the most likely way to report a failed action as done."
     }
   },
   "operations": {
@@ -75,10 +79,17 @@
     "run_stored_action": {
       "method": "POST",
       "path": "/actions/v1/stored-actions/{stored_action_id}/run",
+      "body": {
+        "data": {
+          "inputs": "object",
+          "page": "string? - bulk-read paging state",
+          "callback_url": "uri?, max 2048",
+          "idempotency_id": "uuid?"
+        }
+      },
       "scope": "external",
       "write_scope": "send",
-      "notes": "The endpoint that actually does something in a connected app. Treat every run as a write even when the stored action's action_type is `read`: Flux cannot tell from the outside what the target app does with it.",
-      "path_caveat": "The spec names this endpoint only in prose, as `POST /stored-actions/{stored_action_id}/run`, without a prefix. The /actions/v1 prefix here is taken from its sibling list path in the same spec. Confirm against the actions.yaml paths block before the first live call rather than trusting this line."
+      "notes": "Returns 202 with a run id; it does NOT return results. Poll get_stored_action_run. Always send an idempotency_id - see gotchas. callback_url gets the same body the run-poll endpoint returns."
     },
     "list_inboxes": {
       "method": "GET",
@@ -135,6 +146,81 @@
       "scope": "connection:read",
       "write_scope": "readonly",
       "notes": "Partner API. The user's own connections to an app. Returns only authentications the user OWNS, never ones shared with them, because a Zap cannot be built on a borrowed connection. is_expired true means the user has to reconnect - check it before offering an action rather than letting the run fail."
+    },
+    "get_stored_action_run": {
+      "method": "GET",
+      "path": "/actions/v1/stored-actions/{stored_action_id}/runs/{run_id}",
+      "scope": "external",
+      "write_scope": "readonly",
+      "notes": "200 carries results; 202 means still processing - poll again. Rate limited far more generously than the rest of the Actions API (600 per 5 minutes, override to 3000), which is what makes polling viable. Results are kept seven days.",
+      "response": {
+        "type": "run",
+        "status": "error | success | waiting",
+        "results": "array - can be empty even on success",
+        "next_page": "bulk-read paging state; pass back as `page` on the next run",
+        "errors": "array of partner errors"
+      }
+    },
+    "get_stored_action": {
+      "method": "GET",
+      "path": "/actions/v1/stored-actions/{stored_action_id}",
+      "scope": "external",
+      "write_scope": "readonly"
+    },
+    "create_stored_action": {
+      "method": "POST",
+      "path": "/actions/v1/stored-actions",
+      "body": {
+        "data": {
+          "selected_api": "required",
+          "action_type": "required",
+          "action_key": "required",
+          "connection_id": "uuid?",
+          "inputs": "object"
+        }
+      },
+      "scope": "external",
+      "write_scope": "draft",
+      "notes": "Saves a runnable configuration; it does NOT execute anything, which is why this is `draft` and not `send`. Returns 200 (not 201) with just the id. Only core actions - external and App Extension actions cannot be stored. The triple selected_api + action_type + action_key is mandatory; action_id is deliberately not accepted."
+    },
+    "get_action_input_fields": {
+      "method": "POST",
+      "path": "/v2/actions/{action_id}/inputs",
+      "body": {
+        "data": {
+          "authentication": "required, may be null",
+          "inputs": "required - current field values",
+          "selected_api": "optional version pin"
+        }
+      },
+      "scope": "zap:write",
+      "write_scope": "readonly",
+      "notes": "Partner API. A POST that reads - the current inputs are sent because later fields depend on earlier ones. Fields resolve against the app's CURRENT version unless selected_api pins one; pin it when editing an action built against an older version. Returns input_field, info_field or fieldset entries; invalidates_input_fields true means changing this field forces a refetch."
+    },
+    "get_action_input_choices": {
+      "method": "POST",
+      "path": "/v2/actions/{action_id}/inputs/{input_id}/choices",
+      "params": {
+        "page": "string, default '1'"
+      },
+      "scope": "zap",
+      "write_scope": "readonly",
+      "notes": "Partner API. The values behind a SELECT field."
+    },
+    "get_action_output_fields": {
+      "method": "POST",
+      "path": "/v2/actions/{action_id}/outputs",
+      "body": {
+        "data": {
+          "authentication": "required",
+          "inputs": "required",
+          "fetch_live_samples": "boolean, default false",
+          "selected_api": "optional version pin"
+        }
+      },
+      "scope": "zap:write",
+      "write_scope": "readonly",
+      "notes": "Partner API. What an action returns. fetch_live_samples calls the third-party service for real samples - slower, and not supported for WRITE actions."
     }
   },
   "action_types": {
@@ -166,14 +252,24 @@
     "Releasing a leased trigger message does not refund the lease attempt against the per-message limit.",
     "A workflow's trigger_url embeds a trigger token in the path. Zapier flags it as sensitive - it is a credential in a URL, and it will end up in logs if handled carelessly.",
     "Zapier Forms default to consumerAuth `none`: the published hosted_url is answerable by anyone who has it.",
-    "Unversioned app identifiers resolve at DIFFERENT times depending on the object. A trigger inbox resolves at creation and stores the fully versioned form forever, so it never follows the app forward. A stored action's selected_api, per its own schema, is resolved when the action runs - 'if no version is provided we attempt to use the latest version'. Same-looking field, opposite behaviour: pin the version explicitly if a run has to stay reproducible."
+    "Unversioned app identifiers resolve at DIFFERENT times depending on the object. A trigger inbox resolves at creation and stores the fully versioned form forever, so it never follows the app forward. A stored action's selected_api, per its own schema, is resolved when the action runs - 'if no version is provided we attempt to use the latest version'. Same-looking field, opposite behaviour: pin the version explicitly if a run has to stay reproducible.",
+    "idempotency_id on a run is the answer to the `unknown` status problem. It is a client-supplied UUID, and a repeat within 72 hours is ignored and returns the original response. Send one on EVERY run: it is the only thing that makes retrying an inconclusive run safe.",
+    "connection_id here is the same UUID other Zapier APIs call authentication_id - the Partner API's /v2/actions uses that name. Zapier says so in their own note. Same value, two field names, two APIs.",
+    "PATCH on a stored action cannot change connection_id or selected_api. Zapier's guidance is to delete and recreate. An update that appears to succeed will not have moved the action to a different connection.",
+    "424 partner_api_unhealthy is the connected app being down, and is explicitly retryable later. It is distinct from 500 external_service_error, which is the app returning a failure - retrying that unchanged will fail the same way.",
+    "The run path is singular (.../run) but the result path is plural (.../runs/{run_id}). Easy to get backwards.",
+    "A stored-action run has TWO levels of success and they disagree routinely. Zapier's own words: the HTTP status of the run-results call reports Zapier's processing, not what happened in the external system, and 'you could have a success=True (Zapier succeeded) and status=error (the partner raised an error)'. Always read the body's `status` field and the `errors` array; a 200 means only that Zapier managed to run the thing.",
+    "Partner errors carry their own code vocabulary, separate from the HTTP error codes: user, authentication, partner, system, throttled, system_throttled, hydration, authentication_access. When code is throttled the error object carries `delay` - the seconds to wait - which is the retry signal, not Retry-After.",
+    "Polling is budgeted differently from acting. The run-results endpoint allows 600 requests per 5 minutes (override to 3000) while the rest of the Actions API allows 200 (override to 1000). Poll freely; run sparingly.",
+    "POST /v2/actions/{id}/test executes the step against the third-party API for real - Zapier's own description says 'tests the action (step) in the third party api'. It is not a dry run and must never be used to preview a WRITE.",
+    "Getting an action's INPUT fields needs zap:write, while getting a SELECT field's CHOICES needs only zap. Two reads, two different scopes, the stricter one on the less dangerous call. Request per endpoint rather than assuming."
   ],
   "rate_limits": {
     "actions_api": {
       "window_seconds": 300,
       "default": 200,
       "maximum": 1000,
-      "note": "200 requests per rolling 300-second window by default, raisable to 1000 via limit_override. The only numeric figure Zapier publishes in these specs."
+      "note": "200 requests per 5 minutes by default, and the ceiling is set on the JWT rather than per request: rate_limit.limit_override takes 1-1000, and rate_limit.exempt true skips limiting entirely. Zapier also gates the whole mechanism behind an internal feature flag, so the absence of throttling today is not a guarantee - read X-RateLimit-Remaining rather than assuming."
     },
     "partner_api": "Stated only as a per-hour cap in the header descriptions, with no number given.",
     "on_exceed": "HTTP 429 with code too_many_requests and a required Retry-After in seconds.",
@@ -195,11 +291,11 @@
     "mcp": "Zapier serves a docs MCP server at docs.zapier.com/mcp. That is documentation search, not action invocation - do not confuse the two."
   },
   "pending_operations": {
-    "note": "The SDK settles most of the semantics. What is still missing is REST paths, which is what Flux actually needs, since it cannot run the Node SDK.",
+    "note": "The Actions API is now complete. What remains is the trigger-inbox REST paths and the surfaces that may only exist through the SDK.",
     "wanted": [
-      "actions.yaml in full - the paths block. Still the one place the run endpoint's real path is written down; the prefix on run_stored_action remains inferred.",
-      "The REST paths behind the trigger-inbox lease / ack / release and create / pause / resume / delete methods.",
-      "Whether Tables, Code Workflows and Forms have public REST specs at all, or exist only through the SDK."
+      "The REST paths behind the trigger-inbox lease / ack / release and create / pause / resume / delete methods - known by semantics from the SDK, not by path.",
+      "Whether Tables, Code Workflows and Forms have public REST specs at all, or exist only through the SDK.",
+      "How the JWT used as the bearer token is obtained and what else it accepts as claims - the billing and rate_limit claims imply more."
     ]
   },
   "source": {
@@ -219,7 +315,8 @@
       "Every host, path, scope, pagination scheme, error code and rate-limit figure above is taken verbatim from the OpenAPI 3.1 specs embedded in Zapier's own reference pages.",
       "The one exception is the run_stored_action path prefix, which the spec gives only in prose. It is flagged in place rather than presented as verified.",
       "docs.zapier.com and api.zapier.com are not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining specs need supplying the same way.",
-      "The SDK reference supplied by the user is the source for the sdk block, the run-status vocabulary, the callback delivery guarantee and the trigger-inbox lifecycle. Those are SDK method names, not REST paths, and the file says so rather than presenting them as endpoints."
+      "The SDK reference supplied by the user is the source for the sdk block, the run-status vocabulary, the callback delivery guarantee and the trigger-inbox lifecycle. Those are SDK method names, not REST paths, and the file says so rather than presenting them as endpoints.",
+      "The run endpoint's path is now CONFIRMED from actions.yaml's own paths block: POST /actions/v1/stored-actions/{stored_action_id}/run. An earlier revision inferred that prefix from a sibling path and said so; the inference was right, and the caveat is removed."
     ]
   },
   "sdk": {
@@ -266,6 +363,16 @@
     "createConnection, getConnectionStartUrl and waitForNewConnection - these mint a signed, single-use, time-limited URL bound to the current session that completes an OAuth grant. Connecting an account belongs in the console's own setup flow in front of the user, not in a tool call. The same rule already applies to Superhuman Mail's add_account, and for the same reason.",
     "createClientCredentials and deleteClientCredentials - minting or revoking API credentials.",
     "deleteTable, deleteTableFields, deleteTableRecords, discardWorkflowDraft - destructive, and Tables holds real user data.",
-    "createForm - it publishes by default to a public URL."
-  ]
+    "createForm - it publishes by default to a public URL.",
+    "PATCH and DELETE on a stored action - they edit or destroy the user's saved automation configurations, and PATCH cannot do the one change someone would most want (moving it to another connection), so a task attempting a fix would silently not make it.",
+    "Anything that sets the JWT's billing claim. See the billing block: is_billable true spends the user's task quota.",
+    "POST /v2/actions/{action_id}/test - despite the name it runs the step against the live third-party API. Safe-sounding and not safe; a WRITE action tested this way really writes."
+  ],
+  "billing": {
+    "note": "Running a stored action can be BILLED to the user, and the switch is in the auth token rather than the request. This is the most surprising thing in the API and belongs in front of anyone wiring it up.",
+    "mechanism": "The bearer token is a JWT. A `billing` claim on it - a JSON string - overrides the defaults, and setting is_billable true charges the user one task per successful run.",
+    "default": "is_billable is false by default, so runs are not billed unless something opts in.",
+    "on_insufficient": "HTTP 402 payment_required, 'Insufficient tasks on account'.",
+    "flux_position": "Flux must never set is_billable. Spending the user's Zapier task quota is a purchase, and nothing in the console asks for that."
+  }
 }
