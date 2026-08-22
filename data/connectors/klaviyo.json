@@ -1,0 +1,73 @@
+{
+  "id": "klaviyo",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://www.klaviyo.com/oauth/authorize",
+    "token_url": "https://a.klaviyo.com/oauth/token",
+    "client_auth": "basic",
+    "pkce": true,
+    "scopes": [
+      "lists:read",
+      "segments:read",
+      "campaigns:read",
+      "metrics:read",
+      "profiles:read"
+    ],
+    "notes": [
+      "Read scopes only. Klaviyo sends marketing email; a token that can write campaigns is a token that can email a customer list by mistake, which is the least recoverable action in this whole catalogue.",
+      "The authorize host and the token host differ - www.klaviyo.com to authorise, a.klaviyo.com to exchange. Using one for both fails.",
+      "Every request needs the revision header; Klaviyo versions by date and omitting it pins you to an old shape."
+    ],
+    "personal_token": {
+      "label": "Private API key",
+      "where": "klaviyo.com > Settings > API keys > Create Private API Key, with read-only scopes selected.",
+      "prefix": "pk_",
+      "notes": [
+        "Klaviyo private keys support per-scope restriction, so a read-only key is genuinely read-only."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://a.klaviyo.com/api",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "revision": "2024-10-15",
+      "accept": "application/vnd.api+json"
+    }
+  },
+  "operations": {
+    "list_segments": {
+      "method": "GET",
+      "path": "/segments",
+      "write_scope": "readonly"
+    },
+    "list_lists": {
+      "method": "GET",
+      "path": "/lists",
+      "write_scope": "readonly"
+    },
+    "list_campaigns": {
+      "method": "GET",
+      "path": "/campaigns",
+      "write_scope": "readonly"
+    },
+    "query_metric_aggregates": {
+      "method": "POST",
+      "path": "/metric-aggregates",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Per endpoint, as a burst and a steady rate. Returns 429 with Retry-After."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.klaviyo.com/en/docs/set_up_oauth",
+      "https://developers.klaviyo.com/en/docs/authenticate_",
+      "https://developers.klaviyo.com/en/reference/api_overview"
+    ]
+  }
+}

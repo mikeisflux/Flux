@@ -28,7 +28,7 @@
     "base_url": "https://api.stripe.com/v1",
     "headers": {
       "Authorization": "Bearer {access_token}",
-      "Stripe-Version": "2024-06-20"
+      "Stripe-Version": "2026-07-29.dahlia"
     }
   },
   "operations": {
@@ -67,10 +67,12 @@
     "refs": [
       "https://docs.stripe.com/connect/oauth-standard-accounts",
       "https://stripe.com/docs/connect/reference",
-      "https://logto.io/oauth-providers-explorer/stripe"
+      "https://logto.io/oauth-providers-explorer/stripe",
+      "https://raw.githubusercontent.com/stripe/stripe-python/master/stripe/_api_version.py"
     ],
     "notes": [
-      "The search corrected an assumption: the token endpoint is connect.stripe.com/oauth/token, not api.stripe.com/v1/oauth/token."
+      "The search corrected an assumption: the token endpoint is connect.stripe.com/oauth/token, not api.stripe.com/v1/oauth/token.",
+      "API version read out of stripe-python's _api_version.py, which is generated from Stripe's OpenAPI spec. The 2024-06-20 I first wrote was two years stale."
     ]
   }
 }

@@ -81,10 +81,12 @@
     "refs": [
       "https://api.slack.com/authentication/oauth-v2",
       "https://api.slack.com/methods/oauth.v2.access",
-      "https://docs.slack.dev/reference/methods/oauth.v2.user.access/"
+      "https://docs.slack.dev/reference/methods/oauth.v2.user.access/",
+      "https://raw.githubusercontent.com/slackapi/node-slack-sdk/main/packages/oauth/src/install-provider.ts",
+      "https://raw.githubusercontent.com/slackapi/python-slack-sdk/main/slack_sdk/web/base_client.py"
     ],
     "notes": [
-      "Corroborated across Slack's OAuth guide and the oauth.v2.access method reference. Not fetched from Slack directly - this container cannot reach api.slack.com."
+      "The authorize URL and the API base are read out of Slack's own SDKs - install-provider.ts hard-codes https://slack.com/oauth/v2/authorize and base_client.py hard-codes https://slack.com/api/ - rather than from documentation about them."
     ]
   }
 }

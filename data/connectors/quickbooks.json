@@ -1,0 +1,68 @@
+{
+  "id": "quickbooks",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://appcenter.intuit.com/connect/oauth2",
+    "token_url": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+    "revoke_url": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke",
+    "client_auth": "basic",
+    "scopes": [
+      "com.intuit.quickbooks.accounting"
+    ],
+    "notes": [
+      "The payments scope (com.intuit.quickbooks.payment) is deliberately not requested. It would let a task move money.",
+      "realmId comes back on the OAuth callback and is required in every API URL afterwards. It must be stored at grant time - there is no way to recover it from the token later.",
+      "Access tokens last an hour; refresh tokens last 100 days and are rotated on every use. Persisting the new refresh token on each exchange is not optional - miss one and the connection is dead.",
+      "Sandbox uses https://sandbox-quickbooks.api.intuit.com as the API host."
+    ]
+  },
+  "api": {
+    "base_url": "https://quickbooks.api.intuit.com/v3/company/{realmId}",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Accept": "application/json"
+    }
+  },
+  "operations": {
+    "query": {
+      "method": "GET",
+      "path": "/query",
+      "write_scope": "readonly",
+      "notes": "The general read path, taking a SQL-like query string."
+    },
+    "get_invoice": {
+      "method": "GET",
+      "path": "/invoice/{invoiceId}",
+      "write_scope": "readonly"
+    },
+    "get_bill": {
+      "method": "GET",
+      "path": "/bill/{billId}",
+      "write_scope": "readonly"
+    },
+    "reports_profit_and_loss": {
+      "method": "GET",
+      "path": "/reports/ProfitAndLoss",
+      "write_scope": "readonly"
+    },
+    "reports_aged_receivables": {
+      "method": "GET",
+      "path": "/reports/AgedReceivables",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests_per_minute": 500,
+    "note": "Per realm, plus a concurrency cap of around 10. Reports are expensive; cache rather than re-running per row."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developer.intuit.com/app/developer/qbo/docs/develop/troubleshooting/oauth-errors",
+      "https://github.com/intuit/oauth-rubyclient",
+      "https://help.developer.intuit.com/s/article/Configuring-the-Oauth-2-0-Playground-for-QuickBooks-Online"
+    ]
+  }
+}

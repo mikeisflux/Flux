@@ -1,0 +1,69 @@
+{
+  "id": "atlassian",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://auth.atlassian.com/authorize",
+    "token_url": "https://auth.atlassian.com/oauth/token",
+    "client_auth": "post",
+    "scopes": [
+      "read:jira-work",
+      "read:jira-user",
+      "read:confluence-content.all",
+      "read:confluence-space.summary",
+      "offline_access"
+    ],
+    "extra_authorize_params": {
+      "audience": "api.atlassian.com",
+      "prompt": "consent"
+    },
+    "notes": [
+      "audience=api.atlassian.com is required on the authorize URL. Without it the token comes back scoped to nothing useful.",
+      "offline_access is what produces a refresh token.",
+      "Read-only scopes only. Nothing in the catalogue writes to Jira or Confluence, and write scopes on a ticketing system are the kind an agent should not hold by default.",
+      "Every API call needs the cloudid, fetched once from https://api.atlassian.com/oauth/token/accessible-resources - the site URL is not usable as an API host."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.atlassian.com/ex/jira/{cloudid}",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Accept": "application/json"
+    }
+  },
+  "operations": {
+    "accessible_resources": {
+      "method": "GET",
+      "path": "https://api.atlassian.com/oauth/token/accessible-resources",
+      "write_scope": "readonly",
+      "notes": "Call this first; it returns the cloudid every other call needs."
+    },
+    "search_issues": {
+      "method": "GET",
+      "path": "/rest/api/3/search",
+      "write_scope": "readonly"
+    },
+    "get_issue": {
+      "method": "GET",
+      "path": "/rest/api/3/issue/{issueIdOrKey}",
+      "write_scope": "readonly"
+    },
+    "search_confluence": {
+      "method": "GET",
+      "path": "https://api.atlassian.com/ex/confluence/{cloudid}/wiki/rest/api/search",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Cost-based per app per tenant, returned as 429 with Retry-After. Jira search with many fields is expensive; request only the fields needed."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developer.atlassian.com/cloud/oauth/getting-started/implementing-oauth-3lo/",
+      "https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/",
+      "https://developer.atlassian.com/cloud/confluence/scopes-for-oauth-2-3LO-and-forge-apps/"
+    ]
+  }
+}

@@ -56,7 +56,7 @@
       "description": "Query accounting data, run reports, and manage bills, invoices, and payments",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "notion",
@@ -96,7 +96,7 @@
       "description": "Search Jira issues and Confluence pages",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "asana",
@@ -104,7 +104,7 @@
       "description": "Coordinate tasks, projects, and team goals",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "superhuman_mail",
@@ -120,7 +120,7 @@
       "description": "Debug errors, events, and performance traces",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "cloudflare",
@@ -128,7 +128,7 @@
       "description": "Debug Workers, check Cloudflare edge traffic via Radar, and search docs",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "zapier",
@@ -144,7 +144,7 @@
       "description": "Manage sites, pages, and CMS collections",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "github",
@@ -160,7 +160,7 @@
       "description": "Chat with your CRM to surface deal insights",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "monday",
@@ -168,7 +168,7 @@
       "description": "Manage boards, items, and team workflows",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "calendly",
@@ -176,7 +176,7 @@
       "description": "Manage event types, availability, and scheduling links",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "airtable",
@@ -184,7 +184,7 @@
       "description": "Query and update tables and records",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "grain",
@@ -200,7 +200,7 @@
       "description": "Search and update accounts, contacts, leads, opportunities, tasks, reports, and campaigns",
       "transport": "api",
       "badge": "API-enabled Salesforce orgs",
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "brex",
@@ -240,7 +240,7 @@
       "description": "Build segments, send campaigns, and review email metrics",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "coda",
@@ -248,7 +248,7 @@
       "description": "Search docs, read tables, and create rows",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "posthog",
@@ -256,7 +256,7 @@
       "description": "Analyze product usage and manage experiments & feature flags",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "pylon",

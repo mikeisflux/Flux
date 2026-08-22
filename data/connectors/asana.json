@@ -1,0 +1,72 @@
+{
+  "id": "asana",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://app.asana.com/-/oauth_authorize",
+    "token_url": "https://app.asana.com/-/oauth_token",
+    "client_auth": "post",
+    "scopes": [
+      "openid",
+      "email",
+      "tasks:read",
+      "projects:read",
+      "workspaces:read"
+    ],
+    "notes": [
+      "Asana scopes are <resource>:<action>. Requesting the \"default\" scope instead grants everything the user can do, which is far more than any task here needs.",
+      "Asana has publicly acknowledged that granular read-only coverage is incomplete; where a needed scope does not exist, prefer a personal access token restricted by the user rather than widening to default."
+    ],
+    "personal_token": {
+      "label": "Personal access token",
+      "where": "app.asana.com/0/my-apps - Create new token.",
+      "prefix": "1/",
+      "notes": [
+        "A PAT carries the full permissions of the person who made it, so it is the less safe option here despite being simpler. Prefer OAuth for Asana."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://app.asana.com/api/1.0",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "list_workspaces": {
+      "method": "GET",
+      "path": "/workspaces",
+      "write_scope": "readonly"
+    },
+    "search_tasks": {
+      "method": "GET",
+      "path": "/workspaces/{workspace_gid}/tasks/search",
+      "write_scope": "readonly"
+    },
+    "get_task": {
+      "method": "GET",
+      "path": "/tasks/{task_gid}",
+      "write_scope": "readonly"
+    },
+    "list_projects": {
+      "method": "GET",
+      "path": "/projects",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Around 150 requests per minute for free plans and 1500 for paid, plus a separate lower limit on search."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.asana.com/docs/oauth",
+      "https://developers.asana.com/docs/oauth-scopes",
+      "https://developers.asana.com/docs/authentication"
+    ],
+    "notes": [
+      "The token endpoint is the documented pair of the authorize URL; it was not separately confirmed against Asana, which this container cannot reach."
+    ]
+  }
+}

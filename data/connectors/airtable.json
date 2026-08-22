@@ -1,0 +1,58 @@
+{
+  "id": "airtable",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://airtable.com/oauth2/v1/authorize",
+    "token_url": "https://airtable.com/oauth2/v1/token",
+    "client_auth": "basic",
+    "pkce": true,
+    "pkce_method": "S256",
+    "scopes": [
+      "data.records:read",
+      "schema.bases:read"
+    ],
+    "notes": [
+      "PKCE with S256 is supported and should be used - this is a desktop client, so there is no place to keep a client secret.",
+      "Scopes are space-delimited.",
+      "data.records:write is deliberately absent. A base an agent can write to is a base a misread column can corrupt silently, and nothing in the catalogue needs it.",
+      "schema.bases:read is required as well as the records scope; without it field names come back as ids and the data is unusable."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.airtable.com/v0",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "list_bases": {
+      "method": "GET",
+      "path": "/meta/bases",
+      "write_scope": "readonly"
+    },
+    "get_base_schema": {
+      "method": "GET",
+      "path": "/meta/bases/{baseId}/tables",
+      "write_scope": "readonly"
+    },
+    "list_records": {
+      "method": "GET",
+      "path": "/{baseId}/{tableIdOrName}",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests_per_second": 5,
+    "note": "Per base. Exceeding it returns 429 and Airtable then refuses for 30 seconds, so backing off immediately matters more than usual."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://github.com/Airtable/oauth-example",
+      "https://composio.dev/auth/airtable",
+      "https://docs.arcade.dev/en/home/auth-providers/airtable"
+    ]
+  }
+}

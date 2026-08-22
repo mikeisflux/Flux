@@ -1,0 +1,54 @@
+{
+  "id": "monday",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://auth.monday.com/oauth2/authorize",
+    "token_url": "https://auth.monday.com/oauth2/token",
+    "client_auth": "post",
+    "scopes": [
+      "me:read",
+      "boards:read",
+      "workspaces:read"
+    ],
+    "notes": [
+      "Scopes must also be declared on the app in monday's Developer Center; requesting one that is not declared there fails at consent.",
+      "boards:write is not requested. A board an agent can write to is a board a wrong column mapping can overwrite.",
+      "monday is GraphQL-only on a single endpoint, and the API version is sent as a header rather than in the path."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.monday.com/v2",
+    "headers": {
+      "Authorization": "{access_token}",
+      "API-Version": "2024-10",
+      "Content-Type": "application/json"
+    }
+  },
+  "operations": {
+    "query_boards": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "readonly",
+      "notes": "GraphQL query."
+    },
+    "query_items": {
+      "method": "POST",
+      "path": "/",
+      "write_scope": "readonly",
+      "notes": "GraphQL query."
+    }
+  },
+  "rate_limits": {
+    "note": "Complexity budget per minute rather than a request count. A query asking for every column of every item will exhaust it in one call."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developer.monday.com/apps/docs/oauth",
+      "https://developer.monday.com/apps/docs/authorization-url",
+      "https://developer.monday.com/apps/docs/choosing-auth"
+    ]
+  }
+}

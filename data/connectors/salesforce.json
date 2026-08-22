@@ -1,0 +1,63 @@
+{
+  "id": "salesforce",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://login.salesforce.com/services/oauth2/authorize",
+    "token_url": "https://login.salesforce.com/services/oauth2/token",
+    "client_auth": "post",
+    "pkce": true,
+    "scopes": [
+      "api",
+      "refresh_token",
+      "offline_access"
+    ],
+    "notes": [
+      "refresh_token and offline_access are both needed for a grant that survives the hour; Salesforce treats them as one capability but the connected app has to have it enabled.",
+      "Sandbox orgs authenticate against https://test.salesforce.com with the same paths. Using login.salesforce.com against a sandbox fails with an unhelpful invalid_grant.",
+      "The token response carries instance_url, and every subsequent API call must go to that host - not to login.salesforce.com.",
+      "The org must be API-enabled. That is what the eligibility badge on this connector is about: Essentials editions have no API access at all."
+    ]
+  },
+  "api": {
+    "base_url": "{instance_url}/services/data/v61.0",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "query": {
+      "method": "GET",
+      "path": "/query",
+      "write_scope": "readonly",
+      "notes": "SOQL via the q parameter."
+    },
+    "search": {
+      "method": "GET",
+      "path": "/search",
+      "write_scope": "readonly",
+      "notes": "SOSL via the q parameter."
+    },
+    "get_record": {
+      "method": "GET",
+      "path": "/sobjects/{sobject}/{id}",
+      "write_scope": "readonly"
+    },
+    "describe": {
+      "method": "GET",
+      "path": "/sobjects/{sobject}/describe",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "A daily API call allowance per org, not a per-second rate. Burning it affects everything else the org does, so batch with SOQL rather than looping records."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_tokens_scopes.htm",
+      "https://logto.io/oauth-providers-explorer/salesforce"
+    ]
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "id": "webflow",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://webflow.com/oauth/authorize",
+    "token_url": "https://api.webflow.com/oauth/access_token",
+    "client_auth": "post",
+    "scopes": [
+      "sites:read",
+      "pages:read",
+      "cms:read"
+    ],
+    "notes": [
+      "Scopes are space-separated.",
+      "The authorization code is single-use and expires in 15 minutes.",
+      "All new integrations must use the v2 API; v1 paths still resolve and return a different shape, which is a quiet way to get wrong data.",
+      "Write scopes are not requested: publishing a site is an irreversible public action."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.webflow.com/v2",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "accept": "application/json"
+    }
+  },
+  "operations": {
+    "list_sites": {
+      "method": "GET",
+      "path": "/sites",
+      "write_scope": "readonly"
+    },
+    "list_pages": {
+      "method": "GET",
+      "path": "/sites/{site_id}/pages",
+      "write_scope": "readonly"
+    },
+    "list_collections": {
+      "method": "GET",
+      "path": "/sites/{site_id}/collections",
+      "write_scope": "readonly"
+    },
+    "list_collection_items": {
+      "method": "GET",
+      "path": "/collections/{collection_id}/items",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "note": "Per site. Returns 429 with X-RateLimit headers."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.webflow.com/data/reference/oauth-app",
+      "https://developers.webflow.com/data/reference/authentication",
+      "https://developers.webflow.com/data/reference/rest-introduction/quick-start"
+    ]
+  }
+}

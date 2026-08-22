@@ -1,0 +1,60 @@
+{
+  "id": "posthog",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "Personal API key",
+      "where": "PostHog > Settings > Personal API keys > Create. Give it read scopes on the specific project rather than all access.",
+      "prefix": "phx_",
+      "notes": [
+        "PostHog personal keys are scoped and individually revocable, which is what makes them a reasonable choice here.",
+        "The key is for the private API. The project write key that appears in snippets is a different thing and cannot read."
+      ]
+    },
+    "notes": [
+      "PostHog documents personal API keys as the right choice for your own automations, and OAuth for an app other PostHog users install. A browser configured by its own user is the former.",
+      "Self-hosted instances use the same paths on their own host, so the API base has to be configurable rather than hard-coded to the cloud."
+    ]
+  },
+  "api": {
+    "base_url": "https://us.posthog.com/api",
+    "headers": {
+      "Authorization": "Bearer {api_token}"
+    }
+  },
+  "operations": {
+    "query": {
+      "method": "POST",
+      "path": "/projects/{project_id}/query/",
+      "write_scope": "readonly",
+      "notes": "HogQL. The general read path for anything analytical."
+    },
+    "list_insights": {
+      "method": "GET",
+      "path": "/projects/{project_id}/insights/",
+      "write_scope": "readonly"
+    },
+    "list_feature_flags": {
+      "method": "GET",
+      "path": "/projects/{project_id}/feature_flags/",
+      "write_scope": "readonly"
+    },
+    "list_experiments": {
+      "method": "GET",
+      "path": "/projects/{project_id}/experiments/",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Roughly 240 per minute and 1200 per hour for most endpoints, lower for query. Returns 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://posthog.com/docs/api",
+      "https://posthog.com/docs/api/personal-api-keys"
+    ]
+  }
+}

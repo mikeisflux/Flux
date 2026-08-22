@@ -51,9 +51,16 @@ def check_definition(path, errors):
     # a client secret in a binary, which cannot be kept secret anyway.
     if auth.get('personal_token'):
         pt = auth['personal_token']
-        for field in ('label', 'where', 'prefix'):
+        for field in ('label', 'where'):
             if not pt.get(field):
                 fail(path.name, f'personal_token needs {field}', errors)
+        # Present but possibly empty: Cloudflare tokens have no fixed prefix,
+        # and the field existing is what says that was checked rather than
+        # forgotten.
+        if 'prefix' not in pt:
+            fail(path.name,
+                 'personal_token needs prefix (empty string if there is none)',
+                 errors)
 
     if auth.get('type') == 'oauth2':
         for field in ('authorize_url', 'token_url'):

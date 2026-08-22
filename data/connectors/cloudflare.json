@@ -1,0 +1,66 @@
+{
+  "id": "cloudflare",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API token",
+      "where": "dash.cloudflare.com/profile/api-tokens - Create Token, then grant only the read permissions needed. Do not use a Global API Key.",
+      "prefix": "",
+      "notes": [
+        "A Global API Key has full account access and cannot be scoped or revoked individually. A scoped API token can.",
+        "Verify a token before storing it with GET /client/v4/user/tokens/verify - it returns the token status without needing to know what it can reach."
+      ]
+    },
+    "notes": [
+      "Cloudflare has no OAuth flow for third-party apps; scoped API tokens are the supported mechanism and are strictly better than a key.",
+      "Permissions are granted per resource - a specific zone or account - rather than as a scope string, so the narrowing happens in Cloudflare's own token editor rather than here."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.cloudflare.com/client/v4",
+    "headers": {
+      "Authorization": "Bearer {api_token}"
+    }
+  },
+  "operations": {
+    "verify_token": {
+      "method": "GET",
+      "path": "/user/tokens/verify",
+      "write_scope": "readonly",
+      "notes": "Call this on connect; it is the cheapest way to confirm a token works and has not been revoked."
+    },
+    "list_zones": {
+      "method": "GET",
+      "path": "/zones",
+      "write_scope": "readonly"
+    },
+    "radar_traffic": {
+      "method": "GET",
+      "path": "/radar/http/timeseries",
+      "write_scope": "readonly"
+    },
+    "list_workers": {
+      "method": "GET",
+      "path": "/accounts/{account_id}/workers/scripts",
+      "write_scope": "readonly"
+    },
+    "worker_logs": {
+      "method": "GET",
+      "path": "/accounts/{account_id}/workers/scripts/{script}/tails",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests_per_five_minutes": 1200,
+    "note": "Per user, across the whole API. Returns 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/",
+      "https://developers.cloudflare.com/fundamentals/api/how-to/make-api-calls/"
+    ]
+  }
+}

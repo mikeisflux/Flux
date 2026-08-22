@@ -1,0 +1,71 @@
+{
+  "id": "sentry",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://sentry.io/oauth/authorize/",
+    "token_url": "https://sentry.io/oauth/token/",
+    "client_auth": "post",
+    "scopes": [
+      "org:read",
+      "project:read",
+      "team:read",
+      "member:read",
+      "event:read"
+    ],
+    "notes": [
+      "The trailing slashes are load-bearing; Sentry redirects without them and a POST that follows a redirect loses its body.",
+      "Read scopes only. Write access on an error tracker would let a task resolve or delete issues, which destroys the record it was reading.",
+      "Access tokens last 30 days rather than an hour, so refresh is less frequent but still required.",
+      "Self-hosted Sentry uses the same paths on the installation's own host."
+    ],
+    "personal_token": {
+      "label": "Internal integration token",
+      "where": "sentry.io > Settings > Developer Settings > Internal Integrations - create one with read permissions.",
+      "prefix": "sntrys_",
+      "notes": [
+        "Simpler than OAuth for a single organisation and scoped the same way."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://sentry.io/api/0",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "list_issues": {
+      "method": "GET",
+      "path": "/projects/{org}/{project}/issues/",
+      "write_scope": "readonly"
+    },
+    "get_issue": {
+      "method": "GET",
+      "path": "/issues/{issue_id}/",
+      "write_scope": "readonly"
+    },
+    "list_events": {
+      "method": "GET",
+      "path": "/issues/{issue_id}/events/",
+      "write_scope": "readonly"
+    },
+    "get_latest_event": {
+      "method": "GET",
+      "path": "/issues/{issue_id}/events/latest/",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Per organisation, returned as 429 with X-Sentry-Rate-Limit headers. Issue listing is paginated by cursor, not offset."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.sentry.io/api/auth/",
+      "https://docs.sentry.io/api/permissions",
+      "https://github.com/getsentry/sentry-oauth-example"
+    ]
+  }
+}

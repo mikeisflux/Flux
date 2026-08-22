@@ -1,0 +1,60 @@
+{
+  "id": "coda",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API token",
+      "where": "coda.io/account - API settings, Generate API token. Coda lets you restrict a token to a single doc; do that rather than issuing an unrestricted one.",
+      "prefix": "",
+      "notes": [
+        "An unrestricted Coda token inherits everything the person can see, which for most accounts is every doc they have ever been shared on."
+      ]
+    },
+    "notes": [
+      "Coda has no third-party OAuth flow for the REST API; tokens are the supported mechanism.",
+      "Tokens are unscoped by default and inherit the generating user's permissions - the restriction has to be applied when the token is made."
+    ]
+  },
+  "api": {
+    "base_url": "https://coda.io/apis/v1",
+    "headers": {
+      "Authorization": "Bearer {api_token}"
+    }
+  },
+  "operations": {
+    "list_docs": {
+      "method": "GET",
+      "path": "/docs",
+      "write_scope": "readonly"
+    },
+    "list_tables": {
+      "method": "GET",
+      "path": "/docs/{docId}/tables",
+      "write_scope": "readonly"
+    },
+    "list_rows": {
+      "method": "GET",
+      "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
+      "write_scope": "readonly"
+    },
+    "upsert_rows": {
+      "method": "POST",
+      "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
+      "write_scope": "draft",
+      "notes": "Writes into a doc. Draft rather than send: visible to collaborators but not an outbound message."
+    }
+  },
+  "rate_limits": {
+    "requests_per_second": 10,
+    "note": "Per token. Returns 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://coda.io/developers/apis/v1",
+      "https://github.com/licht1stein/codaio"
+    ]
+  }
+}

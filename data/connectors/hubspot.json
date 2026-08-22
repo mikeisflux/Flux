@@ -1,0 +1,60 @@
+{
+  "id": "hubspot",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://app.hubspot.com/oauth/authorize",
+    "token_url": "https://api.hubapi.com/oauth/v1/token",
+    "client_auth": "post",
+    "scopes": [
+      "oauth",
+      "crm.objects.contacts.read",
+      "crm.objects.companies.read",
+      "crm.objects.deals.read"
+    ],
+    "notes": [
+      "The redirect URI must match the registered one character for character, including a trailing slash. HubSpot is stricter about this than most.",
+      "Read scopes only. A CRM an agent can write to is a CRM that can be quietly corrupted by a task that misread a field.",
+      "Scopes must also be enabled on the app in HubSpot's console; requesting one that is not enabled there fails at the consent screen, not at the token exchange."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.hubapi.com",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "search_contacts": {
+      "method": "POST",
+      "path": "/crm/v3/objects/contacts/search",
+      "write_scope": "readonly"
+    },
+    "search_companies": {
+      "method": "POST",
+      "path": "/crm/v3/objects/companies/search",
+      "write_scope": "readonly"
+    },
+    "search_deals": {
+      "method": "POST",
+      "path": "/crm/v3/objects/deals/search",
+      "write_scope": "readonly"
+    },
+    "get_deal": {
+      "method": "GET",
+      "path": "/crm/v3/objects/deals/{dealId}",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Per-app and per-account limits, commonly around 100 requests per 10 seconds. Search endpoints are lower and are the ones that trip."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.hubspot.com/docs/api-reference/legacy/authentication/oauth-tokens/v1/guide",
+      "https://github.com/HubSpot/oauth-quickstart-python"
+    ]
+  }
+}

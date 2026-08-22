@@ -1,0 +1,67 @@
+{
+  "id": "calendly",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://auth.calendly.com/oauth/authorize",
+    "token_url": "https://auth.calendly.com/oauth/token",
+    "client_auth": "basic",
+    "scopes": [
+      "default"
+    ],
+    "notes": [
+      "Calendly has a single scope. What the token can reach is decided by the authorising user's own permissions, not by the request.",
+      "Authorization codes expire after 10 minutes and access tokens after 2 hours - short enough that refresh handling has to be right from the start rather than added later.",
+      "Every API call needs the user or organization URI, fetched once from /users/me."
+    ],
+    "personal_token": {
+      "label": "Personal access token",
+      "where": "calendly.com/integrations/api_webhooks - Generate token.",
+      "prefix": "eyJ",
+      "notes": [
+        "Calendly documents PATs as the right choice for a personal integration and OAuth for one serving other people."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.calendly.com",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "get_current_user": {
+      "method": "GET",
+      "path": "/users/me",
+      "write_scope": "readonly",
+      "notes": "Returns the URI every other call needs."
+    },
+    "list_event_types": {
+      "method": "GET",
+      "path": "/event_types",
+      "write_scope": "readonly"
+    },
+    "list_scheduled_events": {
+      "method": "GET",
+      "path": "/scheduled_events",
+      "write_scope": "readonly"
+    },
+    "list_availability": {
+      "method": "GET",
+      "path": "/user_availability_schedules",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Documented per endpoint group; returns 429 with Retry-After."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developer.calendly.com/creating-an-oauth-app",
+      "https://developer.calendly.com/how-to-access-calendly-data-on-behalf-of-authenticated-users",
+      "https://developer.calendly.com/when-to-choose-between-personal-access-tokens-and-oauth"
+    ]
+  }
+}
