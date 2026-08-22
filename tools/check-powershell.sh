@@ -37,6 +37,7 @@ if [ -f "$STAMP" ] && [ "$FINGERPRINT" = "$(cat "$STAMP")" ]; then
 fi
 
 "$PWSH" -NoProfile -Command '
+using namespace System.Management.Automation.Language
 $bad = 0
 Get-ChildItem -Recurse -Filter *.ps1 -File | ForEach-Object {
   $errors = $null
@@ -47,6 +48,35 @@ Get-ChildItem -Recurse -Filter *.ps1 -File | ForEach-Object {
     Write-Host "FAIL $($_.FullName)"
     foreach ($e in $errors) {
       Write-Host "     line $($e.Extent.StartLineNumber): $($e.Message)"
+    }
+    return
+  }
+
+  # Variable names are case-insensitive, so a local $jobs and a parameter
+  # [int]$Jobs are ONE variable - and the parameter type sticks. Assigning an
+  # array to the local then fails at runtime with a conversion error that names
+  # neither variable. Parsing cannot see this; comparing the two can.
+  $ast = [Parser]::ParseFile($_.FullName, [ref]$null, [ref]$null)
+  $typed = @{}
+  foreach ($p in $ast.FindAll({ $args[0] -is [ParameterAst] }, $true)) {
+    if ($p.Attributes | Where-Object { $_ -is [TypeConstraintAst] }) {
+      $typed[$p.Name.VariablePath.UserPath] = $p.StaticType
+    }
+  }
+  foreach ($a in $ast.FindAll({ $args[0] -is [AssignmentStatementAst] }, $true)) {
+    if ($a.Left -isnot [VariableExpressionAst]) { continue }
+    $name = $a.Left.VariablePath.UserPath
+    foreach ($declared in $typed.Keys) {
+      if ($name -ne $declared) { continue }          # -ne is case-insensitive
+      $isArray = $a.Right.Expression -is [ArrayExpressionAst] -or
+                 $a.Right.Expression -is [ArrayLiteralAst]
+      $caseDiffers = -not [string]::Equals($name, $declared, "Ordinal")
+      if ($caseDiffers -or ($isArray -and -not $typed[$declared].IsArray)) {
+        $bad++
+        Write-Host "FAIL $($_.FullName)"
+        Write-Host ("     line {0}: `$$name collides with the [{1}] parameter `$$declared" -f `
+                    $a.Extent.StartLineNumber, $typed[$declared].Name)
+      }
     }
   }
 }

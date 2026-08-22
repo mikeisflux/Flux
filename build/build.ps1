@@ -150,11 +150,13 @@ if ($Jobs -gt 0) {
     Write-Host "  Close other apps and re-run to use more cores." -ForegroundColor DarkGray
   }
 }
-$jobs = @("-j$j")
+# Not $jobs: PowerShell variable names are case-insensitive, so that
+# would assign an array into the [int]$Jobs parameter and throw.
+$ninjaFlags = @("-j$j")
 
 Log "Building $($Targets -join ' ') - first build takes hours; incremental takes minutes"
 $sw = [Diagnostics.Stopwatch]::StartNew()
-Invoke-Native "$DepotTools\autoninja.bat" -C $Out @jobs @Targets
+Invoke-Native "$DepotTools\autoninja.bat" -C $Out @ninjaFlags @Targets
 $sw.Stop()
 
 Log "Built in $($sw.Elapsed.ToString('hh\:mm\:ss'))"

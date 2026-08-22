@@ -46,6 +46,12 @@ reads correctly and parses as a drive-qualified variable reference, which is a
 hard parse failure - the script dies at line 1, having done nothing. Reading
 carefully does not catch this class of bug. A parser does.
 
+It also compares parameter names against local assignments, because variable
+names are case-insensitive: a local `$jobs` and a parameter `[int]$Jobs` are
+one variable, and the parameter's type sticks. Assigning an array to the local
+then fails at runtime with a conversion error naming neither variable. Parsing
+cannot see that; comparing the two can.
+
 If the download fails the check exits 0 and says so. That means the scripts are
 **unverified** - say that rather than claiming they work.
 
