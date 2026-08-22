@@ -1,0 +1,49 @@
+// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
+
+#ifndef CHROME_BROWSER_FLUX_UI_FLUX_BROWSER_VIEW_LAYOUT_H_
+#define CHROME_BROWSER_FLUX_UI_FLUX_BROWSER_VIEW_LAYOUT_H_
+
+#include <memory>
+
+#include "chrome/browser/ui/views/frame/layout/browser_view_tabbed_layout_impl.h"
+
+class Browser;
+class BrowserViewLayoutDelegate;
+
+namespace flux {
+
+// The tabbed browser layout, with the console's column taken off the leading
+// edge first.
+//
+// Chromium's layout is left completely intact and simply run inside a narrower
+// window: DoPreLayoutComputations() insets the params it is handed, so the tab
+// strip, toolbar, contents and side panel all measure and place themselves in
+// the space that is left. That is what makes the tab strip start beside the
+// sidebar rather than above it, and it is why this is a subclass rather than a
+// patch - there is nothing to change in the base layout, only what it is told
+// the window is.
+class FluxBrowserViewLayout : public BrowserViewTabbedLayoutImpl {
+ public:
+  FluxBrowserViewLayout(std::unique_ptr<BrowserViewLayoutDelegate> delegate,
+                        Browser* browser,
+                        BrowserViewLayoutViews views);
+  FluxBrowserViewLayout(const FluxBrowserViewLayout&) = delete;
+  FluxBrowserViewLayout& operator=(const FluxBrowserViewLayout&) = delete;
+  ~FluxBrowserViewLayout() override;
+
+ protected:
+  // BrowserViewTabbedLayoutImpl:
+  gfx::Size GetMinimumSize(const views::View* host) const override;
+  void DoPreLayoutComputations(const BrowserLayoutParams& params) override;
+  ProposedLayout CalculateProposedLayout(
+      const BrowserLayoutParams& params) const override;
+
+ private:
+  // False in windows that never got a sidebar, so this class stays safe to
+  // install unconditionally for every tabbed browser.
+  bool HasSidebar() const;
+};
+
+}  // namespace flux
+
+#endif  // CHROME_BROWSER_FLUX_UI_FLUX_BROWSER_VIEW_LAYOUT_H_

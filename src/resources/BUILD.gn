@@ -6,10 +6,12 @@ build_webui("resources") {
   grd_prefix = "flux"
   static_files = [
     "index.html",
+    "sidebar.html",
     "app.css",
   ]
   ts_files = [
     "app.ts",
+    "sidebar.ts",
     "runs.ts",
     "approvals.ts",
     "settings.ts",

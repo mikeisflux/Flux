@@ -12,12 +12,17 @@ import type {
   RunProgress,
 } from './flux.mojom-webui.js';
 
-import {RunList} from './runs.js';
 import {ApprovalQueue} from './approvals.js';
 import {SettingsView} from './settings.js';
 
 /**
- * Owns the Mojo connection and routes browser-process events to the views.
+ * The console's content column, running in a tab.
+ *
+ * The nav, the run list and the approvals badge are not here: they are in
+ * sidebar.html, hosted by the browser frame, because they have to stay on
+ * screen no matter what this tab is showing. What is left is the screen the
+ * user asked for, chosen by the fragment so the shell can route to it with an
+ * ordinary link, and the approval dialog, which needs the width.
  *
  * All state lives in the browser process. The console holds nothing that
  * matters, so reloading chrome://flux mid-run is harmless - a deliberate
@@ -25,7 +30,6 @@ import {SettingsView} from './settings.js';
  */
 class FluxApp {
   private handler: FluxPageHandlerRemote;
-  private runs: RunList;
   private approvals: ApprovalQueue;
   private settings: SettingsView;
 
@@ -37,44 +41,27 @@ class FluxApp {
         observer.$.bindNewPipeAndPassRemote(),
         this.handler.$.bindNewPipeAndPassReceiver());
 
-    this.runs = new RunList(
-        document.getElementById('run-list')!,
-        document.getElementById('concurrency')!,
-        this.handler);
-
     this.approvals = new ApprovalQueue(
         document.getElementById('approval-dialog') as HTMLDialogElement,
-        document.getElementById('approvals-nav')!,
-        document.getElementById('approvals-badge')!,
+        // The visible approvals row is in the shell's sidebar, a different
+        // document; this one owns only the dialog.
+        /*nav=*/null,
+        /*badge=*/null,
         this.handler);
 
     this.settings = new SettingsView(this.handler);
 
-    this.bindNav();
-    void this.refresh();
+    window.addEventListener('hashchange', () => this.renderFromHash());
+    this.renderFromHash();
   }
 
-  private bindNav() {
-    for (const el of document.querySelectorAll<HTMLElement>('.nav-item')) {
-      el.addEventListener('click', () => {
-        for (const other of document.querySelectorAll('.nav-item')) {
-          other.removeAttribute('aria-current');
-        }
-        el.setAttribute('aria-current', 'page');
-        this.render(el.dataset['view'] ?? 'new-task');
-      });
-    }
-  }
-
-  private async refresh() {
-    const {runs} = await this.handler.listRuns();
-    this.runs.replaceAll(runs);
-    await this.runs.refreshConcurrency();
+  private renderFromHash() {
+    this.render(window.location.hash.replace(/^#/, '') || 'new-task');
   }
 
   private render(view: string) {
     const content = document.getElementById('content')!;
-    if (view === 'agent') {
+    if (view === 'agent' || view === 'settings') {
       void this.settings.render(content);
       return;
     }
@@ -86,13 +73,11 @@ class FluxApp {
 
   // --- FluxPageHandlerObserver ---------------------------------------------
 
-  onRunProgress(progress: RunProgress) {
-    this.runs.update(progress);
+  onRunProgress(_progress: RunProgress) {
+    // The run list lives in the shell's sidebar; nothing in the tab tracks it.
   }
 
-  onAction(runId: string, action: ActionRecord) {
-    this.runs.appendAction(runId, action);
-  }
+  onAction(_runId: string, _action: ActionRecord) {}
 
   onApprovalRequested(request: ApprovalRequest) {
     // Surfaced immediately and unconditionally: a run blocked on a human is
@@ -101,15 +86,14 @@ class FluxApp {
     this.approvals.enqueue(request);
   }
 
-  onRunFinished(runId: string, state: RunState, summary: string|null) {
-    this.runs.finish(runId, state, summary);
+  onRunFinished(runId: string, _state: RunState, _summary: string|null) {
     this.approvals.dismissFor(runId);
   }
 
-  onLearnedFact(fact: string, sourceRunId: string) {
+  onLearnedFact(_fact: string, _sourceRunId: string) {
     // The agent writing back into the Instructions buffer is shown with
-    // provenance rather than silently mutating what the user wrote.
-    this.runs.noteLearned(fact, sourceRunId);
+    // provenance in the sidebar's run list rather than silently mutating what
+    // the user wrote.
   }
 }
 

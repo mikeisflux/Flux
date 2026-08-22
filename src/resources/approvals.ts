@@ -15,10 +15,14 @@ import type {
 export class ApprovalQueue {
   private pending: ApprovalRequest[] = [];
 
+  // `nav` and `badge` are null in the tab: the console's shell owns the
+  // sidebar now, so the visible approvals row lives in a different document
+  // from the dialog. The dialog stays here, where there is room for it - a
+  // modal inside a 305px column is not a place to read a payload preview.
   constructor(
       private dialog: HTMLDialogElement,
-      private nav: HTMLElement,
-      private badge: HTMLElement,
+      private nav: HTMLElement|null,
+      private badge: HTMLElement|null,
       private handler: FluxPageHandlerRemote) {
     this.dialog.querySelector('#approval-allow')!
         .addEventListener('click', () => this.resolve(true));
@@ -32,7 +36,7 @@ export class ApprovalQueue {
       this.resolve(false);
     });
 
-    this.nav.addEventListener('click', () => this.showNext());
+    this.nav?.addEventListener('click', () => this.showNext());
   }
 
   enqueue(request: ApprovalRequest) {
@@ -94,7 +98,11 @@ export class ApprovalQueue {
   }
 
   private syncBadge() {
-    this.badge.textContent = String(this.pending.length);
-    this.nav.hidden = this.pending.length === 0;
+    if (this.badge) {
+      this.badge.textContent = String(this.pending.length);
+    }
+    if (this.nav) {
+      this.nav.hidden = this.pending.length === 0;
+    }
   }
 }

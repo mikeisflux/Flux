@@ -1,0 +1,161 @@
+Subject: [flux] The browser shell: a full-height console column
+
+The console had no home in the window: chrome://flux was reachable by URL and
+nothing else. The design has it as a 305px column starting at the top of the
+window, with the tab strip beginning to its right. That is not a side panel -
+a side panel sits below the toolbar, inside the content area, and no amount of
+configuring one gets it above the tab strip.
+
+Chromium's own layout is left completely alone. BrowserViewLayout::CreateLayout
+already exists to swap layouts by browser type, so a normal window now gets
+FluxBrowserViewLayout: it overrides DoPreLayoutComputations() to narrow the
+params before handing them to the tabbed layout, and everything downstream -
+tab strip, toolbar, contents, side panel - measures and places itself in what
+is left, with no knowledge that a sidebar exists. Popups, app windows and
+devtools are untouched; they have no console.
+
+The view is a child of BrowserView rather than of the contents container, which
+is what makes it a sibling of the tab strip rather than of the page. It hosts
+the same chrome://flux WebUI as the tab, serving sidebar.html, so there is one
+data source, one Mojo interface and one stylesheet behind both surfaces.
+
+The two new files live under //chrome/browser/flux but compile into
+//chrome/browser/ui: FluxBrowserViewLayout derives from
+BrowserViewTabbedLayoutImpl and browser_view.cc constructs FluxSidebarView, so
+a target of their own would be a cycle with this one.
+
+--- a/chrome/browser/ui/views/frame/layout/browser_view_layout.h
++++ b/chrome/browser/ui/views/frame/layout/browser_view_layout.h
+@@ -79,6 +79,11 @@
+   raw_ptr<SidePanel> side_panel = nullptr;
+   raw_ptr<views::View> side_panel_animation_content = nullptr;
+ 
++  // The Flux console's column. Unlike every other view here it is laid out
++  // before the window is measured rather than inside it - see
++  // FluxBrowserViewLayout.
++  raw_ptr<views::View> flux_sidebar = nullptr;
++
+   // The contents separator used for when the top container is overlaid.
+   // Note: when `SideBySide` feature is disabled, this separator is also
+   // used when not overlaid. Once the feature is fully rolled out, we can
+--- a/chrome/browser/ui/views/frame/layout/browser_view_layout.cc
++++ b/chrome/browser/ui/views/frame/layout/browser_view_layout.cc
+@@ -10,6 +10,7 @@
+ #include "base/memory/raw_ptr.h"
+ #include "base/observer_list.h"
+ #include "base/scoped_observation.h"
++#include "chrome/browser/flux/ui/flux_browser_view_layout.h"
+ #include "chrome/browser/ui/browser.h"
+ #include "chrome/browser/ui/ui_features.h"
+ #include "chrome/browser/ui/views/exclusive_access/exclusive_access_bubble_views.h"
+@@ -141,7 +142,12 @@
+   if (browser) {
+     switch (browser->type()) {
+       case Browser::TYPE_NORMAL:
+-        return std::make_unique<BrowserViewTabbedLayoutImpl>(
++        // The comment above says this factory exists to switch between layouts
++        // by browser type; a normal Flux window is a tabbed window with the
++        // console's column taken off the leading edge, so it is the tabbed
++        // layout with one thing changed. Popups, apps and devtools are
++        // untouched - they have no sidebar.
++        return std::make_unique<flux::FluxBrowserViewLayout>(
+             std::move(delegate), browser, std::move(views));
+       case Browser::TYPE_APP:
+       case Browser::TYPE_APP_POPUP:
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -100,6 +100,10 @@
+ class VerticalTabStripRegionView;
+ class WebAppFrameToolbarView;
+ 
++namespace flux {
++class FluxSidebarView;
++}  // namespace flux
++
+ namespace gfx {
+ class AnimationRunner;
+ }  // namespace gfx
+@@ -1237,6 +1241,12 @@
+   // should exist if and only if the side_panel_coordinator is created.
+   raw_ptr<SidePanel> side_panel_ = nullptr;
+ 
++  // The Flux console's column down the leading edge, full window height, in
++  // normal windows only. Not a side panel and not a tab: FluxBrowserViewLayout
++  // reserves its width before anything else is laid out, which is why the tab
++  // strip starts beside it rather than above it.
++  raw_ptr<flux::FluxSidebarView> flux_sidebar_ = nullptr;
++
+   // The handler responsible for showing autofill bubbles.
+   std::unique_ptr<autofill::AutofillBubbleHandler> autofill_bubble_handler_;
+ 
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -52,6 +52,7 @@
+ #include "chrome/browser/extensions/browser_extension_window_controller.h"
+ #include "chrome/browser/extensions/extension_util.h"
+ #include "chrome/browser/feature_engagement/tracker_factory.h"
++#include "chrome/browser/flux/ui/flux_sidebar_view.h"
+ #include "chrome/browser/glic/public/features.h"
+ #include "chrome/browser/headless/headless_mode_util.h"
+ #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+@@ -963,6 +964,15 @@
+ 
+   side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
+ 
++  // The Flux console. Added here, as a direct child of the browser view, so
++  // that it is a sibling of the tab strip rather than of the page: it occupies
++  // the full height of the window and the tab strip begins to its right.
++  // Normal windows only - a popup, an app window or devtools has no console.
++  if (browser_->is_type_normal()) {
++    flux_sidebar_ =
++        AddChildView(std::make_unique<flux::FluxSidebarView>(browser_.get()));
++  }
++
+   // Tabstrip comes basically last because it should be before toolbar in the
+   // focus order but also needs to paint on top of everything.
+   horizontal_tab_strip_region_view_ =
+@@ -5016,6 +5026,7 @@
+   layout_views.contents_container = contents_container_;
+   layout_views.multi_contents_view = multi_contents_view_;
+   layout_views.side_panel = side_panel_;
++  layout_views.flux_sidebar = flux_sidebar_;
+   layout_views.top_container_separator = top_container_separator_;
+   // LINT.ThenChange(//chrome/browser/ui/views/frame/layout/browser_view_layout.h:BrowserViewLayoutViews)
+ 
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -4364,6 +4364,18 @@
+ 
+     sources += get_target_outputs(":webui_name_variants")
+ 
++    # Flux's shell views. They live under //chrome/browser/flux - a junction to
++    # the Flux repo - but have to compile into this target rather than their
++    # own: FluxBrowserViewLayout derives from BrowserViewTabbedLayoutImpl and
++    # browser_view.cc constructs FluxSidebarView, so a separate target would be
++    # a dependency cycle with this one.
++    sources += [
++      "//chrome/browser/flux/ui/flux_browser_view_layout.cc",
++      "//chrome/browser/flux/ui/flux_browser_view_layout.h",
++      "//chrome/browser/flux/ui/flux_sidebar_view.cc",
++      "//chrome/browser/flux/ui/flux_sidebar_view.h",
++    ]
++
+     public_deps += [
+       "//chrome/browser/ui/views/bookmarks:bookmark_bar_view_observer",
+       "//chrome/browser/ui/views/tabs/common:impl",
+@@ -4371,6 +4383,7 @@
+ 
+     deps += [
+       "//base",
++      "//chrome/app:branded_strings",
+       "//chrome/browser:main_extra_parts",
+       "//chrome/browser:resources",
+       "//chrome/browser/accessibility",
+@@ -4380,6 +4393,7 @@
+       "//chrome/browser/collaboration",
+       "//chrome/browser/collaboration/messaging",
+       "//chrome/browser/desktop_to_mobile_promos:utils",
++      "//chrome/browser/flux",
+       "//chrome/browser/infobars",
+       "//chrome/browser/preloading/bookmarkbar_preload",
+       "//chrome/browser/preloading/new_tab_page_preload",

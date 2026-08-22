@@ -1,0 +1,17 @@
+Subject: [flux] Allow "Flux" as a top-chrome WebUI name
+
+WebUIContentsWrapperT static_asserts its page's name against an allowlist that
+//chrome/browser/ui:webui_name_variants generates from this file. Hosting the
+console anywhere in the browser frame instantiates that template, so without
+the variant this is a compile error rather than a missing metric.
+
+--- a/tools/metrics/histograms/metadata/page/histograms.xml
++++ b/tools/metrics/histograms/metadata/page/histograms.xml
+@@ -635,6 +635,7 @@
+   <variant name=".ExtensionsWebStoreZeroStatePromo"/>
+   <variant name=".Feed"/>
+   <variant name=".Feedback"/>
++  <variant name=".Flux"/>
+   <variant name=".HistoryClustersSidePanel"/>
+   <variant name=".HistorySidePanel"/>
+   <variant name=".LensOverlayUntrusted"/>

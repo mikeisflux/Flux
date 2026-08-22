@@ -17,6 +17,7 @@
   --radius-card: 12px;
   --radius-nav: 8px;
   --sidebar-w: 305px;
+  --titlebar-h: 44px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,12 +37,59 @@
 
 body {
   margin: 0;
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
   min-height: 100vh;
   background: var(--bg);
   color: var(--fg);
   font: 15px/1.5 system-ui, sans-serif;
+}
+
+/* The shell document is the sidebar column itself: the browser frame has
+ * already given it exactly --sidebar-w, so it is one column, not two, and its
+ * first band is the slice of titlebar to the left of the tab strip. */
+body.shell {
+  display: grid;
+  grid-template-rows: var(--titlebar-h) 1fr;
+  overflow: hidden;
+}
+
+/* The tab document is only the content column - the shell owns the nav. */
+body.tab {
+  display: block;
+}
+
+.shell-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+/* Ghost buttons: no border and no fill until hovered, per the reference. */
+.ghost-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.ghost-icon:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+.ghost-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
 }
 
 .sidebar {
@@ -49,12 +97,16 @@ body {
   flex-direction: column;
   gap: 2px;
   padding: 12px 8px;
-  border-right: 1px solid var(--border);
+  overflow-y: auto;
 }
 
+
+/* Anchors, not buttons: the shell navigates the tab by opening a link rather
+ * than by calling into the browser, so these must not read as links. */
 .nav-item {
   display: flex;
   align-items: center;
+  text-decoration: none;
   gap: 12px;
   width: 100%;
   padding: 11px 14px;
