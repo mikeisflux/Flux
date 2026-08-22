@@ -92,6 +92,45 @@ for path in sorted(ROOT.rglob('*')):
 sys.exit(1 if bad else 0)
 PY
 
+# A pref registered SYNCABLE_PREF must also appear in Chromium's central
+# SyncablePrefsDatabase allowlist. PrefModelAssociator::RegisterPref DCHECKs
+# it, dcheck_always_on is true in dev.gn, and the failure is fatal at profile
+# creation - the browser dies before drawing a window and exits 0 with nothing
+# on screen, which is the least debuggable failure this project has hit.
+#
+# Allowed only if the patch series adds the pref to that allowlist. Nothing
+# does today, so this is currently a flat prohibition, and the message says
+# what it would take.
+python3 - <<'SYNCPY' || status=1
+import pathlib
+import re
+import sys
+
+prefs = pathlib.Path('src/browser/flux_prefs.cc')
+if not prefs.exists():
+    sys.exit(0)
+
+# The allowlist lives in Chromium; the series would have to patch it.
+patched = set()
+for patch in sorted(pathlib.Path('patches').glob('*.patch')):
+    text = patch.read_text(encoding='utf-8')
+    if 'syncable_prefs_database' in text:
+        patched.update(re.findall(r'^\+.*?"(flux\.[\w.]+)"', text, re.M))
+
+bad = 0
+for i, line in enumerate(prefs.read_text(encoding='utf-8').splitlines(), 1):
+    stripped = line.strip()
+    if stripped.startswith('//') or 'SYNCABLE_PREF' not in stripped:
+        continue
+    print(f'src/browser/flux_prefs.cc:{i}: SYNCABLE_PREF without an entry in '
+          "Chromium's SyncablePrefsDatabase is fatal at profile creation. "
+          'Register it non-syncable, or add a patch to that allowlist.')
+    print(f'    {stripped}')
+    bad += 1
+
+sys.exit(1 if bad else 0)
+SYNCPY
+
 # A source file that exists but is not in BUILD.gn compiles nowhere, so the
 # error is not a compile error at all - it is an undefined symbol at LINK, at
 # the very end of the build, after everything else has been paid for. Adding

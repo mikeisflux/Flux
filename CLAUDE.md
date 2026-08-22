@@ -88,6 +88,11 @@ each broken a real build once, as greps over `src/browser`:
 - A reference-typed field is rejected outright by the `chromium-rawref`
   plugin. Use `raw_ref<T>`.
 - A raw pointer field is rejected by the raw-ptr plugin. Use `raw_ptr<T>`.
+- A pref registered `SYNCABLE_PREF` must also be in Chromium's central
+  `SyncablePrefsDatabase`. It is a DCHECK, `dcheck_always_on` is on in
+  `dev.gn`, and it is fatal at profile creation - the browser dies before
+  drawing a window and exits **0**, with nothing on screen. Sync is inert in
+  this fork anyway (no Google API keys), so register prefs non-syncable.
 - Every `.cc`/`.h` under `src/browser` must be listed in `src/browser/BUILD.gn`
   - or added to a Chromium target by the patch series, as the views subclasses
   under `ui/` are. A file that is in neither compiles nowhere, and the error is
@@ -111,6 +116,26 @@ on the same hook as the other checks.
 
 If the fetch fails the check exits 0 and says so, which means the series is
 **unverified** - say that rather than claiming it applies.
+
+### Running it, when it will not run
+
+A fork with `dcheck_always_on = true` fails in a way no build error prepares
+you for: the browser process dies inside a DCHECK, the GPU process starts and
+stops, no window ever appears, and the exit code is **0**. Double-clicking
+looks like nothing happened at all.
+
+Get the reason rather than guessing. One line, and the exit code matters as
+much as the log:
+
+    (Start-Process 'C:\flux-build\chromium\src\out\Dev\chrome.exe' -ArgumentList '--user-data-dir=C:\flux-build\fluxprofile','--enable-logging','--v=1' -PassThru -Wait).ExitCode
+
+    Select-String -Path 'C:\flux-build\fluxprofile\chrome_debug.log' -Pattern 'ERROR|FATAL|CHECK|flux' | Select-Object -Last 60
+
+`--enable-logging` writes `chrome_debug.log` into the user-data dir, and the
+filter is necessary - the log is tens of thousands of field-trial lines and a
+plain `-Tail` lands in the GPU process's noise every time. A separate
+`--user-data-dir` keeps test tokens out of a real profile and makes a clean
+first run a matter of deleting the folder.
 
 ## Layout
 

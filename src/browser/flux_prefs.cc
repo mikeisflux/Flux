@@ -7,27 +7,45 @@
 namespace flux::prefs {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // Syncable: instructions and an adopted skill set are the user's own
-  // configuration and should follow them to another machine. Learned facts
-  // sync too - they are the same buffer conceptually, and a memory that only
-  // exists on one desktop is a memory the user cannot trust.
-  registry->RegisterStringPref(
-      kInstructions, std::string(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(
-      kLearnedFacts, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(
-      kAdoptedSkills, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      kUserSkills, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // NOT registered SYNCABLE_PREF, and this is not a preference - it is a hard
+  // requirement of Chromium's sync layer that took a startup crash to find.
+  //
+  // PrefModelAssociator::RegisterPref DCHECKs that every syncable pref appears
+  // in Chromium's own central allowlist (the SyncablePrefsDatabase). A pref
+  // registered SYNCABLE_PREF without an entry there is fatal at profile
+  // creation:
+  //
+  //   FATAL: pref_model_associator.cc:459] DCHECK failed: Preference
+  //   flux.adopted_skills has not been added to syncable prefs allowlist
+  //
+  // dcheck_always_on is true in dev.gn, so this took the browser down before
+  // it ever drew a window - the browser process died, the GPU process came up
+  // and went away again, and the whole thing exited 0 with no error on screen.
+  //
+  // Making them syncable properly means patching that allowlist, which is a
+  // Chromium file to rebase on every uprev. It would also buy nothing today:
+  // Chromium sync needs Google API keys, and dev.gn says outright that without
+  // them "sync, safe-browsing, geolocation and translate are inert". So these
+  // four were never going to follow a user to another machine - the intent was
+  // real, the mechanism was not.
+  //
+  // Instructions, learned facts and the user's skill set are therefore local
+  // to a profile for now. If sync is ever wanted, it needs the allowlist patch
+  // AND working API keys, in that order, and this comment is the note saying
+  // so.
+  registry->RegisterStringPref(kInstructions, std::string());
+  registry->RegisterListPref(kLearnedFacts);
+  registry->RegisterListPref(kAdoptedSkills);
+  registry->RegisterDictionaryPref(kUserSkills);
 
-  // Not syncable: how wide a window is set up is a property of the screen in
-  // front of you, not of the account.
+  // How wide a window is set up is a property of the screen in front of you,
+  // not of the account.
   registry->RegisterBooleanPref(kSidebarCollapsed, false);
 
   // Encrypted secrets. Registered here and nowhere else - these three names
   // are the only pref paths SecretStore ever touches, which is what makes the
-  // dictionary-of-secrets shape safe. Never syncable.
+  // dictionary-of-secrets shape safe. Never syncable, on their own merits: a
+  // secret that follows a profile onto another machine is a secret that leaks.
   registry->RegisterDictionaryPref(kApiKeys);
   registry->RegisterDictionaryPref(kConnectorTokens);
   registry->RegisterDictionaryPref(kConnectorClients);

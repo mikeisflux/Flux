@@ -9,6 +9,11 @@ class PrefRegistrySyncable;
 
 namespace flux::prefs {
 
+// NONE of these are syncable, including the ones that arguably should be.
+// Chromium DCHECKs that every SYNCABLE_PREF appears in its own central
+// allowlist, and a pref that is not there is fatal at profile creation - it
+// took the browser down before it drew a window. See RegisterProfilePrefs.
+
 // What the user typed under Customize > Instructions. Prepended to every task.
 inline constexpr char kInstructions[] = "flux.instructions";
 
