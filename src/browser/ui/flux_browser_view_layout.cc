@@ -2,12 +2,27 @@
 
 #include "chrome/browser/flux/ui/flux_browser_view_layout.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
+#include "chrome/browser/flux/ui/flux_avatar_button.h"
+// For the complete type: BrowserViewLayoutViews only forward-declares
+// TabStripRegionView, and converting that pointer to views::View* to look its
+// bounds up needs the definition.
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
 namespace flux {
+
+namespace {
+
+// Between the avatar and the last tab on one side, and the caption buttons on
+// the other. Enough that it does not read as part of either.
+constexpr int kAvatarGap = 8;
+
+}  // namespace
 
 FluxBrowserViewLayout::FluxBrowserViewLayout(
     std::unique_ptr<BrowserViewLayoutDelegate> delegate,
@@ -26,6 +41,14 @@ bool FluxBrowserViewLayout::HasSidebar() const {
 // collapse it to the icon rail and the whole window has to follow.
 int FluxBrowserViewLayout::SidebarWidth() const {
   return views().flux_sidebar->GetPreferredSize().width();
+}
+
+bool FluxBrowserViewLayout::HasAvatar() const {
+  return IsParentedTo(views().flux_avatar, views().browser_view);
+}
+
+int FluxBrowserViewLayout::AvatarSlot() const {
+  return FluxAvatarButton::kSize + 2 * kAvatarGap;
 }
 
 gfx::Size FluxBrowserViewLayout::GetMinimumSize(const views::View* host) const {
@@ -52,6 +75,16 @@ void FluxBrowserViewLayout::DoPreLayoutComputations(
   if (HasSidebar()) {
     inset.InsetHorizontal(SidebarWidth(), /*leading=*/true);
   }
+  if (HasAvatar()) {
+    // Widening the trailing exclusion rather than insetting: the exclusion is
+    // what the tab strip measures itself against, and it only applies to the
+    // band the caption buttons are in - insetting would pull the contents area
+    // in for the whole height of the window.
+    auto& trailing = inset.trailing_exclusion;
+    trailing.content.set_width(trailing.content.width() + AvatarSlot());
+    trailing.content.set_height(
+        std::max<float>(trailing.content.height(), FluxAvatarButton::kSize));
+  }
   BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(inset);
 }
 
@@ -74,6 +107,27 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
     gfx::Rect bounds = params.visual_client_area;
     bounds.set_width(SidebarWidth());
     layout.AddChild(views().flux_sidebar, bounds, HasSidebar());
+  }
+
+  // The avatar sits in the tab strip's band, between the last tab and the
+  // caption buttons, vertically centred on the strip. Its bounds come from the
+  // strip the base already placed rather than from a guess at the band height,
+  // which changes with the frame, the theme and fullscreen.
+  if (views().flux_avatar) {
+    gfx::Rect bounds;
+    const bool visible = HasAvatar();
+    if (visible) {
+      const ProposedLayout* strip =
+          layout.GetLayoutFor(views().horizontal_tab_strip_region_view);
+      gfx::Rect band = strip ? strip->bounds : params.visual_client_area;
+      const int caption = base::ClampCeil(
+          params.trailing_exclusion.ContentWithPadding().width());
+      const int size = FluxAvatarButton::kSize;
+      bounds = gfx::Rect(
+          band.right() - caption - kAvatarGap - size,
+          band.y() + std::max(0, (band.height() - size) / 2), size, size);
+    }
+    layout.AddChild(views().flux_avatar, bounds, visible);
   }
 
   return layout;

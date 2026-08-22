@@ -26,7 +26,7 @@ a target of their own would be a cycle with this one.
 
 --- a/chrome/browser/ui/views/frame/layout/browser_view_layout.h
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_layout.h
-@@ -79,6 +79,11 @@
+@@ -79,6 +79,15 @@
    raw_ptr<SidePanel> side_panel = nullptr;
    raw_ptr<views::View> side_panel_animation_content = nullptr;
  
@@ -34,6 +34,10 @@ a target of their own would be a cycle with this one.
 +  // before the window is measured rather than inside it - see
 +  // FluxBrowserViewLayout.
 +  raw_ptr<views::View> flux_sidebar = nullptr;
++
++  // The account avatar, in the tab strip's band between the last tab and the
++  // caption buttons.
++  raw_ptr<views::View> flux_avatar = nullptr;
 +
    // The contents separator used for when the top container is overlaid.
    // Note: when `SideBySide` feature is disabled, this separator is also
@@ -64,18 +68,19 @@ a target of their own would be a cycle with this one.
        case Browser::TYPE_APP_POPUP:
 --- a/chrome/browser/ui/views/frame/browser_view.h
 +++ b/chrome/browser/ui/views/frame/browser_view.h
-@@ -100,6 +100,10 @@
+@@ -100,6 +100,11 @@
  class VerticalTabStripRegionView;
  class WebAppFrameToolbarView;
  
 +namespace flux {
++class FluxAvatarButton;
 +class FluxSidebarView;
 +}  // namespace flux
 +
  namespace gfx {
  class AnimationRunner;
  }  // namespace gfx
-@@ -1237,6 +1241,12 @@
+@@ -1237,6 +1242,16 @@
    // should exist if and only if the side_panel_coordinator is created.
    raw_ptr<SidePanel> side_panel_ = nullptr;
  
@@ -85,20 +90,25 @@ a target of their own would be a cycle with this one.
 +  // strip starts beside it rather than above it.
 +  raw_ptr<flux::FluxSidebarView> flux_sidebar_ = nullptr;
 +
++  // The account avatar. Everything the console's sidebar does not carry -
++  // bookmarks, history, downloads, passwords, extensions - is behind it.
++  raw_ptr<flux::FluxAvatarButton> flux_avatar_ = nullptr;
++
    // The handler responsible for showing autofill bubbles.
    std::unique_ptr<autofill::AutofillBubbleHandler> autofill_bubble_handler_;
  
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -52,6 +52,7 @@
+@@ -52,6 +52,8 @@
  #include "chrome/browser/extensions/browser_extension_window_controller.h"
  #include "chrome/browser/extensions/extension_util.h"
  #include "chrome/browser/feature_engagement/tracker_factory.h"
++#include "chrome/browser/flux/ui/flux_avatar_button.h"
 +#include "chrome/browser/flux/ui/flux_sidebar_view.h"
  #include "chrome/browser/glic/public/features.h"
  #include "chrome/browser/headless/headless_mode_util.h"
  #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
-@@ -963,6 +964,15 @@
+@@ -963,6 +965,17 @@
  
    side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
  
@@ -109,22 +119,25 @@ a target of their own would be a cycle with this one.
 +  if (browser_->is_type_normal()) {
 +    flux_sidebar_ =
 +        AddChildView(std::make_unique<flux::FluxSidebarView>(browser_.get()));
++    flux_avatar_ =
++        AddChildView(std::make_unique<flux::FluxAvatarButton>(browser_.get()));
 +  }
 +
    // Tabstrip comes basically last because it should be before toolbar in the
    // focus order but also needs to paint on top of everything.
    horizontal_tab_strip_region_view_ =
-@@ -5016,6 +5026,7 @@
+@@ -5016,6 +5029,8 @@
    layout_views.contents_container = contents_container_;
    layout_views.multi_contents_view = multi_contents_view_;
    layout_views.side_panel = side_panel_;
 +  layout_views.flux_sidebar = flux_sidebar_;
++  layout_views.flux_avatar = flux_avatar_;
    layout_views.top_container_separator = top_container_separator_;
    // LINT.ThenChange(//chrome/browser/ui/views/frame/layout/browser_view_layout.h:BrowserViewLayoutViews)
  
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -4364,6 +4364,18 @@
+@@ -4364,6 +4364,20 @@
  
      sources += get_target_outputs(":webui_name_variants")
  
@@ -134,6 +147,8 @@ a target of their own would be a cycle with this one.
 +    # browser_view.cc constructs FluxSidebarView, so a separate target would be
 +    # a dependency cycle with this one.
 +    sources += [
++      "//chrome/browser/flux/ui/flux_avatar_button.cc",
++      "//chrome/browser/flux/ui/flux_avatar_button.h",
 +      "//chrome/browser/flux/ui/flux_browser_view_layout.cc",
 +      "//chrome/browser/flux/ui/flux_browser_view_layout.h",
 +      "//chrome/browser/flux/ui/flux_sidebar_view.cc",
@@ -143,7 +158,7 @@ a target of their own would be a cycle with this one.
      public_deps += [
        "//chrome/browser/ui/views/bookmarks:bookmark_bar_view_observer",
        "//chrome/browser/ui/views/tabs/common:impl",
-@@ -4371,6 +4383,7 @@
+@@ -4371,6 +4385,7 @@
  
      deps += [
        "//base",
@@ -151,7 +166,7 @@ a target of their own would be a cycle with this one.
        "//chrome/browser:main_extra_parts",
        "//chrome/browser:resources",
        "//chrome/browser/accessibility",
-@@ -4380,6 +4393,7 @@
+@@ -4380,6 +4395,7 @@
        "//chrome/browser/collaboration",
        "//chrome/browser/collaboration/messaging",
        "//chrome/browser/desktop_to_mobile_promos:utils",

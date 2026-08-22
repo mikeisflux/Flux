@@ -46,6 +46,12 @@ class FluxBrowserViewLayout : public BrowserViewTabbedLayoutImpl {
   // The width to reserve on the leading edge. Follows the collapsed state, so
   // it is asked of the view rather than taken from a constant.
   int SidebarWidth() const;
+
+  bool HasAvatar() const;
+
+  // What the avatar occupies at the trailing end of the tab strip band,
+  // including the gap that keeps it off the caption buttons.
+  int AvatarSlot() const;
 };
 
 }  // namespace flux
