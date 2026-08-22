@@ -18,6 +18,12 @@
   --radius-nav: 8px;
   --sidebar-w: 305px;
   --titlebar-h: 44px;
+
+  /* The only accent in the product, and it is spent on exactly one control:
+   * the composer's send button. Nothing else is allowed to be saturated, so
+   * that button needs no label to read as the primary action. */
+  --accent: #2ab5e8;
+  --accent-fg: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -665,3 +671,196 @@ body.tab {
 }
 
 .outlined:hover { background: var(--hover); }
+
+/* ---------------------------------------------------------------------------
+ * New task - the composer
+ *
+ * The one screen where an accent is allowed: the send button. Everything else
+ * in the product is black, white and gray on purpose, so a single saturated
+ * control reads as "this is the button" without any label.
+ * ------------------------------------------------------------------------ */
+
+.composer-screen {
+  display: grid;
+  min-height: 100%;
+  margin: 0 auto;
+  place-items: center;
+}
+
+.composer-wrap,
+.examples {
+  width: min(790px, 100%);
+}
+
+.display {
+  margin: 0 0 30px;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.composer {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.composer textarea {
+  display: block;
+  width: 100%;
+  padding: 20px 22px 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+  resize: none;
+}
+
+.composer textarea::placeholder { color: var(--fg-muted); }
+
+.composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 14px 22px;
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.depth {
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ghost-icon:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.send {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+  place-items: center;
+}
+
+.send svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+}
+
+.composer-status {
+  margin: 14px 0 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.composer-status.error { color: var(--danger); }
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.chip:hover { background: var(--hover); }
+
+.chip svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+}
+
+/* First run: try an example ---------------------------------------------- */
+
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.example-card {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.example-card:hover { background: var(--hover); }
+
+.example-card span { display: block; }
+
+.example-card strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.example-card > span > span {
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.examples-footer {
+  margin-top: 32px;
+  color: var(--fg-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.link-button {
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-button:hover { color: var(--fg); }

@@ -73,6 +73,22 @@ export interface RunProgress {
   creditsSpent: bigint;
 }
 
+export interface ModelConfig {
+  provider: Provider;
+  model: string;
+  maxOutputTokens: number;
+  allowFailover: boolean;
+}
+
+export interface TaskSpec {
+  prompt: string;
+  templateId: string|null;
+  writeScope: WriteScope;
+  model: ModelConfig;
+  profileId: string;
+  creditBudget: bigint;
+}
+
 export interface ProviderKeyStatus {
   provider: Provider;
   configured: boolean;
@@ -86,6 +102,7 @@ export declare class FluxPageHandlerRemote {
     bindNewPipeAndPassReceiver(): unknown,
   };
 
+  startRun(spec: TaskSpec): Promise<{runId: string, error: string|null}>;
   cancelRun(runId: string): void;
   pauseRun(runId: string): void;
   resumeRun(runId: string): void;

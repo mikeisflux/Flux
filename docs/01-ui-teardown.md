@@ -29,6 +29,16 @@ span the full width. The tab strip begins to the right of the sidebar's
 gutter, at x ≈ 305. The sidebar region of the titlebar is empty (pure drag
 area) except for the two icon buttons at far left.
 
+**The toolbar is there.** Most reference captures show no omnibox, which reads
+as "this product removed the address bar" — it did not. The toolbar row (back,
+forward, reload, omnibox, extensions) and the bookmarks bar appear below the
+titlebar as soon as focus is in the tab rather than in the console. They are
+hidden while the console has focus because the console is not a web page and
+has no address. This is a focus-dependent band, not a removed one, and Flux
+keeps it: an agent browser you cannot type a URL into is a worse browser, and
+the account menu in `07-account-menu.md` is an *addition* to the toolbar, not a
+replacement for it.
+
 ### 1.1 Titlebar, left cluster (x ≈ 232–290)
 | Element | Icon | Notes |
 |---|---|---|
@@ -94,7 +104,37 @@ it.
 
 ---
 
-## 3. Screen: New Tab (empty state) — screenshot 1
+## 3. Screen: New Tab
+
+Two states, and the reference shows both.
+
+### 3.0 The composer — the default
+
+Once there is any run history, the new tab is a task box, centered in the
+content column at ~790px:
+
+- **Heading** `What can I do for you?` — ~40px, light weight, centered.
+- **Composer card**: 1px border, radius ~16px, white. A borderless textarea
+  with placeholder `Describe your task, / for commands, @ for context` — which
+  is where slash-commands and an `@` context picker are advertised, the only
+  place in the product either appears outside the Workflows empty state.
+- **Bottom bar of the card**: a bare `Medium ⌄` dropdown at the left; at the
+  right a display/watch toggle, a paperclip, and a **filled blue circular send
+  button**.
+- **Suggestion chips** below, centered: `Triage my inbox` (Gmail mark),
+  `Prep my day` (calendar mark), `Research a topic` (magnifier), `More`.
+
+**[FLUX]** `Medium` is unlabelled in the reference, which is a strange thing to
+leave unexplained when it is the only control on the screen that decides what a
+run costs. Flux makes it a budget — Quick / Medium / Thorough set the output
+token ceiling and the credit ceiling, and the browser process fails the run
+closed at the limit rather than billing on.
+
+The send button is the **only saturated pixel in the product chrome**, and the
+one deliberate exception to the no-accent rule in §5. It works precisely
+because everything around it is gray.
+
+### 3.1 First run: try an example — screenshot 1
 
 Content column is centered in the content area, ~672px wide.
 
