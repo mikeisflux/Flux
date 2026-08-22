@@ -47,18 +47,27 @@ struct Message {
   std::vector<ToolResult> tool_results;  // user turns
 
   // Move-only for the same reason as ToolCall, which it contains.
-  Message Clone() const {
-    Message out;
-    out.role = role;
-    out.text = text;
-    out.tool_results = tool_results;  // no DictValue; copyable
-    out.tool_calls.reserve(tool_calls.size());
-    for (const ToolCall& call : tool_calls) {
-      out.tool_calls.push_back(call.Clone());
-    }
-    return out;
-  }
+  Message Clone() const;
 };
+
+inline std::vector<ToolCall> CloneToolCalls(
+    const std::vector<ToolCall>& calls) {
+  std::vector<ToolCall> out;
+  out.reserve(calls.size());
+  for (const ToolCall& call : calls) {
+    out.push_back(call.Clone());
+  }
+  return out;
+}
+
+inline Message Message::Clone() const {
+  Message out;
+  out.role = role;
+  out.text = text;
+  out.tool_results = tool_results;  // no DictValue; copyable
+  out.tool_calls = CloneToolCalls(tool_calls);
+  return out;
+}
 
 // The conversation has to outlive each request built from it, so the history
 // is cloned per turn rather than moved.

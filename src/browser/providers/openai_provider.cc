@@ -192,7 +192,7 @@ void OpenAIProvider::Complete(CompletionRequest request,
 }
 
 void OpenAIProvider::OnResponse(CompletionCallback callback,
-                                std::unique_ptr<std::string> body) {
+                                std::optional<std::string> body) {
   CompletionResponse result;
 
   const int http_status =

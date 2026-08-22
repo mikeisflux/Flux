@@ -4,6 +4,7 @@
 #define CHROME_BROWSER_FLUX_PROVIDERS_OPENAI_PROVIDER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -44,7 +45,7 @@ class OpenAIProvider : public LLMProvider {
   std::string BuildRequestBody(const CompletionRequest& request) const;
 
   void OnResponse(CompletionCallback callback,
-                  std::unique_ptr<std::string> body);
+                  std::optional<std::string> body);
 
   raw_ptr<Profile> profile_;
   // When set, overrides the stored key.

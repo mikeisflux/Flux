@@ -123,8 +123,10 @@ void AgentRunner::OnCompletion(CompletionResponse response) {
   Message assistant;
   assistant.role = Message::Role::kAssistant;
   assistant.text = response.text;
-  assistant.tool_calls = response.tool_calls;
-  history_.push_back(assistant);
+  // Cloned, not moved: response.tool_calls is handed to ExecuteToolCalls below
+  // and the transcript has to outlive that.
+  assistant.tool_calls = CloneToolCalls(response.tool_calls);
+  history_.push_back(std::move(assistant));
 
   auto progress = mojom::RunProgress::New();
   progress->run_id = run_id_;
