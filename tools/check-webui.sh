@@ -78,6 +78,42 @@ for name in sorted(os.listdir(res)):
 sys.exit(1 if bad else 0)
 GNPY
 
+# grit reserves a fixed number of resource IDs for the console, and it is a
+# hard bound: exceed it and the build dies ~500 targets in with IdRangeOverflow,
+# naming a file in gen/ that does not explain itself. That has cost one build
+# already. The reservation lives in the patch series, the usage lives in
+# BUILD.gn, and nothing but this connects the two.
+python3 - "$RES" patches/0006-grit-resource-ids.patch <<'GRITPY' || status=1
+import os, re, sys
+res, patch = sys.argv[1], sys.argv[2]
+build = open(os.path.join(res, 'BUILD.gn'), encoding='utf-8').read()
+
+
+def count(name):
+    m = re.search(name + r'\s*(?:\+)?=\s*\[(.*?)\]', build, re.S)
+    return len(re.findall(r'"[^"]+"', m.group(1))) if m else 0
+
+
+# One include each: a static file as-is, a .ts as its compiled .js, and the
+# mojom bindings as theirs.
+used = count('static_files') + count('ts_files') + count('mojo_files')
+
+spec = open(patch, encoding='utf-8').read()
+m = re.search(r'^\+.*"sizes":\s*\{"includes":\s*\[(\d+)\]', spec, re.M)
+if not m:
+    print(f'{patch}: cannot find the includes reservation - has the patch '
+          'been rewritten?')
+    sys.exit(1)
+reserved = int(m.group(1))
+
+if used > reserved:
+    print(f'{patch}: the console needs {used} grit include IDs but only '
+          f'{reserved} are reserved. Raise sizes.includes and regenerate the '
+          'patch, or the build fails at the resources_grit step.')
+    sys.exit(1)
+print(f'  grit IDs: {used}/{reserved} used')
+GRITPY
+
 # Type-check the console under the same strict settings build_webui compiles
 # it with. This is the difference between a typo costing ten seconds and
 # costing a ninety-minute build, so it is worth the one-time npm install.

@@ -8,11 +8,25 @@ grit refuses to build a .grd it has no id range for:
 The integers are fake start ids - only their relative order matters, per
 tools/gritsettings/README.md - so flux takes 3990, between feedback (3980) and
 gaia_auth_host (4000). That keeps it alphabetical in the same place patch 0005
-puts it in chrome_paks.gni and //chrome/browser/resources.
+puts it in chrome_paks.gni and //chrome/browser/resources. They overlap the
+next range on paper and that is fine: actual ids are assigned dynamically, and
+for a generated .grd the only real constraint is sizes.
 
-sizes.includes is 20 against the 7 resources the console currently generates
-(index.html, app.css, four compiled .js, and the mojom bindings) - headroom to
-add a view without touching Chromium again.
+sizes.includes is what bounds it, and it is a HARD bound. Exceeding it fails
+the build with:
+
+  grit.exception.IdRangeOverflow: Generated .grd file used more IDs (23) than
+  were allocated for it (20) for type includes.
+
+which lands about 500 targets in, on a machine that cannot afford the round
+trip. It was 20, sized against the 7 resources the console had at the time;
+the console reached 23 (7 static files, 15 compiled .ts, the mojom bindings)
+and tipped it over.
+
+60 now, matching glic, which is the closest thing to a peer in this file. The
+count to check it against is len(static_files) + len(ts_files) + len(mojo_files)
+in src/resources/BUILD.gn - tools/check-webui.sh asserts it so this cannot be
+discovered by a build again.
 
 --- a/tools/gritsettings/resource_ids.spec
 +++ b/tools/gritsettings/resource_ids.spec
@@ -21,7 +35,7 @@ add a view without touching Chromium again.
      "includes": [3980],
    },
 +  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/flux/resources.grd": {
-+    "META": {"sizes": {"includes": [20],}},
++    "META": {"sizes": {"includes": [60],}},
 +    "includes": [3990],
 +  },
    "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/gaia_auth_host/resources.grd": {
