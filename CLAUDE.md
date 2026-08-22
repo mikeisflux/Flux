@@ -188,6 +188,13 @@ Hard-won, each one from a failed build:
   `chrome_web_ui_controller_factory.cc` handles DevTools only now.
 - Native tools write progress to stderr, which `$ErrorActionPreference='Stop'`
   treats as fatal. Run them through `Invoke-Native`.
+- **A GN action's `inputs`/`outputs` are a promise to ninja, not a rename.**
+  Renaming the executable in `chrome/BUILD.gn` left `reorder-imports.py` -
+  which the action passes *directories* to, and which hardcodes `chrome.exe`
+  on both sides - reading the PREVIOUS build's binary out of `initialexe/`,
+  reprocessing it, and reporting success. The build was green, `flux.exe`
+  never appeared in `out/`, and the thing in `out/` was stale. When a rename
+  touches an action, read the script it runs.
 
 ## What is called "chrome" and stays that way
 

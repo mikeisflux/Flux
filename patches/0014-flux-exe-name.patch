@@ -3,7 +3,7 @@ Subject: [flux] Name the executable flux.exe
 chrome.exe is Chromium's own output name; nothing in the fork had overridden
 it, so the product called Flux shipped a binary called chrome.
 
-Five references, and they have to move together or the series has a state
+Six references, and they have to move together or the series has a state
 where the browser is renamed and the things that look for it are not:
 
 - chrome/BUILD.gn links the executable to initialexe/chrome.exe and then
@@ -18,6 +18,16 @@ where the browser is renamed and the things that look for it are not:
   the install directory, and installer::kChromeExe, which is what setup.exe
   launches and renames on update. Miss any of them and the installer builds
   an archive around a file that is not there.
+
+- build/win/reorder-imports.py is the one that actually bit. The GN action
+  passes DIRECTORIES, not filenames, so the script itself hardcodes
+  chrome.exe on both sides. Renaming the GN inputs/outputs alone changes
+  dependency metadata and nothing else: the linker wrote initialexe/flux.exe,
+  the script went looking for initialexe/chrome.exe, found the PREVIOUS
+  BUILD's copy still sitting there, reprocessed that, and reported success -
+  so out/Dev/chrome.exe was a stale binary and out/Dev/flux.exe never existed.
+  A GN action's inputs and outputs are a promise to ninja about what the step
+  touches; they do not rename anything.
 
 chrome.dll is deliberately NOT renamed. The exe loads it through chrome_elf by
 name, and that name reaches into chrome_elf, the version resources and the
@@ -119,3 +129,35 @@ what has Flux's icon on it in the task manager.
  const wchar_t kChromeOldExe[] = L"old_chrome.exe";
  const wchar_t kChromeProxyExe[] = L"chrome_proxy.exe";
 
+
+--- a/build/win/reorder-imports.py
++++ b/build/win/reorder-imports.py
+@@ -16,7 +16,7 @@
+ import pefile
+ 
+ def reorder_imports(input_dir, output_dir, architecture):
+-  """Swap chrome_elf.dll to be the first import of chrome.exe.
++  """Swap chrome_elf.dll to be the first import of flux.exe.
+   Also copy over any related files that might be needed
+   (pdbs, manifests etc.).
+   """
+@@ -24,8 +24,8 @@
+   # correct executable in the first place, so that this script
+   # only needs to verify that and not write a whole new exe.
+ 
+-  input_image = os.path.join(input_dir, 'chrome.exe')
+-  output_image = os.path.join(output_dir, 'chrome.exe')
++  input_image = os.path.join(input_dir, 'flux.exe')
++  output_image = os.path.join(output_dir, 'flux.exe')
+ 
+   # pefile mmap()s the whole executable, and then parses parts of
+   # it into python data structures for ease of processing.
+@@ -73,7 +73,7 @@
+ 
+   pe.write(filename=output_image)
+ 
+-  for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
++  for fname in glob.iglob(os.path.join(input_dir, 'flux.exe.*')):
+     shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
+   return 0
+ 
