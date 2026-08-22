@@ -1,0 +1,45 @@
+Subject: [flux] Name the user-visible install paths Flux
+
+kProductPathName is what Windows builds the user data directory from, so an
+unpatched fork writes to %LOCALAPPDATA%\Chromium\User Data - the same place a
+real Chromium install uses. Two browsers sharing one profile directory is not
+a cosmetic problem.
+
+base_app_name and base_app_id go with it: they are what Windows shows for the
+app and what the taskbar groups windows by, so leaving them meant Flux windows
+grouping under Chromium.
+
+Deliberately NOT changed here:
+
+- The ProgID prefixes and descriptions (ChromiumHTM, "Chromium PDF Document").
+  They are file-association identity, which only matters once there is an
+  installer to register them, and there is not one yet.
+- The CLSIDs and GUIDs. They identify the elevation and tracing services to
+  COM. Changing them is correct for a fork that installs system-wide, but it
+  is only meaningful alongside an installer, and a half-changed set is worse
+  than an unchanged one.
+- kSafeBrowsingName. It identifies the client to Google's Safe Browsing
+  service, which is inert in this fork - dev.gn ships no API keys.
+
+--- a/chrome/install_static/chromium_install_modes.h
++++ b/chrome/install_static/chromium_install_modes.h
+@@ -21,7 +21,7 @@
+ 
+ // The brand-specific product name to be included as a component of the install
+ // and user data directory paths.
+-inline constexpr wchar_t kProductPathName[] = L"Chromium";
++inline constexpr wchar_t kProductPathName[] = L"Flux";
+ 
+ // The brand-specific safe browsing client name.
+ inline constexpr char kSafeBrowsingName[] = "chromium";
+@@ -45,8 +45,8 @@
+         .logo_suffix = L"",  // No logo suffix for the primary install mode.
+         .app_guid =
+             L"",  // Empty app_guid since no integration with Google Update.
+-        .base_app_name = L"Chromium",              // A distinct base_app_name.
+-        .base_app_id = L"Chromium",                // A distinct base_app_id.
++        .base_app_name = L"Flux",                  // A distinct base_app_name.
++        .base_app_id = L"Flux",                    // A distinct base_app_id.
+         .browser_prog_id_prefix = L"ChromiumHTM",  // Browser ProgID prefix.
+         .browser_prog_id_description =
+             L"Chromium HTML Document",  // Browser ProgID description.

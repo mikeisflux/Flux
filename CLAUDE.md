@@ -189,6 +189,27 @@ Hard-won, each one from a failed build:
 - Native tools write progress to stderr, which `$ErrorActionPreference='Stop'`
   treats as fatal. Run them through `Invoke-Native`.
 
+## What is called "chrome" and stays that way
+
+`chrome/browser/...` is Chromium's source tree, and the fork keeps it. Every
+`#include "chrome/..."`, every GN label and every one of ~40,000 files would
+have to change to rename it, and the reward would be a tree that conflicts
+with upstream on every uprev. No fork does this - not Brave, Edge, Vivaldi or
+Opera. Build output scrolling past as `obj/chrome/browser/...` is Chromium
+compiling its own code, not a naming oversight. Flux's own objects appear
+under `obj/chrome/browser/flux/flux/`.
+
+What a user can actually see IS renamed, and each one took a patch:
+
+- `flux.exe`, not chrome.exe (`0014`)
+- `%LOCALAPPDATA%\Flux\User Data`, not Chromium's - which otherwise means
+  two browsers sharing one profile directory (`0015`)
+- The window title, task manager and about page (`0009`)
+- The icon and taskbar identity (`0001`, `branding/`)
+
+If something else user-visible still says Chromium, that is a bug. If it is a
+path inside the source tree or the build directory, it is not.
+
 ## Brand
 
 Flux lime is `#b4f03c`, and it is a **fill** colour: near-black `#14200a` on

@@ -1,0 +1,78 @@
+Subject: [flux] Name the executable flux.exe
+
+chrome.exe is Chromium's own output name; nothing in the fork had overridden
+it, so the product called Flux shipped a binary called chrome.
+
+Two places decide it on Windows, and both have to move together:
+
+- chrome/BUILD.gn links the executable to initialexe/chrome.exe and then
+  reorder_imports rewrites it out to chrome.exe. Renaming only one of those
+  leaves reorder_imports looking for a file that no longer exists, which fails
+  at the very last target of the build.
+- chrome_constants.cc hardcodes "chrome.exe" as the name the browser uses to
+  find its own executable. Left alone it does not fail the build; it fails
+  later, quietly, wherever the browser looks itself up by name.
+
+chrome.dll is deliberately NOT renamed. The exe loads it through chrome_elf by
+name, and that name reaches further than this patch should - into chrome_elf,
+the version resources and the crash handler. The DLL is an implementation
+detail nobody sees; the exe is what has Flux's icon on it in the task manager.
+
+--- a/chrome/BUILD.gn
++++ b/chrome/BUILD.gn
+@@ -87,12 +87,12 @@
+     # initialexe/ is used so that the we can reorder imports and write back to
+     # the final destination at $root_out_dir/.
+     inputs = [
+-      "$root_out_dir/initialexe/chrome.exe",
+-      "$root_out_dir/initialexe/chrome.exe.pdb",
++      "$root_out_dir/initialexe/flux.exe",
++      "$root_out_dir/initialexe/flux.exe.pdb",
+     ]
+     outputs = [
+-      "$root_out_dir/chrome.exe",
+-      "$root_out_dir/chrome.exe.pdb",
++      "$root_out_dir/flux.exe",
++      "$root_out_dir/flux.exe.pdb",
+     ]
+     args = [
+       "-i",
+@@ -150,9 +150,9 @@
+   }
+ 
+   if (is_win) {
+-    _chrome_output_name = "initialexe/chrome"
++    _chrome_output_name = "initialexe/flux"
+   } else {
+-    _chrome_output_name = "chrome"
++    _chrome_output_name = "flux"
+   }
+ 
+   executable("chrome_initial") {
+
+--- a/chrome/common/chrome_constants.cc
++++ b/chrome/common/chrome_constants.cc
+@@ -32,9 +32,9 @@
+ 
+ #if BUILDFLAG(IS_WIN)
+ const base::FilePath::CharType kBrowserProcessExecutableName[] =
+-    FPL("chrome.exe");
++    FPL("flux.exe");
+ const base::FilePath::CharType kHelperProcessExecutableName[] =
+-    FPL("chrome.exe");
++    FPL("flux.exe");
+ #elif BUILDFLAG(IS_MAC)
+ const base::FilePath::CharType kBrowserProcessExecutableName[] =
+     FPL(PRODUCT_FULLNAME_STRING);
+@@ -54,9 +54,9 @@
+ 
+ #if BUILDFLAG(IS_WIN)
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+-    FPL("chrome.exe");
++    FPL("flux.exe");
+ const base::FilePath::CharType kHelperProcessExecutablePath[] =
+-    FPL("chrome.exe");
++    FPL("flux.exe");
+ #elif BUILDFLAG(IS_MAC)
+ const base::FilePath::CharType kBrowserProcessExecutablePath[] =
+     FPL(PRODUCT_FULLNAME_STRING ".app/Contents/MacOS/" PRODUCT_FULLNAME_STRING);
