@@ -1,0 +1,75 @@
+{
+  "id": "granola",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "incomplete": "No endpoint is recorded yet. Granola's overview page documents keys, scopes, plans and limits but not the API surface; that is at docs.granola.ai/introduction, which this container cannot reach. Until those paths are read, the connector can hold a key and do nothing with it.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API key",
+      "where": "Granola desktop app > Settings > Connectors > API keys > Create new key. Tick the note access scopes on the creation screen.",
+      "prefix": "",
+      "notes": [
+        "Granola does not publish a fixed key prefix; the field is empty deliberately rather than forgotten.",
+        "Requires a Business or Enterprise plan. Any workspace member on those plans can create one; there is no key on the lower tiers at all.",
+        "On Enterprise, an admin can restrict which scopes members may use in Settings > Workspace > General > API access for members - so a scope missing from the creation screen is a workspace policy, not a bug.",
+        "A personal key is tied to its owner's account and expires. Revoking is permanent and cannot be undone.",
+        "There is no sandbox. Test against a small dedicated folder."
+      ]
+    },
+    "workspace_key": {
+      "label": "Workspace API key",
+      "where": "Granola desktop app > Settings > Connectors > Workspace API keys. Admins only.",
+      "notes": [
+        "Belongs to the workspace rather than a person, does not expire, and keeps working after the admin who made it leaves. The better choice for a workflow that has to keep running.",
+        "Reaches public notes, plus any space with 'Allow Granola API access' turned on - which is ON by default for a newly created space, including its folders and subfolders. Worth saying out loud to anyone enabling this.",
+        "Cannot read private notes or unshared folders at all.",
+        "If the workspace has 'Allow public folders' turned off, public notes are not exposed to the API even with this key."
+      ]
+    },
+    "scopes": {
+      "personal_notes": "Notes the key owner owns, notes shared directly with them, and notes in private folders shared with them.",
+      "public_notes": "Notes visible to everyone in the workspace, including the Team space.",
+      "note": "Notes are private by default. A note only appears under public_notes if it sits in a folder visible to the whole workspace. Both scopes can be on one key. An empty result is almost always a scope or folder-visibility question rather than an API fault."
+    }
+  },
+  "api": {
+    "base_url": null,
+    "note": "Not recorded. See `incomplete` above."
+  },
+  "operations": {},
+  "pending_operations": {
+    "note": "Granola's overview names what the API returns - meeting notes, transcripts and AI summaries - but not the paths. The reference at docs.granola.ai/introduction has them, along with the base URL and the auth header spelling, and none of it is guessed here.",
+    "wanted": [
+      "base URL and Authorization header format",
+      "list / search notes",
+      "get a note's transcript",
+      "get a note's AI summary"
+    ]
+  },
+  "rate_limits": {
+    "burst": 25,
+    "sustained_per_second": 5,
+    "note": "Granola's own figures. Scoped per user or per workspace depending on the key, so a workspace key shared between workflows shares one bucket."
+  },
+  "webhooks": {
+    "available": true,
+    "plans": "Business and Enterprise",
+    "note": "Granola publishes a webhooks guide covering registration, event subscription, signature verification and retries. Flux has no public endpoint to register, so it polls; recorded so the alternative is not re-derived."
+  },
+  "also_ships": {
+    "mcp": "Granola publishes an MCP server that uses browser-based OAuth and is aimed at conversational assistants rather than scripts. Not what this connector uses - an API key is the right shape for a scheduled workflow - but it is the path if a skill ever wants OAuth instead of a pasted key."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.granola.ai/help-center/sharing/integrations/api",
+      "https://docs.granola.ai/introduction",
+      "https://docs.granola.ai/webhooks"
+    ],
+    "notes": [
+      "The key tiers, the two access scopes, the plan requirements, the space default and the rate limits are taken verbatim from Granola's API overview page.",
+      "docs.granola.ai is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the reference page has not been read and no endpoint is recorded."
+    ]
+  }
+}

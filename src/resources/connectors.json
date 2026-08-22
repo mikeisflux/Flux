@@ -48,7 +48,7 @@
       "description": "Search and read AI meeting notes",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "quickbooks",
