@@ -29,6 +29,12 @@ inline constexpr char kAdoptedSkills[] = "flux.adopted_skills";
 // lives here and shadows the shipped one.
 inline constexpr char kUserSkills[] = "flux.user_skills";
 
+// Whether the console's column is collapsed to its icon rail. A pref rather
+// than page state because the frame decides the window's layout and the page
+// only draws inside it - both have to agree, and only one of them survives a
+// restart.
+inline constexpr char kSidebarCollapsed[] = "flux.sidebar_collapsed";
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace flux::prefs

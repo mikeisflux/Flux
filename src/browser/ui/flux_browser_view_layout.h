@@ -42,6 +42,10 @@ class FluxBrowserViewLayout : public BrowserViewTabbedLayoutImpl {
   // False in windows that never got a sidebar, so this class stays safe to
   // install unconditionally for every tabbed browser.
   bool HasSidebar() const;
+
+  // The width to reserve on the leading edge. Follows the collapsed state, so
+  // it is asked of the view rather than taken from a constant.
+  int SidebarWidth() const;
 };
 
 }  // namespace flux

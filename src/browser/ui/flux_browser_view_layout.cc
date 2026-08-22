@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "chrome/browser/flux/ui/flux_sidebar_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
@@ -23,12 +22,18 @@ bool FluxBrowserViewLayout::HasSidebar() const {
   return IsParentedTo(views().flux_sidebar, views().browser_view);
 }
 
+// Asked of the view rather than read from the constant, because the user can
+// collapse it to the icon rail and the whole window has to follow.
+int FluxBrowserViewLayout::SidebarWidth() const {
+  return views().flux_sidebar->GetPreferredSize().width();
+}
+
 gfx::Size FluxBrowserViewLayout::GetMinimumSize(const views::View* host) const {
   gfx::Size size = BrowserViewTabbedLayoutImpl::GetMinimumSize(host);
   if (HasSidebar()) {
     // The base measured the window as if the whole width were available to it,
     // so its answer is the minimum for everything to the right of the sidebar.
-    size.Enlarge(FluxSidebarView::kWidth, 0);
+    size.Enlarge(SidebarWidth(), 0);
   }
   return size;
 }
@@ -45,7 +50,7 @@ void FluxBrowserViewLayout::DoPreLayoutComputations(
   // is now laid out in no longer touches it.
   BrowserLayoutParams inset = params;
   if (HasSidebar()) {
-    inset.InsetHorizontal(FluxSidebarView::kWidth, /*leading=*/true);
+    inset.InsetHorizontal(SidebarWidth(), /*leading=*/true);
   }
   BrowserViewTabbedLayoutImpl::DoPreLayoutComputations(inset);
 }
@@ -67,7 +72,7 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
   // showing.
   if (views().flux_sidebar) {
     gfx::Rect bounds = params.visual_client_area;
-    bounds.set_width(FluxSidebarView::kWidth);
+    bounds.set_width(SidebarWidth());
     layout.AddChild(views().flux_sidebar, bounds, HasSidebar());
   }
 

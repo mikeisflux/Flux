@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include "base/functional/bind.h"
+#include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/webui/webui_embedding_context.h"
@@ -13,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/window_open_disposition.h"
+#include "components/prefs/pref_service.h"
 #include "ui/views/view.h"
 #include "url/gurl.h"
 
@@ -45,7 +48,34 @@ FluxSidebarView::FluxSidebarView(BrowserWindowInterface* browser)
   // what the user is looking at - without the sidebar being a tab itself.
   webui::SetBrowserWindowInterface(contents_wrapper_->web_contents(), browser);
 
+  pref_change_registrar_.Init(browser->GetProfile()->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kSidebarCollapsed,
+      base::BindRepeating(&FluxSidebarView::OnCollapsedChanged,
+                          base::Unretained(this)));
+
   SetVisible(true);
+}
+
+int FluxSidebarView::CurrentWidth() const {
+  return browser_->GetProfile()->GetPrefs()->GetBoolean(
+             prefs::kSidebarCollapsed)
+             ? kCollapsedWidth
+             : kWidth;
+}
+
+gfx::Size FluxSidebarView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  // Only the width is used - the layout gives this view the full height of the
+  // window regardless.
+  return gfx::Size(CurrentWidth(), 0);
+}
+
+void FluxSidebarView::OnCollapsedChanged() {
+  PreferredSizeChanged();
+  if (views::View* parent_view = parent()) {
+    parent_view->InvalidateLayout();
+  }
 }
 
 FluxSidebarView::~FluxSidebarView() = default;

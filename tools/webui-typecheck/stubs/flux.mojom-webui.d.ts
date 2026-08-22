@@ -135,6 +135,8 @@ export declare class FluxPageHandlerRemote {
              instructions: string):
       Promise<{adopted: boolean, error: string|null}>;
   removeSkill(command: string): void;
+  getSidebarCollapsed(): Promise<{collapsed: boolean}>;
+  setSidebarCollapsed(collapsed: boolean): void;
 }
 
 export declare class FluxPageHandlerObserverReceiver {

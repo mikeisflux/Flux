@@ -20,6 +20,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kAdoptedSkills, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       kUserSkills, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // Not syncable: how wide a window is set up is a property of the screen in
+  // front of you, not of the account.
+  registry->RegisterBooleanPref(kSidebarCollapsed, false);
 }
 
 }  // namespace flux::prefs

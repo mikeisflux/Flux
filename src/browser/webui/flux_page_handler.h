@@ -69,6 +69,8 @@ class FluxPageHandler : public mojom::FluxPageHandler,
                   const std::string& instructions,
                   AdoptSkillCallback callback) override;
   void RemoveSkill(const std::string& command) override;
+  void GetSidebarCollapsed(GetSidebarCollapsedCallback callback) override;
+  void SetSidebarCollapsed(bool collapsed) override;
 
   // Issues a minimal completion to confirm the key is accepted. Shared by
   // SetProviderKey and ValidateProviderKey.

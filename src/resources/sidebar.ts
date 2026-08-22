@@ -47,7 +47,30 @@ class FluxSidebar {
     this.approvalsBadge = document.getElementById('approvals-badge')!;
 
     this.markCurrentOnClick();
+    void this.bindCollapse();
     void this.refresh();
+  }
+
+  /**
+   * Collapsing is a window layout change, so the browser owns the state and
+   * this document only follows it. Reading it back on load rather than
+   * assuming expanded keeps a collapsed window collapsed across a restart.
+   */
+  private async bindCollapse() {
+    const button = document.getElementById('collapse')!;
+    const {collapsed} = await this.handler.getSidebarCollapsed();
+    const apply = (value: boolean) => {
+      document.body.classList.toggle('collapsed', value);
+      button.title = value ? 'Show sidebar' : 'Hide sidebar';
+      button.setAttribute('aria-pressed', String(value));
+    };
+    apply(collapsed);
+
+    button.addEventListener('click', () => {
+      const next = !document.body.classList.contains('collapsed');
+      apply(next);
+      this.handler.setSidebarCollapsed(next);
+    });
   }
 
   /**

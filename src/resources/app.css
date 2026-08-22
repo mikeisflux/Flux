@@ -1486,3 +1486,35 @@ kbd {
   font-family: ui-monospace, monospace;
   font-size: 12px;
 }
+
+/* Collapsed sidebar ------------------------------------------------------- */
+
+/* The frame has narrowed the column to the icon rail; the page just has to
+ * stop trying to fit labels in it. Everything stays reachable - the nav rows
+ * keep their icons and their tooltips - because a collapsed sidebar that
+ * hides features is a worse trade than one that hides words. */
+body.shell.collapsed .shell-titlebar {
+  flex-direction: column;
+  justify-content: center;
+  padding: 0;
+}
+
+body.shell.collapsed .shell-titlebar #search { display: none; }
+
+body.shell.collapsed .sidebar { padding: 12px 6px; }
+
+/* The label is collapsed to zero rather than removed, so the row keeps its
+ * accessible name for a screen reader. */
+body.shell.collapsed .nav-item {
+  justify-content: center;
+  padding: 11px 0;
+  gap: 0;
+  overflow: hidden;
+  font-size: 0;
+  white-space: nowrap;
+}
+
+body.shell.collapsed .nav-item svg { flex: none; }
+
+body.shell.collapsed .nav-section,
+body.shell.collapsed .badge { display: none; }

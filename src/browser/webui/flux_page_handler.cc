@@ -351,6 +351,18 @@ void FluxPageHandler::RemoveSkill(const std::string& command) {
   skills->Remove(command);
 }
 
+void FluxPageHandler::GetSidebarCollapsed(
+    GetSidebarCollapsedCallback callback) {
+  std::move(callback).Run(
+      profile_->GetPrefs()->GetBoolean(prefs::kSidebarCollapsed));
+}
+
+void FluxPageHandler::SetSidebarCollapsed(bool collapsed) {
+  // FluxSidebarView watches this and re-lays out the window; the page only
+  // restyles itself for the narrower column.
+  profile_->GetPrefs()->SetBoolean(prefs::kSidebarCollapsed, collapsed);
+}
+
 void FluxPageHandler::OnRunProgress(const mojom::RunProgress& progress) {
   observer_->OnRunProgress(progress.Clone());
 }

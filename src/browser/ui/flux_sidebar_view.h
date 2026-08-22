@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "chrome/browser/flux/webui/flux_ui.h"
 #include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -29,10 +30,19 @@ class FluxSidebarView : public views::WebView,
   METADATA_HEADER(FluxSidebarView, views::WebView)
 
  public:
-  // Read off the reference design. Fixed rather than resizable: the console's
-  // own layout is built around it, and the whole point of putting it in the
-  // frame instead of the side panel was to stop it behaving like a panel.
+  // Read off the reference design. Two fixed widths rather than a drag
+  // handle: the console's own layout is built around them, and the point of
+  // putting it in the frame instead of the side panel was to stop it behaving
+  // like a panel.
   static constexpr int kWidth = 305;
+
+  // Collapsed, it keeps the icon rail. Collapsing to nothing would take the
+  // control that un-collapses it with it, and putting a second one in the
+  // frame to compensate is a worse answer than staying on screen.
+  static constexpr int kCollapsedWidth = 56;
+
+  // What the layout should reserve right now.
+  int CurrentWidth() const;
 
   explicit FluxSidebarView(BrowserWindowInterface* browser);
   FluxSidebarView(const FluxSidebarView&) = delete;
@@ -54,8 +64,16 @@ class FluxSidebarView : public views::WebView,
       base::OnceCallback<void(content::NavigationHandle&)>
           navigation_handle_callback) override;
 
+ protected:
+  // views::View:
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
+
  private:
+  void OnCollapsedChanged();
+
   const raw_ptr<BrowserWindowInterface> browser_;
+  PrefChangeRegistrar pref_change_registrar_;
   std::unique_ptr<WebUIContentsWrapperT<FluxUI>> contents_wrapper_;
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
   base::WeakPtrFactory<FluxSidebarView> weak_factory_{this};

@@ -179,6 +179,13 @@ interface FluxPageHandler {
              string instructions) => (bool adopted, string? error);
 
   RemoveSkill(string command);
+
+  // --- The shell ------------------------------------------------------------
+
+  // The console's column is browser chrome, so collapsing it is a window
+  // layout change the frame has to make; the page cannot resize itself.
+  GetSidebarCollapsed() => (bool collapsed);
+  SetSidebarCollapsed(bool collapsed);
 };
 
 // What the console is allowed to know about a stored key. Deliberately never
