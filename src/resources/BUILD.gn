@@ -8,10 +8,24 @@ build_webui("resources") {
     "index.html",
     "sidebar.html",
     "app.css",
+
+    # Catalogues the console fetches at runtime. Static resources rather than
+    # Mojo calls: neither changes while the browser is running, and every
+    # screen that shows one wants all of it.
+    "templates.json",
+    "connectors.json",
+    "skills.json",
   ]
   ts_files = [
     "app.ts",
     "sidebar.ts",
+    "catalog.ts",
+    "connectors_view.ts",
+    "customize_view.ts",
+    "skills.ts",
+    "new_task_view.ts",
+    "templates_view.ts",
+    "workflows_view.ts",
     "runs.ts",
     "approvals.ts",
     "settings.ts",

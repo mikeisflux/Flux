@@ -89,6 +89,13 @@ export interface TaskSpec {
   creditBudget: bigint;
 }
 
+export interface LearnedFact {
+  id: string;
+  text: string;
+  sourceRunId: string;
+  learnedAt: Time;
+}
+
 export interface ProviderKeyStatus {
   provider: Provider;
   configured: boolean;
@@ -120,6 +127,14 @@ export declare class FluxPageHandlerRemote {
   clearProviderKey(provider: Provider): void;
   validateProviderKey(provider: Provider):
       Promise<{valid: boolean, error: string|null}>;
+  getInstructions(): Promise<{text: string, learned: LearnedFact[]}>;
+  setInstructions(text: string): void;
+  dismissLearnedFact(id: string): void;
+  listAdoptedSkills(): Promise<{commands: string[]}>;
+  adoptSkill(command: string, name: string, description: string,
+             instructions: string):
+      Promise<{adopted: boolean, error: string|null}>;
+  removeSkill(command: string): void;
 }
 
 export declare class FluxPageHandlerObserverReceiver {

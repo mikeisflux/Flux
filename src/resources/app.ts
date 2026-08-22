@@ -14,6 +14,8 @@ import type {
 
 import {ApprovalQueue} from './approvals.js';
 import {SettingsView} from './settings.js';
+import {ConnectorsView} from './connectors_view.js';
+import {CustomizeView} from './customize_view.js';
 import {NewTaskView} from './new_task_view.js';
 import {TemplatesView} from './templates_view.js';
 import {WorkflowsView} from './workflows_view.js';
@@ -35,6 +37,8 @@ class FluxApp {
   private handler: FluxPageHandlerRemote;
   private approvals: ApprovalQueue;
   private settings: SettingsView;
+  private connectors = new ConnectorsView();
+  private customize: CustomizeView;
   private newTask: NewTaskView;
   private templates = new TemplatesView();
   private workflows = new WorkflowsView();
@@ -57,6 +61,7 @@ class FluxApp {
 
     this.settings = new SettingsView(this.handler);
     this.newTask = new NewTaskView(this.handler);
+    this.customize = new CustomizeView(this.handler);
 
     window.addEventListener('hashchange', () => this.renderFromHash());
     this.renderFromHash();
@@ -78,6 +83,12 @@ class FluxApp {
     switch (view) {
       case 'new-task':
         void this.newTask.render(content);
+        return;
+      case 'customize':
+        void this.customize.render(content, sub === 'skills' ? 'skills' : 'instructions');
+        return;
+      case 'connectors':
+        void this.connectors.render(content);
         return;
       case 'templates':
         void this.templates.render(content, sub === 'skills' ? 'skills' : 'tasks');

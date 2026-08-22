@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "note": "Names, descriptions and eligibility badges are transcribed from the reference verbatim. `definition` says whether the auth and operation detail in data/connectors/<id>.json has been authored against the vendor's real API - it is not guessed, so a pending connector renders but will not connect.",
+  "connectors": [
+    {
+      "id": "google",
+      "name": "Google",
+      "description": "Read and write Gmail, Drive, Docs, Sheets, and Calendar (powered by Composio)",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "description": "Search messages, post updates, and find people",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "imessage",
+      "name": "iMessage",
+      "description": "Read and send iMessages and look up contacts on this Mac",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "outlook",
+      "name": "Outlook",
+      "description": "Read and send email, manage calendars, and work with Microsoft To Do",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "apollo",
+      "name": "Apollo",
+      "description": "Find leads, enrich data, and sequence outreach",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "granola",
+      "name": "Granola",
+      "description": "Search and read AI meeting notes",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "quickbooks",
+      "name": "QuickBooks",
+      "description": "Query accounting data, run reports, and manage bills, invoices, and payments",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "description": "Search, read, and update pages and databases",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "linear",
+      "name": "Linear",
+      "description": "Triage issues and manage projects & team workflows",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "attio",
+      "name": "Attio",
+      "description": "Manage CRM contacts, companies, and deals",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "description": "Search customers, invoices, payments, and subscriptions",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "atlassian",
+      "name": "Atlassian",
+      "description": "Search Jira issues and Confluence pages",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "asana",
+      "name": "Asana",
+      "description": "Coordinate tasks, projects, and team goals",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "superhuman_mail",
+      "name": "Superhuman Mail",
+      "description": "Search email, draft and send messages, and manage calendar events",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "sentry",
+      "name": "Sentry",
+      "description": "Debug errors, events, and performance traces",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "description": "Debug Workers, check Cloudflare edge traffic via Radar, and search docs",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "zapier",
+      "name": "Zapier",
+      "description": "Trigger automations across 9,000+ connected apps",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "webflow",
+      "name": "Webflow",
+      "description": "Manage sites, pages, and CMS collections",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "description": "Search code, review pull requests, and triage issues",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "hubspot",
+      "name": "HubSpot",
+      "description": "Chat with your CRM to surface deal insights",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "monday",
+      "name": "Monday",
+      "description": "Manage boards, items, and team workflows",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "calendly",
+      "name": "Calendly",
+      "description": "Manage event types, availability, and scheduling links",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "airtable",
+      "name": "Airtable",
+      "description": "Query and update tables and records",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "grain",
+      "name": "Grain",
+      "description": "Search meeting recordings, notes, and transcripts",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "salesforce",
+      "name": "Salesforce",
+      "description": "Search and update accounts, contacts, leads, opportunities, tasks, reports, and campaigns",
+      "transport": "api",
+      "badge": "API-enabled Salesforce orgs",
+      "definition": "pending"
+    },
+    {
+      "id": "brex",
+      "name": "Brex",
+      "description": "Inspect cards, expenses, bills, banking, users, and accounting records",
+      "transport": "api",
+      "badge": "Requires approval",
+      "definition": "pending"
+    },
+    {
+      "id": "mercury",
+      "name": "Mercury",
+      "description": "Check balances, transactions, and team activity",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "ramp",
+      "name": "Ramp",
+      "description": "Track card spend, invoices, and bills",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "cal_com",
+      "name": "Cal.com",
+      "description": "Manage scheduling links, bookings, and availability",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "klaviyo",
+      "name": "Klaviyo",
+      "description": "Build segments, send campaigns, and review email metrics",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "coda",
+      "name": "Coda",
+      "description": "Search docs, read tables, and create rows",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "posthog",
+      "name": "PostHog",
+      "description": "Analyze product usage and manage experiments & feature flags",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "pylon",
+      "name": "Pylon",
+      "description": "Investigate customer issues, accounts, and conversations",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "sanity",
+      "name": "Sanity",
+      "description": "Query schemas and manage structured content",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "dualentry",
+      "name": "DualEntry",
+      "description": "Search accounting records and create validated draft transactions and entities",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "google_analytics",
+      "name": "Google Analytics",
+      "description": "Inspect GA4 properties, audiences, reports, funnels, and realtime activity",
+      "transport": "api",
+      "badge": null,
+      "definition": "pending"
+    },
+    {
+      "id": "instagram",
+      "name": "Instagram",
+      "description": "Publish posts, review insights and comments, and reply to existing customer DMs",
+      "transport": "api",
+      "badge": "Business & Creator accounts only",
+      "definition": "pending"
+    },
+    {
+      "id": "facebook_pages",
+      "name": "Facebook Pages",
+      "description": "Publish and schedule posts, read insights and comments on Pages you manage",
+      "transport": "api",
+      "badge": "Pages only - personal profiles have no API",
+      "definition": "authored"
+    }
+  ]
+}

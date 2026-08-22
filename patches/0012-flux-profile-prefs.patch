@@ -1,0 +1,28 @@
+Subject: [flux] Register the console's profile prefs
+
+Instructions, learned facts and the adopted skill set are per-profile and have
+to survive a restart, so they are prefs; a pref nothing registers is a CHECK
+failure the first time it is read.
+
+Syncable, all four: instructions and an adopted skill set are the user's own
+configuration and should follow them to another machine, and a memory that
+only exists on one desktop is a memory they cannot rely on.
+
+--- a/chrome/browser/prefs/browser_prefs.cc
++++ b/chrome/browser/prefs/browser_prefs.cc
+@@ -34,6 +34,7 @@
+ #include "chrome/browser/external_protocol/external_protocol_handler.h"
+ #include "chrome/browser/finds/core/finds_service.h"
+ #include "chrome/browser/first_run/first_run.h"
++#include "chrome/browser/flux/flux_prefs.h"
+ #include "chrome/browser/glic/glic_pref_names.h"
+ #include "chrome/browser/glic/suggestions/contextual_cueing_prefs.h"
+ #include "chrome/browser/gpu/gpu_mode_manager.h"
+@@ -1773,6 +1774,7 @@
+   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
+   DownloadPrefs::RegisterProfilePrefs(registry);
+   finds::FindsService::RegisterProfilePrefs(registry);
++  flux::prefs::RegisterProfilePrefs(registry);
+   glic::prefs::RegisterProfilePrefs(registry);
+   glic::contextual_cueing::prefs::RegisterProfilePrefs(registry);
+   permissions::PermissionHatsTriggerHelper::RegisterProfilePrefs(registry);

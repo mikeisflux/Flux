@@ -1,9 +1,6 @@
 {
   "id": "facebook_pages",
-  "name": "Facebook Pages",
-  "description": "Publish and schedule posts, read insights and comments on Pages you manage",
-  "transport": "api",
-  "badge": "Pages only - personal profiles have no API",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
   "auth": {
     "type": "oauth2",
     "authorize_url": "https://www.facebook.com/v21.0/dialog/oauth",
@@ -24,7 +21,10 @@
     "publish": {
       "method": "POST",
       "path": "/{page_id}/feed",
-      "params": { "message": "string", "link": "string?" },
+      "params": {
+        "message": "string",
+        "link": "string?"
+      },
       "write_scope": "send"
     },
     "schedule": {

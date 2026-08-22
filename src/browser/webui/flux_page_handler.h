@@ -59,6 +59,16 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void ClearProviderKey(mojom::Provider provider) override;
   void ValidateProviderKey(mojom::Provider provider,
                            ValidateProviderKeyCallback callback) override;
+  void GetInstructions(GetInstructionsCallback callback) override;
+  void SetInstructions(const std::string& text) override;
+  void DismissLearnedFact(const std::string& id) override;
+  void ListAdoptedSkills(ListAdoptedSkillsCallback callback) override;
+  void AdoptSkill(const std::string& command,
+                  const std::string& name,
+                  const std::string& description,
+                  const std::string& instructions,
+                  AdoptSkillCallback callback) override;
+  void RemoveSkill(const std::string& command) override;
 
   // Issues a minimal completion to confirm the key is accepted. Shared by
   // SetProviderKey and ValidateProviderKey.

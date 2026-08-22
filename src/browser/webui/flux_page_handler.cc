@@ -5,11 +5,17 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/strings/string_util.h"
+#include "base/time/time.h"
+#include "base/uuid.h"
 #include "chrome/browser/flux/flux_agent_service_factory.h"
+#include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace flux {
 
@@ -244,6 +250,105 @@ void FluxPageHandler::ValidateProviderKey(mojom::Provider provider,
                                           : std::make_optional(error));
                },
                weak_factory_.GetWeakPtr(), provider, std::move(callback)));
+}
+
+// --- Customize > Instructions ------------------------------------------------
+
+void FluxPageHandler::GetInstructions(GetInstructionsCallback callback) {
+  PrefService* p = profile_->GetPrefs();
+  std::vector<mojom::LearnedFactPtr> learned;
+  for (const base::Value& entry : p->GetList(prefs::kLearnedFacts)) {
+    const base::DictValue* d = entry.GetIfDict();
+    if (!d) {
+      continue;
+    }
+    auto fact = mojom::LearnedFact::New();
+    fact->id = d->FindString("id") ? *d->FindString("id") : std::string();
+    fact->text = d->FindString("text") ? *d->FindString("text") : std::string();
+    fact->source_run_id =
+        d->FindString("run_id") ? *d->FindString("run_id") : std::string();
+    fact->learned_at = base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds(d->FindDouble("learned_at").value_or(0)));
+    learned.push_back(std::move(fact));
+  }
+  std::move(callback).Run(p->GetString(prefs::kInstructions),
+                          std::move(learned));
+}
+
+void FluxPageHandler::SetInstructions(const std::string& text) {
+  profile_->GetPrefs()->SetString(prefs::kInstructions, text);
+}
+
+void FluxPageHandler::DismissLearnedFact(const std::string& id) {
+  ScopedListPrefUpdate update(profile_->GetPrefs(), prefs::kLearnedFacts);
+  update->EraseIf([&id](const base::Value& entry) {
+    const base::DictValue* d = entry.GetIfDict();
+    const std::string* found = d ? d->FindString("id") : nullptr;
+    return found && *found == id;
+  });
+}
+
+// --- Customize > Skills ------------------------------------------------------
+
+void FluxPageHandler::ListAdoptedSkills(ListAdoptedSkillsCallback callback) {
+  std::vector<std::string> commands;
+  for (const base::Value& entry :
+       profile_->GetPrefs()->GetList(prefs::kAdoptedSkills)) {
+    if (const std::string* command = entry.GetIfString()) {
+      commands.push_back(*command);
+    }
+  }
+  std::move(callback).Run(std::move(commands));
+}
+
+void FluxPageHandler::AdoptSkill(const std::string& command,
+                                 const std::string& name,
+                                 const std::string& description,
+                                 const std::string& instructions,
+                                 AdoptSkillCallback callback) {
+  const std::string trimmed = std::string(
+      base::TrimWhitespaceASCII(command, base::TRIM_ALL));
+  if (trimmed.empty()) {
+    std::move(callback).Run(false, "A skill needs a command.");
+    return;
+  }
+  // Skills and workflows share one command namespace, so adopting over an
+  // existing command would silently shadow whatever was there. Refused rather
+  // than resolved: only the user knows which one they meant.
+  for (const base::Value& entry :
+       profile_->GetPrefs()->GetList(prefs::kAdoptedSkills)) {
+    const std::string* existing = entry.GetIfString();
+    if (existing && *existing == trimmed) {
+      std::move(callback).Run(
+          false, "/" + trimmed + " is already taken. Pick another command.");
+      return;
+    }
+  }
+
+  {
+    ScopedDictPrefUpdate skills(profile_->GetPrefs(), prefs::kUserSkills);
+    base::DictValue skill;
+    skill.Set("name", name);
+    skill.Set("description", description);
+    skill.Set("instructions", instructions);
+    skills->Set(trimmed, std::move(skill));
+  }
+  ScopedListPrefUpdate adopted(profile_->GetPrefs(), prefs::kAdoptedSkills);
+  adopted->Append(trimmed);
+
+  std::move(callback).Run(true, std::nullopt);
+}
+
+void FluxPageHandler::RemoveSkill(const std::string& command) {
+  {
+    ScopedListPrefUpdate adopted(profile_->GetPrefs(), prefs::kAdoptedSkills);
+    adopted->EraseIf([&command](const base::Value& entry) {
+      const std::string* existing = entry.GetIfString();
+      return existing && *existing == command;
+    });
+  }
+  ScopedDictPrefUpdate skills(profile_->GetPrefs(), prefs::kUserSkills);
+  skills->Remove(command);
 }
 
 void FluxPageHandler::OnRunProgress(const mojom::RunProgress& progress) {

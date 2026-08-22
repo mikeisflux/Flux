@@ -13,6 +13,8 @@ mojom("mojo_bindings") {
 
 source_set("flux") {
   sources = [
+    "flux_prefs.cc",
+    "flux_prefs.h",
     "flux_agent_service.cc",
     "flux_agent_service.h",
     "flux_agent_service_factory.cc",

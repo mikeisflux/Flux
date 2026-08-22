@@ -51,6 +51,28 @@ for path in sorted(glob.glob(os.path.join(sys.argv[1], '*.ts'))):
 sys.exit(1 if bad else 0)
 PY
 
+# Every resource has to be listed in BUILD.gn or it is simply not packed, and
+# the failure shows up as a missing module at runtime - after a two-hour build.
+# Adding a file and forgetting the build entry has already happened once.
+python3 - "$RES" <<'GNPY' || status=1
+import os, re, sys
+res = sys.argv[1]
+build = open(os.path.join(res, 'BUILD.gn'), encoding='utf-8').read()
+listed = set(re.findall(r'"([^"]+\.(?:ts|html|css|json|svg|png))"', build))
+bad = 0
+for name in sorted(os.listdir(res)):
+    if not name.endswith(('.ts', '.html', '.css', '.json')):
+        continue
+    # The mojom stub is dropped in by this script and removed again; during a
+    # real build it is generated, so it must never be listed here.
+    if name.endswith('.d.ts'):
+        continue
+    if name not in listed:
+        print(f'{res}/{name}: not listed in BUILD.gn - it will not be packed')
+        bad += 1
+sys.exit(1 if bad else 0)
+GNPY
+
 # Type-check the console under the same strict settings build_webui compiles
 # it with. This is the difference between a typo costing ten seconds and
 # costing a ninety-minute build, so it is worth the one-time npm install.

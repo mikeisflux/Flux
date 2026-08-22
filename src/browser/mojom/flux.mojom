@@ -149,6 +149,36 @@ interface FluxPageHandler {
   // Re-checks a stored key. Keys get revoked and quotas get exhausted; a
   // scheduled workflow failing at 7am should not be the first sign of it.
   ValidateProviderKey(Provider provider) => (bool valid, string? error);
+
+  // --- Customize > Instructions ---------------------------------------------
+
+  // The user's own text, and separately what the agent has learned. The
+  // reference keeps one buffer that both write to, which is transparent but
+  // lets the agent overwrite the user with no way to tell afterwards who wrote
+  // what. Same transparency, two lists.
+  GetInstructions() => (string text, array<LearnedFact> learned);
+
+  SetInstructions(string text);
+
+  // The user disagreeing with something the agent concluded. Individually
+  // removable, because the alternative is editing a paragraph the agent will
+  // just rewrite.
+  DismissLearnedFact(string id);
+
+  // --- Customize > Skills ---------------------------------------------------
+
+  // Commands of the skills in the user's own set. The shipped library is a
+  // catalog to adopt from; the console has it packed and only needs to know
+  // which of them are live.
+  ListAdoptedSkills() => (array<string> commands);
+
+  // Copies a skill into the user's set, with whatever edits they made in the
+  // form. Fails if the command collides - skills and workflows share one
+  // command namespace, so a silent overwrite would shadow a workflow.
+  AdoptSkill(string command, string name, string description,
+             string instructions) => (bool adopted, string? error);
+
+  RemoveSkill(string command);
 };
 
 // What the console is allowed to know about a stored key. Deliberately never
@@ -165,6 +195,16 @@ struct ProviderKeyStatus {
   // from "saved and known to work".
   bool validated;
   string? last_error;
+};
+
+// A thing the agent worked out about the user during a run. Kept apart from
+// the user's own instructions so that neither can silently overwrite the
+// other, and carrying its origin so "why does it think that" is answerable.
+struct LearnedFact {
+  string id;
+  string text;
+  string source_run_id;
+  mojo_base.mojom.Time learned_at;
 };
 
 interface FluxPageHandlerFactory {
