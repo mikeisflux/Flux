@@ -305,6 +305,15 @@
       "transport": "api",
       "badge": "Pages only - personal profiles have no API",
       "definition": "authored"
+    },
+    {
+      "id": "plain",
+      "_": "Not in the reference. Added deliberately at the user's request; appended rather than sorted in so the reference order above stays intact.",
+      "name": "Plain",
+      "description": "Reply to customer threads and send email from your support inbox",
+      "transport": "api",
+      "badge": null,
+      "definition": "authored"
     }
   ]
 }

@@ -1,0 +1,78 @@
+{
+  "id": "plain",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "not_in_reference": "Plain is not one of the 38 connectors transcribed from the reference. It was added deliberately at the user's request. Do not 'correct' the catalogue by removing it.",
+  "incomplete": "The API endpoint and the auth scheme are NOT recorded. Plain publishes both on its Authentication page, which has not been supplied and which this container cannot reach. Until they are read, this connector cannot connect. See pending.",
+  "shape": {
+    "note": "GraphQL, not REST - the first in this catalogue. There is one endpoint and one HTTP method; operations below are named mutations, and what varies is the document sent, not the path. Authorisation is per-operation permission strings rather than OAuth scopes or roles.",
+    "errors": "Plain returns errors INSIDE a successful response: every mutation selects an `error { message type code }` alongside its payload. A 200 with a populated error field is a failure. Code that only checks the HTTP status will read every rejection as a success - this is the single most likely way to get this connector wrong."
+  },
+  "auth": {
+    "type": "api_key",
+    "notes": [
+      "Plain's docs list an Authentication page and a machine-users concept, so a key issued to a machine user is the expected mechanism - but the header name, the key format and the endpoint are not recorded here because the page has not been read. Do not guess them.",
+      "Permissions are granted per API key as individual strings. Grant only the ones the exposed operations need: thread:reply, email:create, email:read. Do NOT grant customer:impersonate - see never_expose."
+    ]
+  },
+  "api": {
+    "base_url": null,
+    "note": "Deliberately null. See `incomplete`."
+  },
+  "operations": {
+    "reply_to_thread": {
+      "mutation": "replyToThread",
+      "permissions": ["thread:reply"],
+      "write_scope": "send",
+      "notes": "Only works when the thread's `channel` is API, CHAT, EMAIL, SLACK or MS_TEAMS. Read `channel` off the thread first; otherwise the mutation fails with cannot_reply_to_thread and a message saying why."
+    },
+    "reply_to_email": {
+      "mutation": "replyToEmail",
+      "permissions": ["email:create", "email:read"],
+      "write_scope": "send",
+      "notes": "Replies to one inbound email by inReplyToEmailId, rather than to the thread. Takes customerId plus both textContent and markdownContent - send both, they are the two renderings of the same message, not alternatives."
+    },
+    "send_new_email": {
+      "mutation": "sendNewEmail",
+      "permissions": ["email:create"],
+      "write_scope": "send",
+      "notes": "Outbound, unprompted mail to a customer - Plain's own framing is proactively reaching out about issues. This is the highest-consequence operation exposed here: it starts a conversation with a real customer who did not ask for one, so it needs explicit per-send confirmation, not a standing approval."
+    }
+  },
+  "never_expose": [
+    "The `impersonation` parameter on replyToThread, and the customer:impersonate permission that enables it. It sends a message that appears to come from the customer themselves - on an EMAIL or API thread it forges their address into the From line, and in Slack and chat it wears their name and avatar. Plain built it for headless-portal products relaying a customer's own words, which is legitimate; an agent composing text and sending it as a named third party is not the same thing, and nothing in the Flux catalogue needs it. Leave customer:impersonate off the key so the capability cannot be reached even by mistake.",
+    "channelSpecificOptions.hiddenRecipients on a reply - it Bccs a third party into a customer conversation without either party seeing it."
+  ],
+  "pending_operations": {
+    "note": "Only the three messaging mutations whose pages were supplied are recorded. Plain's docs list considerably more, and none of it is guessed here.",
+    "wanted": [
+      "Authentication - the endpoint URL, the header, and the key format. Nothing works without this.",
+      "Error handling and Error codes - the `type` and `code` vocabulary returned in that inline error object.",
+      "Pagination - how to page threads and customers.",
+      "Reading threads, and the queries behind them - this connector is currently all writes and no reads, which is the wrong shape for a support task.",
+      "Notes and Attachments.",
+      "Webhooks, including request signing, if a task ever needs to react rather than poll."
+    ]
+  },
+  "also_ships": {
+    "sdk": "A fully typed TypeScript GraphQL SDK, plus separate webhook and UI-component SDKs.",
+    "api_explorer": "app.plain.com/developer/api-explorer - the quickest way to confirm a document and a permission set before wiring one up.",
+    "agents": "Plain documents a first-party agent story - machine users, receiving events, routing, reading threads, searching knowledge, acting on threads. Worth reading before building Flux skills against this, since it may already cover the workflow.",
+    "security": "Request signing and mTLS are both documented, which matters for the webhook direction rather than for outbound calls."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://www.plain.com/docs/graphql/messaging/reply-to-thread",
+      "https://www.plain.com/docs/graphql/messaging/send-email",
+      "https://www.plain.com/docs/graphql/messaging/reply-email",
+      "https://www.plain.com/docs/graphql/authentication",
+      "https://www.plain.com/docs/llms.txt"
+    ],
+    "notes": [
+      "The three mutations, their permission strings, the repliable channel list, the inline error shape and the impersonation behaviour are taken verbatim from Plain's own messaging pages.",
+      "The write_scope on each operation is Flux's judgement, not Plain's.",
+      "www.plain.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the authentication and error-handling pages need supplying the same way."
+    ]
+  }
+}
