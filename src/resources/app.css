@@ -200,8 +200,6 @@ body.tab {
   text-align: center;
 }
 
-.content { padding: 40px 48px;
- overflow-y: auto; }
 
 .approval {
   width: min(560px, 90vw);
@@ -340,3 +338,330 @@ body.tab {
 
 .ghost.danger { color: var(--danger);
  border-color: currentColor; }
+
+/* ---------------------------------------------------------------------------
+ * Console screens
+ *
+ * The shell owns the sidebar, so everything here lays out inside the content
+ * column. Tokens above carry all the colour: there is no accent anywhere, per
+ * the reference - the only saturated pixels in the product are connector
+ * marks, which is what makes "what does this task touch" the first thing the
+ * eye lands on.
+ * ------------------------------------------------------------------------ */
+
+/* The tab fills the window; each screen owns its own padding, because the
+ * Templates screen turns this into a two-column grid where padding on the
+ * column itself would sit outside the nav rail's border. */
+.content {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Templates puts a nav rail between the shell's sidebar and the catalog. */
+.content.two-column {
+  display: grid;
+  grid-template-columns: 242px 1fr;
+  overflow: hidden;
+}
+
+.content.two-column .screen {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sub-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 16px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.sub-nav-title {
+  margin: 0 0 12px 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sub-nav-item {
+  padding: 9px 14px;
+  border-radius: var(--radius-nav);
+  color: inherit;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.sub-nav-item:hover { background: var(--hover); }
+
+.sub-nav-item[aria-current='page'] { background: var(--hover); }
+
+.screen {
+  max-width: 1180px;
+  padding: 34px 40px 64px;
+}
+
+.screen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.screen h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.subtitle {
+  max-width: 760px;
+  margin: 0 0 24px;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+/* Search --------------------------------------------------------------- */
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.search svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 1.6;
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  outline: none;
+}
+
+/* Filters -------------------------------------------------------------- */
+
+.pill-row,
+.facet-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pill,
+.facet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pill:hover,
+.facet:hover { background: var(--hover); }
+
+.pill[data-active],
+.facet[data-active] {
+  border-color: transparent;
+  background: var(--invert-bg);
+  color: var(--invert-fg);
+}
+
+.facet svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+}
+
+/* Sections and cards --------------------------------------------------- */
+
+.sections { margin-top: 34px; }
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 34px 0 16px;
+}
+
+.section-header h2,
+.section-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.see-all {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.see-all:hover { color: var(--fg); }
+
+.card-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.template-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.template-card p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+/* Footer sits at the bottom so cards in a row stay flush however the title
+ * wraps - the reference does the same. */
+.card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.connector-marks {
+  display: flex;
+  gap: 4px;
+}
+
+/* A lettered chip rather than a brand icon, and the border says how the
+ * service is reached: the reference drew an API connector and a
+ * browser-driven site with the same mark, which hid the difference between
+ * "stable contract" and "breaks when the site changes". */
+.connector-mark {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  place-items: center;
+}
+
+.connector-mark[data-transport='browser'] {
+  border-style: dashed;
+  color: var(--fg-muted);
+}
+
+.connector-more {
+  align-self: center;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.schedule-chip,
+.trust {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+/* Only the two scopes that can do something irreversible are marked; a
+ * read-only task gets no emphasis because it needs none. */
+.trust[data-scope='send'],
+.trust[data-scope='purchase'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--danger);
+  color: var(--danger);
+}
+
+/* Empty states --------------------------------------------------------- */
+
+.empty-state {
+  max-width: 700px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 1.5;
+}
+
+.empty-state h2 {
+  margin: 14px 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 15px;
+}
+
+.empty-state code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e8f2fd;
+  color: #1a1a1a;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+}
+
+.centered-footer {
+  margin-top: 34px;
+  text-align: center;
+}
+
+.outlined {
+  display: inline-block;
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-nav);
+  color: inherit;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.outlined:hover { background: var(--hover); }

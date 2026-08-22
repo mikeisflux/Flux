@@ -51,5 +51,29 @@ for path in sorted(glob.glob(os.path.join(sys.argv[1], '*.ts'))):
 sys.exit(1 if bad else 0)
 PY
 
+# Type-check the console under the same strict settings build_webui compiles
+# it with. This is the difference between a typo costing ten seconds and
+# costing a ninety-minute build, so it is worth the one-time npm install.
+TSC="$ROOT/tools/webui-typecheck/node_modules/.bin/tsc"
+if [ ! -x "$TSC" ]; then
+  echo "Installing typescript (one time)..." >&2
+  if ! (cd "$ROOT/tools/webui-typecheck" && npm install --silent --no-fund \
+          --no-audit typescript@5.6.3 >/dev/null 2>&1); then
+    echo "typescript install failed - TS is UNVERIFIED. Say so rather than" >&2
+    echo "claiming the console compiles." >&2
+  fi
+fi
+if [ -x "$TSC" ]; then
+  # The mojom bindings only exist inside a Chromium build, so a hand-kept stub
+  # stands in. It has to sit next to the sources under its real name: a
+  # relative import is not redirectable through tsconfig "paths".
+  STUB="$RES/flux.mojom-webui.d.ts"
+  cp "$ROOT/tools/webui-typecheck/stubs/flux.mojom-webui.d.ts" "$ROOT/$STUB"
+  trap 'rm -f "$ROOT/$STUB"' EXIT
+  "$TSC" -p "$ROOT/tools/webui-typecheck/tsconfig.json" || status=1
+  rm -f "$ROOT/$STUB"
+  trap - EXIT
+fi
+
 [ $status -eq 0 ] && echo "WebUI lint OK"
 exit $status

@@ -1,0 +1,31 @@
+Subject: [flux] A new tab is the console
+
+The console is the product's home screen, so it replaces the new tab page
+rather than being one more thing to navigate to. NewTabURLDetails::ForProfile
+is the single place that decides what chrome://newtab resolves to - the
+rewrite, the omnibox's reverse rewrite and the instant-process checks all read
+from it - so returning early here covers every path that opens a tab.
+
+Off-the-record profiles keep Chromium's incognito NTP: the console is signed
+into the user's connectors and has no business being the landing page of a
+window whose point is that it remembers nothing.
+
+--- a/chrome/browser/search/search.cc
++++ b/chrome/browser/search/search.cc
+@@ -164,6 +164,16 @@
+       : url(url), state(state) {}
+ 
+   static NewTabURLDetails ForProfile(Profile* profile) {
++    // In Flux a new tab is the console. It is the product's home screen rather
++    // than a search page, so it replaces the NTP outright instead of competing
++    // with the default search provider's - which is also why this returns
++    // before the DefaultSearchProviderIsGoogle() branch below rather than
++    // being wired in as one more candidate.
++    if (profile && !profile->IsOffTheRecord()) {
++      return NewTabURLDetails(GURL(chrome::kChromeUIFluxURL),
++                              NEW_TAB_URL_VALID);
++    }
++
+     // Incognito and Guest profiles have their own New Tab.
+     // This function may also be called by other off-the-record profiles that
+     // can exceptionally open a browser window.

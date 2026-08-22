@@ -14,6 +14,8 @@ import type {
 
 import {ApprovalQueue} from './approvals.js';
 import {SettingsView} from './settings.js';
+import {TemplatesView} from './templates_view.js';
+import {WorkflowsView} from './workflows_view.js';
 
 /**
  * The console's content column, running in a tab.
@@ -32,6 +34,8 @@ class FluxApp {
   private handler: FluxPageHandlerRemote;
   private approvals: ApprovalQueue;
   private settings: SettingsView;
+  private templates = new TemplatesView();
+  private workflows = new WorkflowsView();
 
   constructor() {
     this.handler = new FluxPageHandlerRemote();
@@ -56,19 +60,40 @@ class FluxApp {
   }
 
   private renderFromHash() {
-    this.render(window.location.hash.replace(/^#/, '') || 'new-task');
+    // "#templates/skills" - screen, then whatever that screen needs. Keeping
+    // the route in the fragment is what lets the shell's sidebar, which lives
+    // in another document entirely, reach any screen with a plain link.
+    const [screen, sub] = (window.location.hash.replace(/^#/, '') || 'new-task')
+                              .split('/');
+    this.render(screen ?? 'new-task', sub);
   }
 
-  private render(view: string) {
+  private render(view: string, sub?: string) {
     const content = document.getElementById('content')!;
-    if (view === 'agent' || view === 'settings') {
-      void this.settings.render(content);
-      return;
+    content.classList.remove('two-column');
+
+    switch (view) {
+      case 'templates':
+        void this.templates.render(content, sub === 'skills' ? 'skills' : 'tasks');
+        return;
+      case 'workflows':
+        void this.workflows.render(content);
+        return;
+      case 'agent':
+      case 'settings':
+        void this.settings.render(content);
+        return;
+      default:
+        break;
     }
+
     content.replaceChildren();
+    const screen = document.createElement('div');
+    screen.className = 'screen';
     const h1 = document.createElement('h1');
     h1.textContent = view.replace('-', ' ').replace(/^\w/, c => c.toUpperCase());
-    content.append(h1);
+    screen.append(h1);
+    content.append(screen);
   }
 
   // --- FluxPageHandlerObserver ---------------------------------------------

@@ -6,7 +6,8 @@
       "outcome",
       "category",
       "connectors.id",
-      "schedule.display"
+      "schedule.display",
+      "featured"
     ],
     "derived": [
       "id",
@@ -36,7 +37,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 0
     },
     {
       "id": "sales-company-list-decision-maker",
@@ -58,7 +60,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 3
     },
     {
       "id": "sales-outreach-replies-update-tracker",
@@ -507,7 +510,8 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 7
     },
     {
       "id": "sales-gong-pipeline-deal-hygiene",
@@ -687,7 +691,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 4
     },
     {
       "id": "recruiting-interview-job-post",
@@ -705,7 +710,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "featured": 9
     },
     {
       "id": "recruiting-candidates-haven-t-messaged",
@@ -1059,7 +1065,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 6
     },
     {
       "id": "marketing-creators-already-sponsored-by",
@@ -1574,7 +1581,8 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 2
     },
     {
       "id": "data-research-missing-fields-row",
@@ -1993,7 +2001,8 @@
       "category": "Research",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 5
     },
     {
       "id": "research-competitor-matrix-pricing-features",
@@ -2774,7 +2783,8 @@
         "cron": "0 17 * * 1-5",
         "display": "Weekdays at 5pm"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "featured": 8
     },
     {
       "id": "ops-follow-up-sent-emails",
@@ -2938,7 +2948,8 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 11
     },
     {
       "id": "engineering-qa-checklist-mark-case",
@@ -3474,7 +3485,8 @@
         "cron": "0 */3 * * *",
         "display": "Every 3 hours"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 10
     },
     {
       "id": "personal-trip-live-hotel-prices",
@@ -3863,7 +3875,8 @@
         "cron": "0 7 * * *",
         "display": "Every day at 7am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "featured": 1
     },
     {
       "id": "monitoring-today-s-economic-data",

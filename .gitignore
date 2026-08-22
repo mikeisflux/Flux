@@ -4,3 +4,5 @@ dist/
 .vite/
 *.log
 .DS_Store
+tools/webui-typecheck/node_modules/
+src/resources/flux.mojom-webui.d.ts

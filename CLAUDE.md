@@ -64,8 +64,17 @@ stylelint against `tools/stylelint.config.mjs` (a mirror of Chromium's config,
 keep it in sync on uprev), plus the mixed type/value import rule that
 `@webui-eslint` enforces and npm has no copy of. Both are on the same hook.
 
+`tools/check-webui.sh` also type-checks every `.ts` with the real `tsc` under
+the same strict settings `build_webui` uses. The mojom bindings only exist
+inside a Chromium build, so `tools/webui-typecheck/stubs/flux.mojom-webui.d.ts`
+stands in for them; it is transcribed by hand and **must be updated whenever
+`src/browser/mojom/flux.mojom` changes**. It errs toward being incomplete
+rather than wrong: anything the console calls that the stub does not declare
+fails the check, which is the signal to add it.
+
 Node and npm are available in this container, so there is no excuse for
-hand-formatting CSS to satisfy a linter - install it and run the real thing.
+hand-formatting CSS to satisfy a linter, or for shipping TypeScript nobody
+compiled - install them and run the real thing.
 
 ## Layout
 
@@ -75,7 +84,11 @@ hand-formatting CSS to satisfy a linter - install it and run the real thing.
 - `patches/` - the Chromium patch series, applied in `patches/series` order
 - `build/` - fetch/sync/build, in both bash and PowerShell
 - `go.ps1` - the single entrypoint: pull, sync, build
-- `data/` - templates, skills, connector definitions
+- `data/` - skills and connector definitions, read from disk at runtime
+- `src/resources/templates.json` - the 250-template catalog. It lives with the
+  WebUI rather than in `data/` because it is packed into `flux_resources.pak`;
+  `build_webui` cannot reach outside its own directory, and one copy read by
+  both the console and the browser process beats two that drift.
 - `docs/` - the Polar teardown these features are specified from
 
 ## Patches
