@@ -90,7 +90,7 @@
       },
       "scope": "external",
       "write_scope": "readonly",
-      "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user."
+      "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user. Each inbox also carries notification_url: a URL Zapier POSTs to when messages become available, so an inbox does not have to be polled at all. Flux has no public endpoint to register one, but it is the documented alternative and is why the read limits here are not the constraint they look like."
     },
     "list_messages": {
       "method": "GET",
