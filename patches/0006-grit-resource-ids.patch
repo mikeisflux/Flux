@@ -1,0 +1,29 @@
+Subject: [flux] Reserve grit resource ids for the chrome://flux console
+
+grit refuses to build a .grd it has no id range for:
+
+  Exception: Please update gen\tools\gritsettings\default_resource_ids and add
+  a first id for .../chrome/browser/resources/flux/resources.grd (includes).
+
+The integers are fake start ids - only their relative order matters, per
+tools/gritsettings/README.md - so flux takes 3990, between feedback (3980) and
+gaia_auth_host (4000). That keeps it alphabetical in the same place patch 0005
+puts it in chrome_paks.gni and //chrome/browser/resources.
+
+sizes.includes is 20 against the 7 resources the console currently generates
+(index.html, app.css, four compiled .js, and the mojom bindings) - headroom to
+add a view without touching Chromium again.
+
+--- a/tools/gritsettings/resource_ids.spec
++++ b/tools/gritsettings/resource_ids.spec
+@@ -513,6 +513,10 @@
+     "META": {"sizes": {"includes": [40],}},
+     "includes": [3980],
+   },
++  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/flux/resources.grd": {
++    "META": {"sizes": {"includes": [20],}},
++    "includes": [3990],
++  },
+   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/gaia_auth_host/resources.grd": {
+     "META": {"sizes": {"includes": [20],}},
+     "includes": [4000],
