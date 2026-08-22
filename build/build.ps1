@@ -160,7 +160,10 @@ Invoke-Native "$DepotTools\autoninja.bat" -C $Out @ninjaFlags @Targets
 $sw.Stop()
 
 Log "Built in $($sw.Elapsed.ToString('hh\:mm\:ss'))"
-Write-Host "  $Src\$Out\chrome.exe" -ForegroundColor Green
+# flux.exe, not chrome.exe: patch 0014 renames the executable. This line is
+# the last thing the build says, so it is the one place a stale name sends
+# someone to a binary that is not there - or worse, to a leftover one.
+Write-Host "  $Src\$Out\flux.exe" -ForegroundColor Green
 } finally {
   Pop-Location
 }
