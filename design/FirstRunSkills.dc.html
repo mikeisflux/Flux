@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #b4f03c; }
+    a:hover { color: #cbf571; }
+    /* Lifted verbatim from src/resources/app.css - these are the product's
+       real tokens, not an approximation of them. */
+    .root {
+      --bg: #1b1b1a;
+      --fg: #f2f2f0;
+      --fg-muted: #9a9a96;
+      --border: #34343150;
+      --hover: #262624;
+      --invert-bg: #f2f2f0;
+      --invert-fg: #111;
+      --accent-fg: #14200a;
+      --radius-card: 12px;
+      --radius-nav: 8px;
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    .root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b68;
+      --border: #e8e8e6;
+      --hover: #f1f1f0;
+      --invert-bg: #111;
+      --invert-fg: #fff;
+    }
+    .root * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div class="root" data-theme="{{theme}}" style="--accent: {{accent}}; width: 1120px; height: 780px; padding: 34px 40px 64px; background: var(--bg); color: var(--fg); overflow: hidden"><div style="display: flex; max-width: 720px; min-height: 100%; flex-direction: column; justify-content: center; margin: 0 auto"><div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 30px"><svg viewBox="0 0 64 64" style="width: 40px; height: 40px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{accent}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><span style="font-size: 26px; font-weight: 600; letter-spacing: -0.01em">Flux</span></div><div style="display: flex; justify-content: center; gap: 7px; margin-bottom: 34px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--fg-muted)"></span><span style="width: 22px; height: 7px; border-radius: 999px; background: var(--accent)"></span><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--border)"></span></div><h1 style="margin: 0 0 30px; font-size: 40px; font-weight: 400; letter-spacing: -0.01em; text-align: center">Pick a few skills</h1><p style="max-width: 760px; margin: 0 auto 24px; color: var(--fg-muted); font-size: 14px; text-align: center">Skills are know-how Flux applies on its own when a task calls for it. Start with a couple; you can adopt more, or write your own, under Customize.</p><div style="display: grid; gap: 12px; margin-top: 10px; grid-template-columns: repeat(2, minmax(0, 1fr))"><button style="padding: 14px 16px; border: 1px solid var(--accent); border-radius: var(--radius-card); background: var(--hover); color: inherit; font: inherit; text-align: left; cursor: pointer"><div style="font-size: 14px; font-weight: 500">Start the day from Basecamp</div><div style="margin-top: 3px; color: var(--fg-muted); font-size: 13px">What is overdue, due today, and what was said while you were away</div></button><button style="padding: 14px 16px; border: 1px solid var(--accent); border-radius: var(--radius-card); background: var(--hover); color: inherit; font: inherit; text-align: left; cursor: pointer"><div style="font-size: 14px; font-weight: 500">Turn a Basecamp thread into to-dos</div><div style="margin-top: 3px; color: var(--fg-muted); font-size: 13px">Pull the real commitments out of a message and its comments</div></button><button style="padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg); color: inherit; font: inherit; text-align: left; cursor: pointer"><div style="font-size: 14px; font-weight: 500">Friday revenue recap</div><div style="margin-top: 3px; color: var(--fg-muted); font-size: 13px">A weekly read with the three numbers that actually moved</div></button><button style="padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg); color: inherit; font: inherit; text-align: left; cursor: pointer"><div style="font-size: 14px; font-weight: 500">Support ticket triage</div><div style="margin-top: 3px; color: var(--fg-muted); font-size: 13px">Sort the queue by what is blocking a customer, not by age</div></button></div><div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 34px"><button style="border: 0; background: transparent; color: var(--fg-muted); font: inherit; font-size: 13px; cursor: pointer">Skip for now</button><button style="padding: 10px 18px; border: 0; border-radius: var(--radius-nav); background: var(--accent); color: var(--accent-fg); font: inherit; font-size: 14px; cursor: pointer">Add these</button></div></div></div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"accent":{"editor":"color","default":"#b4f03c","options":["#b4f03c","#7bd1ff","#ff9f4a","#e8705f"]},"$preview":{"width":1120,"height":780}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      theme: this.props.theme ?? 'dark',
+      accent: this.props.accent ?? '#b4f03c',
+    };
+  }
+}
+</script>
+</body>
+</html>

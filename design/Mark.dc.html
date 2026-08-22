@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #b4f03c; }
+    a:hover { color: #cbf571; }
+    /* Lifted verbatim from src/resources/app.css - these are the product's
+       real tokens, not an approximation of them. */
+    .root {
+      --bg: #1b1b1a;
+      --fg: #f2f2f0;
+      --fg-muted: #9a9a96;
+      --border: #34343150;
+      --hover: #262624;
+      --invert-bg: #f2f2f0;
+      --invert-fg: #111;
+      --accent-fg: #14200a;
+      --radius-card: 12px;
+      --radius-nav: 8px;
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    .root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b68;
+      --border: #e8e8e6;
+      --hover: #f1f1f0;
+      --invert-bg: #111;
+      --invert-fg: #fff;
+    }
+    .root * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div class="root" data-theme="{{theme}}" style="--accent: {{accent}}; width: 900px; height: 620px; padding: 34px 40px; background: var(--bg); color: var(--fg); overflow: hidden"><h1 style="margin: 0 0 8px; font-size: 28px; font-weight: 600">The Flux mark</h1><p style="max-width: 620px; margin: 0 0 28px; color: var(--fg-muted); font-size: 14px">A current, not a cursor. The bolt is deliberately heavy because it has to hold at 16px in a tab strip, where a thin mark turns to mush.</p><div style="display: flex; align-items: flex-end; gap: 28px"><div><svg viewBox="0 0 64 64" style="width: 16px; height: 16px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">16px</div></div><div><svg viewBox="0 0 64 64" style="width: 24px; height: 24px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">24px</div></div><div><svg viewBox="0 0 64 64" style="width: 32px; height: 32px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">32px</div></div><div><svg viewBox="0 0 64 64" style="width: 48px; height: 48px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">48px</div></div><div><svg viewBox="0 0 64 64" style="width: 64px; height: 64px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">64px</div></div></div><div style="display: grid; gap: 28px; margin-top: 34px; grid-template-columns: 260px 1fr"><div style="display: grid; gap: 14px"><div style="display: flex; align-items: center; gap: 12px"><span style="width: 40px; height: 40px; border-radius: 8px; background: #b4f03c; border: 1px solid var(--border)"></span><div><div style="font-size: 13px; font-weight: 500">--accent</div><div style="color: var(--fg-muted); font-size: 12px">#b4f03c &middot; fill only</div></div></div><div style="display: flex; align-items: center; gap: 12px"><span style="width: 40px; height: 40px; border-radius: 8px; background: #14200a; border: 1px solid var(--border)"></span><div><div style="font-size: 13px; font-weight: 500">--accent-fg</div><div style="color: var(--fg-muted); font-size: 12px">#14200a &middot; on lime, 13:1</div></div></div><div style="display: flex; align-items: center; gap: 12px"><span style="width: 40px; height: 40px; border-radius: 8px; background: #4f7a08; border: 1px solid var(--border)"></span><div><div style="font-size: 13px; font-weight: 500">--accent-text</div><div style="color: var(--fg-muted); font-size: 12px">#4f7a08 &middot; text on light</div></div></div></div><div style="display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr))"><div style="padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card)"><span style="display: inline-block; padding: 10px 18px; border-radius: var(--radius-nav); background: var(--accent); color: var(--accent-fg); font-size: 14px">Start a task</span><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">Correct. Near-black on lime.</div></div><div style="padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card)"><span style="display: inline-block; padding: 10px 18px; border-radius: var(--radius-nav); border: 1px solid var(--border); background: #fff; color: #b4f03c; font-size: 14px">Start a task</span><div style="margin-top: 10px; color: var(--fg-muted); font-size: 12px">Never. Lime as text on white fails at any size.</div></div></div></div></div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"accent":{"editor":"color","default":"#b4f03c","options":["#b4f03c","#7bd1ff","#ff9f4a","#e8705f"]},"$preview":{"width":900,"height":620}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      theme: this.props.theme ?? 'dark',
+      accent: this.props.accent ?? '#b4f03c',
+    };
+  }
+}
+</script>
+</body>
+</html>

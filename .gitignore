@@ -6,3 +6,8 @@ dist/
 .DS_Store
 tools/webui-typecheck/node_modules/
 src/resources/flux.mojom-webui.d.ts
+
+# The seeded design canvas is ~2MB of editor payload regenerated from the
+# .dc.html sources beside it. Those are the authoring source; this is output.
+design/*.html
+!design/*.dc.html

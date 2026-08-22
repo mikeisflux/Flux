@@ -3,20 +3,26 @@ Subject: [flux] Name the executable flux.exe
 chrome.exe is Chromium's own output name; nothing in the fork had overridden
 it, so the product called Flux shipped a binary called chrome.
 
-Two places decide it on Windows, and both have to move together:
+Five references, and they have to move together or the series has a state
+where the browser is renamed and the things that look for it are not:
 
 - chrome/BUILD.gn links the executable to initialexe/chrome.exe and then
   reorder_imports rewrites it out to chrome.exe. Renaming only one of those
-  leaves reorder_imports looking for a file that no longer exists, which fails
-  at the very last target of the build.
+  leaves reorder_imports looking for a file that no longer exists, which
+  fails at the very last target of the build.
 - chrome_constants.cc hardcodes "chrome.exe" as the name the browser uses to
-  find its own executable. Left alone it does not fail the build; it fails
-  later, quietly, wherever the browser looks itself up by name.
+  find its own executable. This one does not fail the build; it fails later
+  and quietly, wherever the browser looks itself up by name.
+- The installer packs the browser by name in three places: the archive
+  action's input list, the chrome.release manifest that says what goes into
+  the install directory, and installer::kChromeExe, which is what setup.exe
+  launches and renames on update. Miss any of them and the installer builds
+  an archive around a file that is not there.
 
 chrome.dll is deliberately NOT renamed. The exe loads it through chrome_elf by
-name, and that name reaches further than this patch should - into chrome_elf,
-the version resources and the crash handler. The DLL is an implementation
-detail nobody sees; the exe is what has Flux's icon on it in the task manager.
+name, and that name reaches into chrome_elf, the version resources and the
+crash handler. The DLL is an implementation detail nobody sees; the exe is
+what has Flux's icon on it in the task manager.
 
 --- a/chrome/BUILD.gn
 +++ b/chrome/BUILD.gn
@@ -76,3 +82,40 @@ detail nobody sees; the exe is what has Flux's icon on it in the task manager.
  #elif BUILDFLAG(IS_MAC)
  const base::FilePath::CharType kBrowserProcessExecutablePath[] =
      FPL(PRODUCT_FULLNAME_STRING ".app/Contents/MacOS/" PRODUCT_FULLNAME_STRING);
+
+--- a/chrome/installer/mini_installer/BUILD.gn
++++ b/chrome/installer/mini_installer/BUILD.gn
+@@ -151,7 +151,7 @@
+   inputs = [
+     "$root_out_dir/chrome.dll",
+     "$root_out_dir/chrome_elf.dll",
+-    "$root_out_dir/chrome.exe",
++    "$root_out_dir/flux.exe",
+     "$root_out_dir/locales/en-US.pak",
+     "$root_out_dir/setup.exe",
+     "//chrome/tools/build/win/makecab.py",
+
+--- a/chrome/installer/mini_installer/chrome.release
++++ b/chrome/installer/mini_installer/chrome.release
+@@ -6,7 +6,7 @@
+ #
+ # Chrome Application dir entries, sorted alphabetically.
+ #
+-chrome.exe: %(ChromeDir)s\
++flux.exe: %(ChromeDir)s\
+ chrome_proxy.exe: %(ChromeDir)s\
+ #
+ # Chrome version dir assembly manifest.
+
+--- a/chrome/installer/util/util_constants.cc
++++ b/chrome/installer/util/util_constants.cc
+@@ -179,7 +179,7 @@
+ // Active Setup.
+ const wchar_t kActiveSetupExe[] = L"chrmstp.exe";
+ const wchar_t kChromeDll[] = L"chrome.dll";
+-const wchar_t kChromeExe[] = L"chrome.exe";
++const wchar_t kChromeExe[] = L"flux.exe";
+ const wchar_t kChromeNewExe[] = L"new_chrome.exe";
+ const wchar_t kChromeOldExe[] = L"old_chrome.exe";
+ const wchar_t kChromeProxyExe[] = L"chrome_proxy.exe";
+

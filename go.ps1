@@ -11,6 +11,8 @@
     -NoPull                 build what is already checked out
     -NoSync                 skip patches/junctions (nothing changed under patches\)
     -Jobs N                 force the parallel job count (default: from free RAM)
+    -Targets a,b            ninja targets (default: chrome). Use
+                            "chrome,mini_installer" to build the installer too.
 #>
 param(
   [ValidateSet('dev','debug','release')][string]$Config = 'dev',
@@ -18,7 +20,12 @@ param(
   [switch]$NoPull,
   [switch]$NoSync,
   # Override the job count build.ps1 computes from free memory, e.g. -Jobs 8.
-  [int]$Jobs = 0
+  [int]$Jobs = 0,
+  # Passed straight to ninja. mini_installer produces the Windows installer,
+  # which is a separate target and is not built by default - it roughly
+  # doubles the tail of the build for something you only want when you are
+  # actually packaging.
+  [string[]]$Targets = @('chrome')
 )
 $ErrorActionPreference = 'Stop'
 
@@ -60,7 +67,7 @@ if (-not $NoSync) {
 }
 
 Step "Building"
-& "$FluxRoot\build\build.ps1" -CheckoutDrive $CheckoutDrive -Config $Config -Jobs $Jobs 2>&1 |
+& "$FluxRoot\build\build.ps1" -CheckoutDrive $CheckoutDrive -Config $Config -Jobs $Jobs -Targets $Targets 2>&1 |
   Tee-Object -FilePath $Log -Append
 
 Write-Host "`nFull log: $Log" -ForegroundColor DarkGray

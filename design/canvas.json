@@ -1,0 +1,58 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1120,
+      "h": 780
+    },
+    {
+      "file": "FirstRunSkills.dc.html",
+      "x": 1220,
+      "y": 0,
+      "w": 1120,
+      "h": 780
+    },
+    {
+      "file": "FirstRunDone.dc.html",
+      "x": 2440,
+      "y": 0,
+      "w": 1120,
+      "h": 780
+    },
+    {
+      "file": "Connectors.dc.html",
+      "x": 0,
+      "y": 940,
+      "w": 1260,
+      "h": 900
+    },
+    {
+      "file": "Mark.dc.html",
+      "x": 1380,
+      "y": 940,
+      "w": 900,
+      "h": 620
+    }
+  ],
+  "annotations": [
+    {
+      "id": "first-run",
+      "x": 0,
+      "y": -130,
+      "w": 420,
+      "text": "First run, three steps.\nCopy and tokens are lifted from src/resources/welcome_view.ts and app.css - this is what ships today, not a proposal."
+    },
+    {
+      "id": "accent-rule",
+      "x": 1380,
+      "y": 1610,
+      "w": 420,
+      "text": "Lime is a FILL colour. Near-black on lime clears 13:1; lime on white fails at any size. The accent buys exactly three things: the send button, keyboard focus, and first run."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
