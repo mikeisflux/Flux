@@ -1,0 +1,21 @@
+{
+  "id": "imessage",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "unsupported",
+    "notes": [
+      "iMessage has no API, public or private. The reference product reads the local chat database on the Mac it runs on, which is a filesystem integration wearing a connector's clothes.",
+      "Flux builds for Windows, where that database does not exist. There is nothing to connect to and nothing to authenticate against.",
+      "Listed rather than removed because the reference lists it, and a gap in the catalogue is more honest than a quietly shorter list. The console shows it as unavailable on this platform rather than as pending.",
+      "If Flux is ever built for macOS this becomes a local integration: read ~/Library/Messages/chat.db, which requires Full Disk Access and should be read-only and never copied off the machine."
+    ]
+  },
+  "source": {
+    "verified": "not-applicable",
+    "checked": "2026-08-22",
+    "refs": [],
+    "notes": [
+      "Nothing to verify - Apple publishes no iMessage API."
+    ]
+  }
+}

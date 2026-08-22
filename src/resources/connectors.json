@@ -22,9 +22,9 @@
       "id": "imessage",
       "name": "iMessage",
       "description": "Read and send iMessages and look up contacts on this Mac",
-      "transport": "api",
-      "badge": null,
-      "definition": "pending"
+      "transport": "browser",
+      "badge": "macOS only - no API",
+      "definition": "authored"
     },
     {
       "id": "outlook",
