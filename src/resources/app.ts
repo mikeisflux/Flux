@@ -13,7 +13,8 @@ import type {
 } from './flux.mojom-webui.js';
 
 import {ApprovalQueue} from './approvals.js';
-import {SettingsView} from './settings.js';
+import {FluxSettingsView} from './settings_view.js';
+import {CommandPalette} from './command_palette.js';
 import {ConnectorsView} from './connectors_view.js';
 import {CustomizeView} from './customize_view.js';
 import {WelcomeView} from './welcome_view.js';
@@ -37,8 +38,9 @@ import {WorkflowsView} from './workflows_view.js';
 class FluxApp {
   private handler: FluxPageHandlerRemote;
   private approvals: ApprovalQueue;
-  private settings: SettingsView;
+  private settings: FluxSettingsView;
   private connectors = new ConnectorsView();
+  private palette = new CommandPalette();
   private customize: CustomizeView;
   private welcome: WelcomeView;
   private newTask: NewTaskView;
@@ -61,10 +63,20 @@ class FluxApp {
         /*badge=*/null,
         this.handler);
 
-    this.settings = new SettingsView(this.handler);
+    this.settings = new FluxSettingsView(this.handler);
     this.newTask = new NewTaskView(this.handler);
     this.customize = new CustomizeView(this.handler);
     this.welcome = new WelcomeView(this.handler);
+
+    // Ctrl+K reaches the panel from any console screen. Reaching it from a
+    // web page needs a browser accelerator, which is a frame change, not a
+    // page one - the sidebar's magnifier covers that case in the meantime.
+    window.addEventListener('keydown', event => {
+      if (event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        window.location.hash = '#search';
+      }
+    });
 
     window.addEventListener('hashchange', () => this.renderFromHash());
     this.renderFromHash();
@@ -119,9 +131,12 @@ class FluxApp {
       case 'workflows':
         void this.workflows.render(content);
         return;
+      case 'search':
+        void this.palette.render(content);
+        return;
       case 'agent':
       case 'settings':
-        void this.settings.render(content);
+        void this.settings.render(content, sub);
         return;
       default:
         break;
