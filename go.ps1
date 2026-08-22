@@ -10,12 +10,15 @@
     -Config debug|release   default dev
     -NoPull                 build what is already checked out
     -NoSync                 skip patches/junctions (nothing changed under patches\)
+    -Jobs N                 force the parallel job count (default: from free RAM)
 #>
 param(
   [ValidateSet('dev','debug','release')][string]$Config = 'dev',
   [string]$CheckoutDrive = '',
   [switch]$NoPull,
-  [switch]$NoSync
+  [switch]$NoSync,
+  # Override the job count build.ps1 computes from free memory, e.g. -Jobs 8.
+  [int]$Jobs = 0
 )
 $ErrorActionPreference = 'Stop'
 
@@ -57,7 +60,7 @@ if (-not $NoSync) {
 }
 
 Step "Building"
-& "$FluxRoot\build\build.ps1" -CheckoutDrive $CheckoutDrive -Config $Config 2>&1 |
+& "$FluxRoot\build\build.ps1" -CheckoutDrive $CheckoutDrive -Config $Config -Jobs $Jobs 2>&1 |
   Tee-Object -FilePath $Log -Append
 
 Write-Host "`nFull log: $Log" -ForegroundColor DarkGray

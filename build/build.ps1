@@ -5,7 +5,9 @@
 param(
   [Parameter(Mandatory=$true)][string]$CheckoutDrive,
   [ValidateSet('dev','debug','release')][string]$Config = 'dev',
-  [string[]]$Targets = @('chrome')
+  [string[]]$Targets = @('chrome'),
+  # Override the computed job count, e.g. -Jobs 8.
+  [int]$Jobs = 0
 )
 $ErrorActionPreference = 'Stop'
 
@@ -123,10 +125,32 @@ Log "gn gen $Out"
 Invoke-Native "$DepotTools\gn.bat" gen $Out
 Set-Content -Path $stamp -Value $runner
 
-$ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
-$jobs = @()
-if ($ramGB -lt 16)      { Write-Host "  [warn] ${ramGB}GB RAM - capping to -j2" -ForegroundColor Yellow; $jobs = @('-j2') }
-elseif ($ramGB -lt 32)  { $jobs = @('-j4') }
+# Pick -j from FREE memory, not core count.
+#
+# ninja defaults to cores+2, and clang-cl holds the whole translation unit in
+# memory: most are modest, but Chromium's larger ones (chrome_metrics_service_
+# client, connectors_service) peak at several GB each. Enough of those landing
+# together and clang dies with "LLVM ERROR: out of memory" - which reads like a
+# compiler bug and is really just too many jobs.
+#
+# Free memory, not total: whatever else is running on the machine is memory the
+# build cannot have. 4GB per job leaves room for the occasional heavy TU.
+if ($Jobs -gt 0) {
+  $j = $Jobs
+  Log "Using -j$j (requested)"
+} else {
+  $cores = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+  # FreePhysicalMemory is in kilobytes.
+  $freeGB = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB
+  $byMemory = [math]::Max(2, [math]::Floor($freeGB / 4))
+  $j = [math]::Min($cores, $byMemory)
+  Log ("-j{0} ({1} cores, {2:N1} GB free -> room for {3} jobs at 4GB each)" -f `
+       $j, $cores, $freeGB, $byMemory)
+  if ($j -lt $cores) {
+    Write-Host "  Close other apps and re-run to use more cores." -ForegroundColor DarkGray
+  }
+}
+$jobs = @("-j$j")
 
 Log "Building $($Targets -join ' ') - first build takes hours; incremental takes minutes"
 $sw = [Diagnostics.Stopwatch]::StartNew()
