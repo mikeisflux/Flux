@@ -1,58 +1,116 @@
 {
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Product"
+    },
+    {
+      "id": "page-2",
+      "name": "Install and brand"
+    }
+  ],
   "artboards": [
     {
       "file": "Main.dc.html",
       "x": 0,
       "y": 0,
       "w": 1120,
-      "h": 780
+      "h": 780,
+      "page": "page-1"
     },
     {
       "file": "FirstRunSkills.dc.html",
       "x": 1220,
       "y": 0,
       "w": 1120,
-      "h": 780
+      "h": 780,
+      "page": "page-1"
     },
     {
       "file": "FirstRunDone.dc.html",
       "x": 2440,
       "y": 0,
       "w": 1120,
-      "h": 780
+      "h": 780,
+      "page": "page-1"
+    },
+    {
+      "file": "NewTask.dc.html",
+      "x": 0,
+      "y": 940,
+      "w": 1120,
+      "h": 780,
+      "page": "page-1"
     },
     {
       "file": "Connectors.dc.html",
-      "x": 0,
+      "x": 1220,
       "y": 940,
       "w": 1260,
-      "h": 900
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Install.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 580,
+      "h": 480,
+      "page": "page-2"
+    },
+    {
+      "file": "InstallDone.dc.html",
+      "x": 700,
+      "y": 0,
+      "w": 580,
+      "h": 480,
+      "page": "page-2"
+    },
+    {
+      "file": "Loading.dc.html",
+      "x": 0,
+      "y": 560,
+      "w": 1120,
+      "h": 700,
+      "page": "page-2"
     },
     {
       "file": "Mark.dc.html",
-      "x": 1380,
-      "y": 940,
+      "x": 1240,
+      "y": 560,
       "w": 900,
-      "h": 620
+      "h": 620,
+      "page": "page-2"
     }
   ],
   "annotations": [
     {
-      "id": "first-run",
+      "id": "product-note",
       "x": 0,
-      "y": -130,
-      "w": 420,
-      "text": "First run, three steps.\nCopy and tokens are lifted from src/resources/welcome_view.ts and app.css - this is what ships today, not a proposal."
+      "y": -140,
+      "w": 460,
+      "page": "page-1",
+      "text": "Every token here is lifted verbatim from src/resources/app.css and the copy from the .ts views. This is a picture of what ships, not a proposal beside it."
+    },
+    {
+      "id": "install-note",
+      "x": 0,
+      "y": -140,
+      "w": 460,
+      "page": "page-2",
+      "text": "The installer is the one thing here with NO source to match - Chromium's setup UI is unstyled, so this is new design. Everything else mirrors shipping code."
     },
     {
       "id": "accent-rule",
-      "x": 1380,
-      "y": 1610,
+      "x": 1240,
+      "y": 1230,
       "w": 420,
-      "text": "Lime is a FILL colour. Near-black on lime clears 13:1; lime on white fails at any size. The accent buys exactly three things: the send button, keyboard focus, and first run."
+      "page": "page-2",
+      "text": "Lime is a FILL colour. Near-black on lime clears 13:1; lime on white fails at any size. The accent buys three things: the send button, keyboard focus, and first run."
     }
   ],
   "launch": {
-    "view": "canvas"
+    "view": "canvas",
+    "page": "page-1"
   }
 }

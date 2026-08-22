@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #b4f03c; }
+    a:hover { color: #cbf571; }
+    /* Lifted verbatim from src/resources/app.css - these are the product's
+       real tokens, not an approximation of them. */
+    .root {
+      --bg: #1b1b1a;
+      --fg: #f2f2f0;
+      --fg-muted: #9a9a96;
+      --border: #34343150;
+      --hover: #262624;
+      --invert-bg: #f2f2f0;
+      --invert-fg: #111;
+      --accent-fg: #14200a;
+      --radius-card: 12px;
+      --radius-nav: 8px;
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    .root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b68;
+      --border: #e8e8e6;
+      --hover: #f1f1f0;
+      --invert-bg: #111;
+      --invert-fg: #fff;
+    }
+    .root * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div class="root" data-theme="{{theme}}" style="--accent: {{accent}}; width: 1120px; height: 700px; padding: 0; background: var(--bg); color: var(--fg); overflow: hidden; display: grid; place-items: center"><div style="display: grid; justify-items: center; gap: 22px"><svg viewBox="0 0 64 64" style="width: 56px; height: 56px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><div style="font-size: 22px; font-weight: 600; letter-spacing: -0.01em">Flux</div><div style="width: 220px; height: 3px; border-radius: 999px; background: var(--border); overflow: hidden"><div style="width: 38%; height: 100%; border-radius: 999px; background: var(--accent)"></div></div><div style="color: var(--fg-muted); font-size: 13px">Starting the console</div></div></div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"accent":{"editor":"color","default":"#b4f03c","options":["#b4f03c","#7bd1ff","#ff9f4a","#e8705f"]},"$preview":{"width":1120,"height":700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      theme: this.props.theme ?? 'dark',
+      accent: this.props.accent ?? '#b4f03c',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #b4f03c; }
+    a:hover { color: #cbf571; }
+    /* Lifted verbatim from src/resources/app.css - these are the product's
+       real tokens, not an approximation of them. */
+    .root {
+      --bg: #1b1b1a;
+      --fg: #f2f2f0;
+      --fg-muted: #9a9a96;
+      --border: #34343150;
+      --hover: #262624;
+      --invert-bg: #f2f2f0;
+      --invert-fg: #111;
+      --accent-fg: #14200a;
+      --radius-card: 12px;
+      --radius-nav: 8px;
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    .root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b68;
+      --border: #e8e8e6;
+      --hover: #f1f1f0;
+      --invert-bg: #111;
+      --invert-fg: #fff;
+    }
+    .root * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div class="root" data-theme="{{theme}}" style="--accent: {{accent}}; width: 1120px; height: 780px; padding: 34px 40px 64px; background: var(--bg); color: var(--fg); overflow: hidden; display: grid; place-items: center"><div style="width: min(790px, 100%)"><h1 style="margin: 0 0 30px; font-size: 40px; font-weight: 400; letter-spacing: -0.01em; text-align: center">What can I do for you?</h1><div style="border: 1px solid var(--border); border-radius: 16px; background: var(--bg)"><div style="padding: 20px 22px 4px; color: var(--fg-muted)">Describe a task, or paste a link to start from a page.</div><div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px 14px 22px"><span style="font-size: 14px">Read-only</span><span style="color: var(--fg-muted); font-size: 14px">&middot; Claude Opus 5</span><span style="display: flex; align-items: center; gap: 4px; margin-left: auto"><span style="display: grid; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); place-items: center"><svg viewBox="0 0 20 20" style="width: 18px; height: 18px; fill: none; stroke: currentcolor; stroke-width: 1.8"><path d="M10 16V4M5 9l5-5 5 5"></path></svg></span></span></div></div><div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px"><span style="padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg-muted); font-size: 13px">Catch me up on Basecamp</span><span style="padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg-muted); font-size: 13px">Draft the weekly update</span><span style="padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg-muted); font-size: 13px">Triage the support queue</span></div><p style="margin: 14px 0 0; color: var(--fg-muted); font-size: 13px; text-align: center">Nothing sends without you. This task is read-only.</p></div></div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"accent":{"editor":"color","default":"#b4f03c","options":["#b4f03c","#7bd1ff","#ff9f4a","#e8705f"]},"$preview":{"width":1120,"height":780}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      theme: this.props.theme ?? 'dark',
+      accent: this.props.accent ?? '#b4f03c',
+    };
+  }
+}
+</script>
+</body>
+</html>

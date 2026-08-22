@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: #b4f03c; }
+    a:hover { color: #cbf571; }
+    /* Lifted verbatim from src/resources/app.css - these are the product's
+       real tokens, not an approximation of them. */
+    .root {
+      --bg: #1b1b1a;
+      --fg: #f2f2f0;
+      --fg-muted: #9a9a96;
+      --border: #34343150;
+      --hover: #262624;
+      --invert-bg: #f2f2f0;
+      --invert-fg: #111;
+      --accent-fg: #14200a;
+      --radius-card: 12px;
+      --radius-nav: 8px;
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    .root[data-theme="light"] {
+      --bg: #fff;
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b68;
+      --border: #e8e8e6;
+      --hover: #f1f1f0;
+      --invert-bg: #111;
+      --invert-fg: #fff;
+    }
+    .root * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div class="root" data-theme="{{theme}}" style="--accent: {{accent}}; width: 580px; height: 480px; padding: 0; background: var(--bg); color: var(--fg); overflow: hidden; display: flex; flex-direction: column"><div style="display: flex; align-items: center; gap: 12px; padding: 22px 28px; border-bottom: 1px solid var(--border)"><svg viewBox="0 0 64 64" style="width: 28px; height: 28px; display: block" role="img" aria-label="Flux"><rect width="64" height="64" rx="15" fill="{{accent}}"></rect><path d="M37 8 L17 36 H28 L25 56 L47 27 H35 Z" fill="var(--accent-fg)"></path></svg><span style="font-size: 17px; font-weight: 600">Flux</span></div><div style="flex: 1; padding: 30px 28px"><h1 style="margin: 0 0 10px; font-size: 24px; font-weight: 500; letter-spacing: -0.01em">Install Flux</h1><p style="margin: 0 0 22px; max-width: 460px; color: var(--fg-muted); font-size: 14px">Flux installs for you only, into your user folder. It does not need an administrator, and it will not touch an existing Chrome or Chromium install.</p><div style="display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-card)"><div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: var(--fg-muted)">Location</span><span>%LOCALAPPDATA%\Flux</span></div><div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: var(--fg-muted)">Profile</span><span>%LOCALAPPDATA%\Flux\User Data</span></div></div></div><div style="display: flex; align-items: center; gap: 10px; padding: 18px 28px; border-top: 1px solid var(--border)"><span style="color: var(--fg-muted); font-size: 12px">Version 152.0.7977.60</span><span style="margin-left: auto"></span><span style="display: inline-block; padding: 9px 18px; border: 1px solid var(--border); border-radius: var(--radius-nav); font-size: 14px">Cancel</span><span style="width: 8px"></span><span style="display: inline-block; padding: 10px 20px; border-radius: var(--radius-nav); background: var(--accent); color: var(--accent-fg); font-size: 14px">Install</span></div></div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","light"],"default":"dark"},"accent":{"editor":"color","default":"#b4f03c","options":["#b4f03c","#7bd1ff","#ff9f4a","#e8705f"]},"$preview":{"width":580,"height":480}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      theme: this.props.theme ?? 'dark',
+      accent: this.props.accent ?? '#b4f03c',
+    };
+  }
+}
+</script>
+</body>
+</html>
