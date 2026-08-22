@@ -34,6 +34,7 @@ FluxAgentService::FluxAgentService(Profile* profile)
     : profile_(profile),
       skills_(std::make_unique<SkillRegistry>(profile)),
       keys_(std::make_unique<ApiKeyStore>(profile)),
+      connectors_(std::make_unique<ConnectorService>(profile)),
       scheduler_(std::make_unique<WorkflowScheduler>(this)),
       concurrency_limit_(ComputeConcurrencyLimit()) {
   tools_.RegisterBuiltins();

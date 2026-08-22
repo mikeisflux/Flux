@@ -20,7 +20,13 @@
     "account_discovery": {
       "endpoint": "GET https://launchpad.37signals.com/authorization.json",
       "note": "This is the mandatory first call after authorizing - it is where the base URL comes from. Pick the account whose \"product\" is \"bc3\" and use its \"href\" verbatim as the API base. Do not build https://3.basecampapi.com/{account_id} yourself; the href is the contract.",
-      "also": "Basecamp serves its own copy at GET https://3.basecampapi.com/authorization.json (no account prefix). It omits identity name/email and replaces \"product\"/\"app_href\" with an RFC 8707 \"resource\" (urn:bc:account:{id}), so a client reading both must select accounts by href or resource and treat product as optional."
+      "also": "Basecamp serves its own copy at GET https://3.basecampapi.com/authorization.json (no account prefix). It omits identity name/email and replaces \"product\"/\"app_href\" with an RFC 8707 \"resource\" (urn:bc:account:{id}), so a client reading both must select accounts by href or resource and treat product as optional.",
+      "accounts_path": "accounts",
+      "match": {
+        "product": "bc3"
+      },
+      "base_url_field": "href",
+      "machine_readable": "The four fields above are what the runtime executes: GET endpoint, find the list at accounts_path, take the first entry matching every pair in match, and use its base_url_field as the API base. Declarative so that \"the href is the contract\" is enforced by data rather than by a Basecamp-shaped branch in the client."
     }
   },
   "api": {

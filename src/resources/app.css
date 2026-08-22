@@ -929,6 +929,83 @@ body.tab {
   opacity: 0.7;
 }
 
+/* Connected. The tick is the one place a connector card earns a colour, and
+ * it is the accent as a fill with near-black on top - lime as text fails
+ * contrast at any size. */
+.ghost-icon.connected {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.ghost-icon.connected:hover {
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+/* Connected but the access token has lapsed. Not an error state - Flux renews
+ * it on the next task - so the card is marked, not alarmed. */
+.connector-card[data-expired] .connector-avatar {
+  border-style: dashed;
+}
+
+.connector-notice {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--hover);
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+/* The OAuth app registration form, inline under its card. Spans the whole
+ * grid so the fields are not squeezed into one 430px column. */
+.connector-form {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--hover);
+  grid-column: 1 / -1;
+}
+
+.connector-form p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.connector-field {
+  display: grid;
+  gap: 5px;
+}
+
+.connector-field span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.connector-field input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-nav);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+}
+
+.connector-form-hint {
+  font-size: 12px;
+}
+
+.connector-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .connector-avatar {
   display: grid;
   width: 32px;

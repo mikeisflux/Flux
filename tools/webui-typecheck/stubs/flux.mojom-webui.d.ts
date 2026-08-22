@@ -96,6 +96,15 @@ export interface LearnedFact {
   learnedAt: Time;
 }
 
+export interface ConnectorStatus {
+  id: string;
+  connectable: boolean;
+  hasClient: boolean;
+  connected: boolean;
+  expired: boolean;
+  detail: string|null;
+}
+
 export interface ProviderKeyStatus {
   provider: Provider;
   configured: boolean;
@@ -135,6 +144,17 @@ export declare class FluxPageHandlerRemote {
              instructions: string):
       Promise<{adopted: boolean, error: string|null}>;
   removeSkill(command: string): void;
+  listConnectors(): Promise<{statuses: ConnectorStatus[]}>;
+  setConnectorClient(connectorId: string, clientId: string,
+                     clientSecret: string, redirectUri: string):
+      Promise<{stored: boolean, error: string|null}>;
+  getConnectorClient(connectorId: string):
+      Promise<{clientId: string, redirectUri: string, hasSecret: boolean}>;
+  beginConnect(connectorId: string):
+      Promise<{started: boolean, error: string|null}>;
+  setPersonalToken(connectorId: string, token: string):
+      Promise<{stored: boolean, error: string|null}>;
+  disconnect(connectorId: string): void;
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
 }

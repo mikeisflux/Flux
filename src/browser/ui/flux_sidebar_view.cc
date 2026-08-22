@@ -8,6 +8,7 @@
 #include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/webui_embedding_context.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/branded_strings.h"
@@ -132,7 +133,25 @@ content::WebContents* FluxSidebarView::OpenURLFromTab(
   // A link in the sidebar navigates the window, not the sidebar. The nav items
   // are target=_blank precisely so they arrive here: a same-frame navigation
   // never consults the delegate, and would replace the sidebar with the page.
-  browser_->OpenGURL(params.url, WindowOpenDisposition::CURRENT_TAB);
+  //
+  // The requested disposition is honoured rather than forced to CURRENT_TAB.
+  // Connecting a service needs its authorization page in a tab of its own that
+  // Flux can then watch and close, and replacing whatever the user was looking
+  // at with an OAuth consent screen is its own bug besides.
+  const WindowOpenDisposition disposition =
+      params.disposition == WindowOpenDisposition::UNKNOWN
+          ? WindowOpenDisposition::CURRENT_TAB
+          : params.disposition;
+  browser_->OpenGURL(params.url, disposition);
+
+  // BrowserWindowInterface::OpenGURL returns void, so the new contents has to
+  // be read back off the tab strip. Only meaningful for a foreground tab,
+  // which has just become the active one; for anything else the caller gets
+  // nullptr, which is what this always used to return.
+  if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
+    if (TabStripModel* tabs = browser_->GetTabStripModel())
+      return tabs->GetActiveWebContents();
+  }
   return nullptr;
 }
 

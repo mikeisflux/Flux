@@ -35,6 +35,26 @@ inline constexpr char kUserSkills[] = "flux.user_skills";
 // restart.
 inline constexpr char kSidebarCollapsed[] = "flux.sidebar_collapsed";
 
+// Encrypted secrets, each a dictionary of name -> base64 ciphertext.
+//
+// A dictionary rather than a pref per secret, and the reason is load-bearing:
+// PrefService::GetString on an unregistered path is a hard CHECK that takes
+// the browser process down ("Trying to access an unregistered pref"), and a
+// write to one is silently dropped. A pref name that embeds a provider or a
+// connector id cannot be registered up front, so the id has to be a key inside
+// a registered dictionary instead. See SecretStore.
+//
+// None of these are syncable. A secret that follows a profile onto another
+// machine is a secret that leaks.
+inline constexpr char kApiKeys[] = "flux.api_keys";
+inline constexpr char kConnectorTokens[] = "flux.connector_tokens";
+
+// The OAuth apps the user registered with each provider: client id, secret and
+// redirect URI. Flux ships no client secrets - a secret inside a binary anyone
+// can download is not a secret, and several of these providers say so
+// themselves - so every connector is the user's own registration.
+inline constexpr char kConnectorClients[] = "flux.connector_clients";
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace flux::prefs

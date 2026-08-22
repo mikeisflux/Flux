@@ -56,6 +56,10 @@ PY
 # packed copy that has drifted from it ships stale instructions to the agent.
 python3 "$ROOT/tools/build-skills-json.py" || status=1
 
+# Same for the connector definitions: data/connectors/*.json is the authoring
+# source, and the packed resource is what the browser process actually reads.
+python3 "$ROOT/tools/build-connectors-json.py" || status=1
+
 # Every resource has to be listed in BUILD.gn or it is simply not packed, and
 # the failure shows up as a missing module at runtime - after a two-hour build.
 # Adding a file and forgetting the build entry has already happened once.

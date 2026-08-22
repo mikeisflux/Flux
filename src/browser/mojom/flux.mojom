@@ -26,6 +26,7 @@ enum WriteScope {
 enum Transport {
   kApi,        // authenticated API. Stable contract, rate-limited.
   kBrowser,    // driving a live page. Breaks when the site changes.
+  kMcp,        // reached over MCP. The server decides what exists.
 };
 
 enum RunState {
@@ -102,6 +103,25 @@ struct TaskSpec {
 };
 
 // Browser -> renderer. Live updates for the console.
+// What the connectors screen renders per row. Deliberately not the whole
+// definition: the console already has names, descriptions and badges packed in
+// connectors.json, and this is only the part that changes at runtime.
+struct ConnectorStatus {
+  string id;
+  // False for the connectors there is no auth path for - a local one with
+  // nothing to authorize, an MCP one configured elsewhere, or one catalogued
+  // only so the console can say why it is not offered.
+  bool connectable;
+  // The user registered an OAuth app. Flux ships no client secrets, so this is
+  // a precondition for connecting anything that uses OAuth.
+  bool has_client;
+  bool connected;
+  // Connected but past its expiry, and the refresh has not run or failed.
+  bool expired;
+  // Why it is not connectable or what is missing, in words for the user.
+  string? detail;
+};
+
 interface FluxPageHandlerObserver {
   OnRunProgress(RunProgress progress);
   OnAction(string run_id, ActionRecord action);
@@ -110,6 +130,11 @@ interface FluxPageHandlerObserver {
   // Emitted when the agent writes back to the Instructions buffer, so the UI
   // can show provenance rather than silently mutating what the user wrote.
   OnLearnedFact(string fact, string source_run_id);
+
+  // A connector connected, disconnected, or failed to connect. Carries the
+  // whole row rather than an id, so the console never has to re-query to
+  // redraw one card.
+  OnConnectorChanged(ConnectorStatus status, string? error);
 };
 
 // Renderer -> browser.
@@ -179,6 +204,35 @@ interface FluxPageHandler {
              string instructions) => (bool adopted, string? error);
 
   RemoveSkill(string command);
+
+  // --- Connectors -----------------------------------------------------------
+
+  ListConnectors() => (array<ConnectorStatus> statuses);
+
+  // The OAuth app the user registered with the provider. Flux ships no client
+  // secrets - one inside a downloadable binary is not a secret - so each
+  // connector is registered by the user as their own app.
+  SetConnectorClient(string connector_id, string client_id,
+                     string client_secret, string redirect_uri)
+      => (bool stored, string? error);
+
+  // Returns the client id and redirect URI for the form to show. The secret is
+  // deliberately NOT returned: it goes into the encrypted store and never
+  // comes back out to a renderer, so a compromised console cannot read it.
+  GetConnectorClient(string connector_id)
+      => (string client_id, string redirect_uri, bool has_secret);
+
+  // Opens the provider's authorization page in a tab. The result arrives on
+  // OnConnectorChanged, not here: the user has to go and approve it, which can
+  // take any amount of time and can be abandoned.
+  BeginConnect(string connector_id) => (bool started, string? error);
+
+  // A pasted personal token, for the connectors that document one as an
+  // alternative to the OAuth dance.
+  SetPersonalToken(string connector_id, string token)
+      => (bool stored, string? error);
+
+  Disconnect(string connector_id);
 
   // --- The shell ------------------------------------------------------------
 

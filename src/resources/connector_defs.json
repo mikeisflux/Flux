@@ -1,0 +1,3235 @@
+{
+  "version": 1,
+  "note": "Generated from data/connectors/*.json by tools/build-connectors-json.py. Edit those, not this file.",
+  "connectors": [
+    {
+      "id": "airtable",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://airtable.com/oauth2/v1/authorize",
+        "token_url": "https://airtable.com/oauth2/v1/token",
+        "client_auth": "basic",
+        "pkce": true,
+        "pkce_method": "S256",
+        "scopes": [
+          "data.records:read",
+          "schema.bases:read"
+        ]
+      },
+      "api": {
+        "base_url": "https://api.airtable.com/v0",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "list_bases": {
+          "method": "GET",
+          "path": "/meta/bases",
+          "write_scope": "readonly"
+        },
+        "get_base_schema": {
+          "method": "GET",
+          "path": "/meta/bases/{baseId}/tables",
+          "write_scope": "readonly"
+        },
+        "list_records": {
+          "method": "GET",
+          "path": "/{baseId}/{tableIdOrName}",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests_per_second": 5,
+        "note": "Per base. Exceeding it returns 429 and Airtable then refuses for 30 seconds, so backing off immediately matters more than usual."
+      }
+    },
+    {
+      "id": "apollo",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API key",
+          "where": "Apollo > Settings > Integrations > API. Master keys exist; prefer a key scoped to the endpoints you need.",
+          "prefix": "",
+          "notes": [
+            "Sent in the x-api-key header, not as a Bearer token and not as a query parameter - Apollo removed query-parameter auth in September 2024."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.apollo.io/api/v1",
+        "headers": {
+          "x-api-key": "{api_key}",
+          "Content-Type": "application/json"
+        }
+      },
+      "operations": {
+        "people_search": {
+          "method": "POST",
+          "path": "/mixed_people/search",
+          "write_scope": "readonly"
+        },
+        "organization_search": {
+          "method": "POST",
+          "path": "/mixed_companies/search",
+          "write_scope": "readonly"
+        },
+        "people_enrich": {
+          "method": "POST",
+          "path": "/people/match",
+          "write_scope": "readonly"
+        },
+        "organization_enrich": {
+          "method": "GET",
+          "path": "/organizations/enrich",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Per minute, hour and day, varying by plan, returned in x-rate-limit headers. Enrichment is metered as credits separately from the rate limit - a loop over a sheet can exhaust the credit balance without ever hitting a 429."
+      }
+    },
+    {
+      "id": "asana",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://app.asana.com/-/oauth_authorize",
+        "token_url": "https://app.asana.com/-/oauth_token",
+        "client_auth": "post",
+        "scopes": [
+          "openid",
+          "email",
+          "tasks:read",
+          "projects:read",
+          "workspaces:read"
+        ],
+        "personal_token": {
+          "label": "Personal access token",
+          "where": "app.asana.com/0/my-apps - Create new token.",
+          "prefix": "1/",
+          "notes": [
+            "A PAT carries the full permissions of the person who made it, so it is the less safe option here despite being simpler. Prefer OAuth for Asana."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://app.asana.com/api/1.0",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "list_workspaces": {
+          "method": "GET",
+          "path": "/workspaces",
+          "write_scope": "readonly"
+        },
+        "search_tasks": {
+          "method": "GET",
+          "path": "/workspaces/{workspace_gid}/tasks/search",
+          "write_scope": "readonly"
+        },
+        "get_task": {
+          "method": "GET",
+          "path": "/tasks/{task_gid}",
+          "write_scope": "readonly"
+        },
+        "list_projects": {
+          "method": "GET",
+          "path": "/projects",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Around 150 requests per minute for free plans and 1500 for paid, plus a separate lower limit on search."
+      }
+    },
+    {
+      "id": "atlassian",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://auth.atlassian.com/authorize",
+        "token_url": "https://auth.atlassian.com/oauth/token",
+        "client_auth": "post",
+        "scopes": [
+          "read:jira-work",
+          "read:jira-user",
+          "read:confluence-content.all",
+          "read:confluence-space.summary",
+          "offline_access"
+        ],
+        "extra_authorize_params": {
+          "audience": "api.atlassian.com",
+          "prompt": "consent"
+        }
+      },
+      "api": {
+        "base_url": "https://api.atlassian.com/ex/jira/{cloudid}",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Accept": "application/json"
+        }
+      },
+      "operations": {
+        "accessible_resources": {
+          "method": "GET",
+          "path": "https://api.atlassian.com/oauth/token/accessible-resources",
+          "write_scope": "readonly",
+          "notes": "Call this first; it returns the cloudid every other call needs."
+        },
+        "search_issues": {
+          "method": "GET",
+          "path": "/rest/api/3/search",
+          "write_scope": "readonly"
+        },
+        "get_issue": {
+          "method": "GET",
+          "path": "/rest/api/3/issue/{issueIdOrKey}",
+          "write_scope": "readonly"
+        },
+        "search_confluence": {
+          "method": "GET",
+          "path": "https://api.atlassian.com/ex/confluence/{cloudid}/wiki/rest/api/search",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Cost-based per app per tenant, returned as 429 with Retry-After. Jira search with many fields is expensive; request only the fields needed."
+      }
+    },
+    {
+      "id": "attio",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://app.attio.com/authorize",
+        "token_url": "https://app.attio.com/oauth/token",
+        "client_auth": "post",
+        "scopes": [
+          "record:read",
+          "object_configuration:read",
+          "list:read"
+        ],
+        "personal_token": {
+          "label": "Access token",
+          "where": "Attio > Workspace Settings > Developers > Generate API key.",
+          "prefix": "",
+          "notes": [
+            "Scoped to a single workspace, which is the natural boundary here."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.attio.com/v2",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "list_objects": {
+          "method": "GET",
+          "path": "/objects",
+          "write_scope": "readonly"
+        },
+        "query_records": {
+          "method": "POST",
+          "path": "/objects/{object}/records/query",
+          "write_scope": "readonly"
+        },
+        "get_record": {
+          "method": "GET",
+          "path": "/objects/{object}/records/{record_id}",
+          "write_scope": "readonly"
+        },
+        "list_lists": {
+          "method": "GET",
+          "path": "/lists",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Per workspace; returns 429."
+      }
+    },
+    {
+      "id": "basecamp",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://launchpad.37signals.com/authorization/new",
+        "token_url": "https://launchpad.37signals.com/authorization/token",
+        "client_auth": "post",
+        "scopes": [],
+        "token": {
+          "expires_in": 1209600,
+          "note": "Access tokens last two weeks. The token response always carries a refresh_token; POST grant_type=refresh_token with client_id and client_secret to the same token_url. A connector that does not refresh silently stops working a fortnight after the user connects it."
+        },
+        "account_discovery": {
+          "endpoint": "GET https://launchpad.37signals.com/authorization.json",
+          "note": "This is the mandatory first call after authorizing - it is where the base URL comes from. Pick the account whose \"product\" is \"bc3\" and use its \"href\" verbatim as the API base. Do not build https://3.basecampapi.com/{account_id} yourself; the href is the contract.",
+          "also": "Basecamp serves its own copy at GET https://3.basecampapi.com/authorization.json (no account prefix). It omits identity name/email and replaces \"product\"/\"app_href\" with an RFC 8707 \"resource\" (urn:bc:account:{id}), so a client reading both must select accounts by href or resource and treat product as optional.",
+          "accounts_path": "accounts",
+          "match": {
+            "product": "bc3"
+          },
+          "base_url_field": "href",
+          "machine_readable": "The four fields above are what the runtime executes: GET endpoint, find the list at accounts_path, take the first entry matching every pair in match, and use its base_url_field as the API base. Declarative so that \"the href is the contract\" is enforced by data rather than by a Basecamp-shaped branch in the client."
+        }
+      },
+      "api": {
+        "base_url": "https://3.basecampapi.com/{account_id}",
+        "base_url_note": "Templated only for documentation. At runtime it is the href from the authorization document - see auth.account_discovery.",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "User-Agent": "Flux (https://github.com/mikeisflux/Flux)",
+          "Content-Type": "application/json; charset=utf-8",
+          "Accept": "application/json"
+        },
+        "pagination": {
+          "style": "link-header",
+          "request": "Follow the URL in the RFC 5988 Link header with rel=\"next\". Never construct a page URL.",
+          "response": "A blank Link header is the last page. X-Total-Count carries the size of the whole collection.",
+          "note": "Page size is geared, not fixed: 15 on page 1, 30 on page 2, 50 on page 3, 100 from page 4 on. Code that assumes a constant page size will miscount."
+        },
+        "caching": {
+          "note": "Basecamp asks that clients use freshness headers, not as an optimisation but as a condition of use. Store the ETag and Last-Modified from every response and send them back as If-None-Match and If-Modified-Since; a 304 costs no bandwidth and no rate-limit goodwill."
+        },
+        "errors": {
+          "400": "Almost always a missing or malformed User-Agent header. See gotchas.",
+          "415": "Content-Type was not application/json; charset=utf-8 on a POST or PUT.",
+          "429": "Read Retry-After (seconds) and wait exactly that long. Do not use a fixed backoff.",
+          "404": "Deleted content, insufficient permission, or an inactive account. Never retried automatically.",
+          "404 with Reason: Account Inactive": "The whole account is suspended or its trial expired. Every request to it will fail. Disable the connection in Flux and tell the user; retrying is pure noise.",
+          "5xx": "500, 502, 503 and 504 are retryable with exponential backoff."
+        }
+      },
+      "operations": {
+        "get_authorization": {
+          "method": "GET",
+          "path": "https://launchpad.37signals.com/authorization.json",
+          "write_scope": "readonly",
+          "notes": "Absolute, not relative to base_url - this is the call that produces the base URL. Also returns expires_at, which is the cheapest way to know a token is about to lapse."
+        },
+        "list_projects": {
+          "method": "GET",
+          "path": "/projects.json",
+          "write_scope": "readonly",
+          "notes": "Active projects visible to the user, newest first. Each carries its dock, which is where the message_board, todoset, schedule and chat IDs come from."
+        },
+        "get_project": {
+          "method": "GET",
+          "path": "/projects/{project_id}.json",
+          "write_scope": "readonly"
+        },
+        "get_todoset": {
+          "method": "GET",
+          "path": "/todosets/{todoset_id}.json",
+          "write_scope": "readonly",
+          "notes": "The todoset ID comes from the project's dock, not from a list endpoint."
+        },
+        "list_todolists": {
+          "method": "GET",
+          "path": "/todosets/{todoset_id}/todolists.json",
+          "write_scope": "readonly"
+        },
+        "list_todos": {
+          "method": "GET",
+          "path": "/todolists/{todolist_id}/todos.json",
+          "write_scope": "readonly",
+          "notes": "Returns only active, pending to-dos by default. completed=true returns only completed ones; status=archived or status=trashed returns archived or trashed to-dos including both pending and completed. The two combine."
+        },
+        "get_todo": {
+          "method": "GET",
+          "path": "/todos/{todo_id}.json",
+          "write_scope": "readonly"
+        },
+        "create_todo": {
+          "method": "POST",
+          "path": "/todolists/{todolist_id}/todos.json",
+          "write_scope": "draft",
+          "notes": "Requires content. Optional description (HTML), assignee_ids, completion_subscriber_ids, due_on, starts_on, and notify. Draft rather than send while notify is false: the to-do is visible in the project but nobody is messaged. Set notify true only under a send-scoped task."
+        },
+        "update_todo": {
+          "method": "PUT",
+          "path": "/todos/{todo_id}.json",
+          "write_scope": "draft"
+        },
+        "complete_todo": {
+          "method": "POST",
+          "path": "/todos/{todo_id}/completion.json",
+          "write_scope": "draft"
+        },
+        "uncomplete_todo": {
+          "method": "DELETE",
+          "path": "/todos/{todo_id}/completion.json",
+          "write_scope": "draft"
+        },
+        "list_messages": {
+          "method": "GET",
+          "path": "/message_boards/{message_board_id}/messages.json",
+          "write_scope": "readonly"
+        },
+        "get_message": {
+          "method": "GET",
+          "path": "/messages/{message_id}.json",
+          "write_scope": "readonly"
+        },
+        "draft_message": {
+          "method": "POST",
+          "path": "/message_boards/{message_board_id}/messages.json",
+          "write_scope": "draft",
+          "notes": "Omit status. Requires subject; content is optional HTML. The message is created as a draft and notifies nobody, which is what makes this the draft-scoped form of the same endpoint as post_message."
+        },
+        "post_message": {
+          "method": "POST",
+          "path": "/message_boards/{message_board_id}/messages.json",
+          "write_scope": "send",
+          "notes": "Same endpoint with status: \"active\". Publishes and notifies. Everyone on the project is notified and subscribed unless subscriptions is given as an array of person IDs."
+        },
+        "publish_message": {
+          "method": "PUT",
+          "path": "/messages/{message_id}.json",
+          "write_scope": "send",
+          "notes": "Publishes an existing draft with a body of {\"status\": \"active\"} and nothing else. The update merges, so subject, content and subscribers are preserved - resending them is how you change who gets notified by accident. Documents publish the same way via PUT /documents/{id}.json."
+        },
+        "list_comments": {
+          "method": "GET",
+          "path": "/recordings/{recording_id}/comments.json",
+          "write_scope": "readonly"
+        },
+        "create_comment": {
+          "method": "POST",
+          "path": "/recordings/{recording_id}/comments.json",
+          "write_scope": "send",
+          "notes": "Send, not draft: every subscriber to the recording is notified the moment it posts, and there is no draft state for a comment. Requires content as HTML."
+        },
+        "list_campfires": {
+          "method": "GET",
+          "path": "/chats.json",
+          "write_scope": "readonly"
+        },
+        "list_campfire_lines": {
+          "method": "GET",
+          "path": "/chats/{chat_id}/lines.json",
+          "write_scope": "readonly"
+        },
+        "create_campfire_line": {
+          "method": "POST",
+          "path": "/chats/{chat_id}/lines.json",
+          "write_scope": "send",
+          "notes": "Requires content. Pass content_type: \"text/html\" for rich text; plain text is the default. A campfire line cannot be drafted, so this is always send."
+        },
+        "get_my_assignments": {
+          "method": "GET",
+          "path": "/my/assignments.json",
+          "write_scope": "readonly",
+          "notes": "Grouped into priorities (\"Up Next\") and non_priorities. Card table steps are folded into their parent card as children."
+        },
+        "get_assignments_due": {
+          "method": "GET",
+          "path": "/my/assignments/due.json",
+          "write_scope": "readonly",
+          "notes": "scope is one of overdue, due_today, due_tomorrow, due_later_this_week, due_next_week, due_later; defaults to overdue. An unrecognised scope is a 400 that lists the valid ones."
+        },
+        "get_completed_assignments": {
+          "method": "GET",
+          "path": "/my/assignments/completed.json",
+          "write_scope": "readonly"
+        },
+        "prioritize_assignment": {
+          "method": "POST",
+          "path": "/my/priorities.json",
+          "write_scope": "draft",
+          "notes": "Adds a recording to Up Next. Returns 204 No Content - no body to parse."
+        },
+        "deprioritize_assignment": {
+          "method": "DELETE",
+          "path": "/my/priorities/{recording_id}.json",
+          "write_scope": "draft",
+          "notes": "Returns 204 No Content."
+        },
+        "list_schedule_entries": {
+          "method": "GET",
+          "path": "/schedules/{schedule_id}/entries.json",
+          "write_scope": "readonly"
+        },
+        "get_schedule_entry": {
+          "method": "GET",
+          "path": "/schedule_entries/{entry_id}.json",
+          "write_scope": "readonly"
+        },
+        "create_schedule_entry": {
+          "method": "POST",
+          "path": "/schedules/{schedule_id}/entries.json",
+          "write_scope": "send",
+          "notes": "Requires summary, starts_at and ends_at (ISO 8601). Send, not draft, because a schedule entry over the API publishes immediately unless status: \"drafted\" is passed - the opposite default to messages and documents. participant_ids, all_day, url (returned as join_url), highlighted, notify and recurrence_schedule are optional."
+        },
+        "list_people": {
+          "method": "GET",
+          "path": "/people.json",
+          "write_scope": "readonly"
+        },
+        "list_project_people": {
+          "method": "GET",
+          "path": "/projects/{project_id}/people.json",
+          "write_scope": "readonly",
+          "notes": "The source of the person IDs that assignee_ids, subscriptions and participant_ids take."
+        },
+        "get_person": {
+          "method": "GET",
+          "path": "/people/{person_id}.json",
+          "write_scope": "readonly"
+        },
+        "get_my_profile": {
+          "method": "GET",
+          "path": "/my/profile.json",
+          "write_scope": "readonly",
+          "notes": "The correct way to learn who the token belongs to inside Basecamp. The identity on the authorization document is a Basecamp ID, not a person, and the docs say plainly not to use it for this."
+        },
+        "get_search_metadata": {
+          "method": "GET",
+          "path": "/searches/metadata.json",
+          "write_scope": "readonly",
+          "notes": "Fetch this before searching rather than hardcoding type names - the docs say the available types vary. Keys look like Kanban::Card and Schedule::Entry, not \"card\" and \"event\"."
+        },
+        "search": {
+          "method": "GET",
+          "path": "/search.json",
+          "write_scope": "readonly",
+          "notes": "Requires q. Optional type_names[], bucket_ids[], creator_ids[], file_type, exclude_chat, since (last_7_days | last_30_days | last_90_days | last_12_months | forever), sort (best_match | recency), page, per_page. The singular type, bucket_id and creator_id are deprecated."
+        },
+        "list_documents": {
+          "method": "GET",
+          "path": "/vaults/{vault_id}/documents.json",
+          "write_scope": "readonly"
+        },
+        "get_document": {
+          "method": "GET",
+          "path": "/documents/{document_id}.json",
+          "write_scope": "readonly"
+        },
+        "create_document": {
+          "method": "POST",
+          "path": "/vaults/{vault_id}/documents.json",
+          "write_scope": "draft",
+          "notes": "Requires title and content (HTML). Draft-scoped because status is omitted; passing status: \"active\" publishes and notifies, which is a send-scoped act."
+        },
+        "get_notifications": {
+          "method": "GET",
+          "path": "/my/readings.json",
+          "write_scope": "readonly",
+          "notes": "Grouped into unreads, reads, memories, bubble_ups and scheduled_bubble_ups."
+        }
+      },
+      "gotchas": [
+        "The User-Agent header is mandatory and must name the app AND a way to contact its author. Without it every request is 400 Bad Request - not 401, not 403, which is why it reads like a bug in the request body.",
+        "Creating a message or a document WITHOUT a status field creates a draft, not a post. It notifies nobody and does not appear on the board. Pass status: \"active\" to publish. Schedule entries invert this: they publish immediately unless you pass status: \"drafted\".",
+        "Flat routes (/todos/{id}.json) are canonical. The /buckets/{project_id}/... form still works in perpetuity but is legacy. Three endpoint families are the exception and are still project-scoped only: message types (/buckets/{id}/categories.json), the webhooks index and create, and adding a tool to a dock.",
+        "bucket_id and project id are the same number. A project has exactly one bucket, so anywhere the docs say bucket, the project ID is the value.",
+        "Everything in a project is a \"recording\", which is why comments are posted to /recordings/{id}/comments.json regardless of whether the thing being commented on is a message, a to-do or an upload.",
+        "Check a project's dock before assuming a tool exists. Message boards, to-do sets, schedules and campfires can each be disabled per project, and the dock array in the project payload is what says which are enabled and what their IDs are.",
+        "The search endpoint's project filter is bucket_ids[] (plural, array). The recordings endpoint uses bucket. They are different parameter names for the same idea and swapping them silently returns unfiltered results.",
+        "Campfires are /chats.json, not /campfires.json.",
+        "Rich text is HTML with a fixed allowed tag set: div, h1, br, strong, em, strike, a (with href), pre, ol, ul, li and blockquote. Anything else is stripped silently, so content that looked right in the request comes back missing.",
+        "A to-do can live directly under the todoset, outside any list - the todoset payload counts them as completed_loose_todos_count. Walking only the to-do lists misses them."
+      ],
+      "rate_limits": {
+        "first_limit": "50 requests per 10 seconds per IP address, as of the docs' own wording (\"currently\").",
+        "note": "Several limits run at once - separate ones for GET and POST, and per-second, per-hour and per-day windows - and Basecamp adjusts them dynamically. That makes a hardcoded client-side limiter wrong by design. Obey Retry-After on a 429 and treat backpressure as normal rather than exceptional.",
+        "retry": "429 carries Retry-After in seconds. 5xx is retried with exponential backoff. 404 is never retried."
+      }
+    },
+    {
+      "id": "brex",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "User token",
+          "where": "dashboard.brex.com/settings/developer > Create Token. Scopes are chosen on the creation screen and are fixed at that point.",
+          "prefix": "bxt_",
+          "notes": [
+            "Requires signing in as an account admin or card admin; a normal user cannot reach the developer page at all.",
+            "The company must have accepted Brex's developer API agreement first. That is what the \"Requires approval\" badge means, and it is a person-in-a-dashboard step Flux cannot do.",
+            "Shown once, never readable again.",
+            "Expires after 90 days without an API call - a connector used only by a quarterly workflow will silently stop working between runs.",
+            "A token belonging to a user who becomes inactive stops working immediately. That is the usual cause of a connection that broke with nobody touching it."
+          ]
+        },
+        "partner_oauth": {
+          "discovery_url": "https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration",
+          "authorize_url": "https://accounts-api.brex.com/oauth2/default/v1/authorize",
+          "token_url": "https://accounts-api.brex.com/oauth2/default/v1/token",
+          "revoke_url": "https://accounts-api.brex.com/oauth2/default/v1/revoke",
+          "staging_base": "https://accounts-api.staging.brexapps.com/oauth2/default",
+          "client_auth": "post",
+          "pkce": true,
+          "scopes": [
+            "openid",
+            "offline_access"
+          ],
+          "notes": [
+            "Brex says in its own documentation to treat the well-known OpenID configuration as the source of truth for the base URL, because these may change without notice. Resolve it at connect time rather than trusting the URLs recorded here.",
+            "state is required and must be longer than 8 characters - Brex rejects the request otherwise, which is stricter than the spec.",
+            "PKCE is supported but not required. Use it anyway; this is a desktop client with nowhere to keep a secret.",
+            "Access tokens last 1 hour. Refresh tokens last 90 days and are rotated on every exchange, so the new one must be persisted each time or the connection dies at the next refresh.",
+            "The grant type differs by API: client_credentials for the onboarding API, authorization_code for everything else.",
+            "openid and offline_access are added automatically by Brex; a partner does not list them. They are recorded here because the token response depends on them."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.brex.com",
+        "staging_base_url": "https://api-staging.brex.com",
+        "headers": {
+          "Authorization": "Bearer {api_token}"
+        }
+      },
+      "operations": {
+        "get_current_user": {
+          "method": "GET",
+          "path": "/v2/users/me",
+          "scope": "users.readonly",
+          "write_scope": "readonly",
+          "notes": "The cheapest confirmation that a token works and has not expired. Worth calling on connect."
+        },
+        "list_transactions": {
+          "method": "GET",
+          "path": "/v2/transactions/card/primary",
+          "scope": "transactions.card.readonly",
+          "write_scope": "readonly"
+        },
+        "list_expenses": {
+          "method": "GET",
+          "path": "/v1/expenses",
+          "scope": "expenses.card.readonly",
+          "write_scope": "readonly"
+        },
+        "list_cards": {
+          "method": "GET",
+          "path": "/v2/cards",
+          "scope": "cards.readonly",
+          "write_scope": "readonly"
+        },
+        "list_budgets": {
+          "method": "GET",
+          "path": "/v2/budgets",
+          "scope": "budgets.readonly",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests": "1000 per 60 seconds, counted per Client ID and per Brex account.",
+        "daily": [
+          "1000 transfers per 24 hours",
+          "100 international wires per 24 hours",
+          "5000 cards created per 24 hours"
+        ],
+        "on_exceed": "HTTP 429.",
+        "note": "Brex's own guidance is a token bucket keyed on the client ID plus exponential backoff with jitter on a 429, and webhooks instead of polling where a webhook exists for the event. The per-60-second window is the one that a Flux workflow can realistically hit; the daily caps are all on write operations Flux does not perform.",
+        "backoff": {
+          "strategy": "exponential",
+          "jitter": true
+        }
+      }
+    },
+    {
+      "id": "cal_com",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://app.cal.com/auth/oauth2/authorize",
+        "token_url": "https://api.cal.com/v2/oauth/{clientId}/exchange",
+        "client_auth": "post",
+        "scopes": [
+          "READ_BOOKING",
+          "READ_PROFILE"
+        ],
+        "personal_token": {
+          "label": "API key",
+          "where": "cal.com > Settings > Security > API keys.",
+          "prefix": "cal_",
+          "notes": [
+            "cal_live_ prefixes a live-mode key; cal_ alone is test mode. Connecting a test key against live data returns empty results rather than an error."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.cal.com/v2",
+        "headers": {
+          "Authorization": "Bearer {api_key}"
+        }
+      },
+      "operations": {
+        "list_bookings": {
+          "method": "GET",
+          "path": "/bookings",
+          "write_scope": "readonly"
+        },
+        "get_booking": {
+          "method": "GET",
+          "path": "/bookings/{uid}",
+          "write_scope": "readonly"
+        },
+        "list_event_types": {
+          "method": "GET",
+          "path": "/event-types",
+          "write_scope": "readonly"
+        },
+        "list_schedules": {
+          "method": "GET",
+          "path": "/schedules",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests_per_minute": 120,
+        "note": "Documented starting point; higher on paid plans."
+      }
+    },
+    {
+      "id": "calendly",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://auth.calendly.com/oauth/authorize",
+        "token_url": "https://auth.calendly.com/oauth/token",
+        "client_auth": "basic",
+        "scopes": [
+          "default"
+        ],
+        "personal_token": {
+          "label": "Personal access token",
+          "where": "calendly.com/integrations/api_webhooks - Generate token.",
+          "prefix": "eyJ",
+          "notes": [
+            "Calendly documents PATs as the right choice for a personal integration and OAuth for one serving other people."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.calendly.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "get_current_user": {
+          "method": "GET",
+          "path": "/users/me",
+          "write_scope": "readonly",
+          "notes": "Returns the URI every other call needs."
+        },
+        "list_event_types": {
+          "method": "GET",
+          "path": "/event_types",
+          "write_scope": "readonly"
+        },
+        "list_scheduled_events": {
+          "method": "GET",
+          "path": "/scheduled_events",
+          "write_scope": "readonly"
+        },
+        "list_availability": {
+          "method": "GET",
+          "path": "/user_availability_schedules",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Documented per endpoint group; returns 429 with Retry-After."
+      }
+    },
+    {
+      "id": "cloudflare",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API token",
+          "where": "dash.cloudflare.com/profile/api-tokens - Create Token, then grant only the read permissions needed. Do not use a Global API Key.",
+          "prefix": "",
+          "notes": [
+            "A Global API Key has full account access and cannot be scoped or revoked individually. A scoped API token can.",
+            "Verify a token before storing it with GET /client/v4/user/tokens/verify - it returns the token status without needing to know what it can reach."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.cloudflare.com/client/v4",
+        "headers": {
+          "Authorization": "Bearer {api_token}"
+        }
+      },
+      "operations": {
+        "verify_token": {
+          "method": "GET",
+          "path": "/user/tokens/verify",
+          "write_scope": "readonly",
+          "notes": "Call this on connect; it is the cheapest way to confirm a token works and has not been revoked."
+        },
+        "list_zones": {
+          "method": "GET",
+          "path": "/zones",
+          "write_scope": "readonly"
+        },
+        "radar_traffic": {
+          "method": "GET",
+          "path": "/radar/http/timeseries",
+          "write_scope": "readonly"
+        },
+        "list_workers": {
+          "method": "GET",
+          "path": "/accounts/{account_id}/workers/scripts",
+          "write_scope": "readonly"
+        },
+        "worker_logs": {
+          "method": "GET",
+          "path": "/accounts/{account_id}/workers/scripts/{script}/tails",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests_per_five_minutes": 1200,
+        "note": "Per user, across the whole API. Returns 429."
+      }
+    },
+    {
+      "id": "coda",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API token",
+          "where": "coda.io/account > API settings > Generate API token. Coda lets you restrict a token to a single doc; do that rather than issuing an unrestricted one.",
+          "prefix": "",
+          "notes": [
+            "An unrestricted token inherits everything the person can see, which for most accounts is every doc they have ever been shared on.",
+            "GET /whoami reports `scoped` (true if the token is restricted) and `tokenName`. Check `scoped` on connect and warn if it is false - it is the only way to tell from the API side that the user handed over a key to their whole account.",
+            "There is no fixed prefix; the field is empty deliberately rather than forgotten."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://coda.io/apis/v1",
+        "headers": {
+          "Authorization": "Bearer {api_token}"
+        },
+        "ids": {
+          "note": "Every resource carries id, type and href. Most endpoints accept a name in place of an ID, and Coda's own documentation discourages it in almost every parameter description: names are changed by doc users, and where several objects share a name an ARBITRARY one is selected - silently, with no error. Always resolve to an ID and store that.",
+          "prefixes": "doc ids are bare (AbCDeFGH); pages canvas-, tables grid-, columns c-, rows i-, controls ctrl-, formulas f-, folders fl-, workspaces ws-, organizations org-."
+        },
+        "pagination": {
+          "style": "opaque page token",
+          "response": "items, nextPageToken, nextPageLink",
+          "rule": "The maximum page size can change at any time and differs per endpoint. Asking for more than the maximum silently returns the maximum, so page on the presence of nextPageToken - never on the result count matching the limit requested.",
+          "page_token": "A pageToken implies every parameter from the original request. Any other parameter sent alongside one is ignored."
+        }
+      },
+      "operations": {
+        "whoami": {
+          "method": "GET",
+          "path": "/whoami",
+          "write_scope": "readonly",
+          "notes": "The connect-time check. Returns name, loginId, workspace, and crucially `scoped` and `tokenName`."
+        },
+        "list_docs": {
+          "method": "GET",
+          "path": "/docs",
+          "params": {
+            "query": "string?",
+            "isOwner": "boolean?",
+            "isStarred": "boolean?",
+            "workspaceId": "string?",
+            "folderId": "string?",
+            "limit": "integer, default 25"
+          },
+          "write_scope": "readonly",
+          "notes": "Only docs the user has opened at least once, ordered by the latest event relevant to them. A doc shared but never opened does not appear. Rate limited far harder than other reads - 4 requests per 6 seconds."
+        },
+        "get_doc": {
+          "method": "GET",
+          "path": "/docs/{docId}",
+          "write_scope": "readonly",
+          "notes": "docSize.overApiSizeLimit is worth checking before a big read."
+        },
+        "list_pages": {
+          "method": "GET",
+          "path": "/docs/{docId}/pages",
+          "write_scope": "readonly"
+        },
+        "get_page": {
+          "method": "GET",
+          "path": "/docs/{docId}/pages/{pageIdOrName}",
+          "write_scope": "readonly",
+          "notes": "contentType is canvas, embed or syncPage. isEffectivelyHidden accounts for a hidden parent, isHidden does not."
+        },
+        "list_page_content": {
+          "method": "GET",
+          "path": "/docs/{docId}/pages/{pageIdOrName}/content",
+          "params": {
+            "contentFormat": "plainText (the only value)",
+            "limit": "1-500, default 50"
+          },
+          "write_scope": "readonly",
+          "notes": "Plain text only. For html or markdown use the export flow below."
+        },
+        "export_page": {
+          "method": "POST",
+          "path": "/docs/{docId}/pages/{pageIdOrName}/export",
+          "params": {
+            "outputFormat": "html | markdown"
+          },
+          "write_scope": "readonly",
+          "notes": "Asynchronous: returns an export id, then poll GET .../export/{requestId} until status completes and read downloadLink. The link expires quickly and a fresh one is issued on each status call, so fetch immediately or re-poll. This is a read despite being a POST."
+        },
+        "list_tables": {
+          "method": "GET",
+          "path": "/docs/{docId}/tables",
+          "params": {
+            "tableTypes": "table,view,database"
+          },
+          "write_scope": "readonly"
+        },
+        "get_table": {
+          "method": "GET",
+          "path": "/docs/{docId}/tables/{tableIdOrName}",
+          "write_scope": "readonly"
+        },
+        "list_columns": {
+          "method": "GET",
+          "path": "/docs/{docId}/tables/{tableIdOrName}/columns",
+          "params": {
+            "visibleOnly": "boolean? - base tables only, ignored on views",
+            "limit": "1-100, default 25"
+          },
+          "write_scope": "readonly",
+          "notes": "Call this before reading rows. Column IDs are immutable; names are not, and row values are keyed by column ID unless useColumnNames is set."
+        },
+        "list_rows": {
+          "method": "GET",
+          "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
+          "params": {
+            "query": "<column_id_or_name>:<json_value>, e.g. c-tuVwxYz:\"Apple\"",
+            "sortBy": "createdAt | updatedAt | natural",
+            "valueFormat": "simple | simpleWithArrays | rich",
+            "visibleOnly": "boolean?",
+            "useColumnNames": "boolean? - discouraged",
+            "syncToken": "string?",
+            "limit": "integer, default 25"
+          },
+          "write_scope": "readonly",
+          "notes": "syncToken is the incremental-sync mechanism: the response carries nextSyncToken, and passing it back later returns only what has since changed. Use it instead of re-reading a whole table on a schedule."
+        },
+        "get_row": {
+          "method": "GET",
+          "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
+          "write_scope": "readonly"
+        },
+        "upsert_rows": {
+          "method": "POST",
+          "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
+          "params": {
+            "rows": "RowEdit[]",
+            "keyColumns": "string[]? - column IDs to match on",
+            "disableParsing": "boolean?"
+          },
+          "write_scope": "send",
+          "notes": "Base tables only - not views. Without keyColumns it inserts and returns addedRowIds; with them it upserts and addedRowIds is absent. If several rows match the key, ALL of them are updated. Always 202."
+        },
+        "update_row": {
+          "method": "PUT",
+          "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
+          "write_scope": "send",
+          "notes": "Addressing by name updates an arbitrary matching row. Use the row ID."
+        },
+        "list_formulas": {
+          "method": "GET",
+          "path": "/docs/{docId}/formulas",
+          "write_scope": "readonly"
+        },
+        "get_formula": {
+          "method": "GET",
+          "path": "/docs/{docId}/formulas/{formulaIdOrName}",
+          "write_scope": "readonly",
+          "notes": "Returns the computed value. A cheap way to read a rollup without pulling the table it summarises."
+        },
+        "list_controls": {
+          "method": "GET",
+          "path": "/docs/{docId}/controls",
+          "write_scope": "readonly"
+        },
+        "resolve_browser_link": {
+          "method": "GET",
+          "path": "/resolveBrowserLink",
+          "params": {
+            "url": "required",
+            "degradeGracefully": "boolean?"
+          },
+          "write_scope": "readonly",
+          "notes": "Turns a coda.io URL the user pasted into an API href. The natural first call when a task starts from a link rather than an ID."
+        },
+        "mutation_status": {
+          "method": "GET",
+          "path": "/mutationStatus/{requestId}",
+          "write_scope": "readonly",
+          "notes": "See `consistency`. Every 202 should end here."
+        }
+      },
+      "gotchas": [
+        "sortBy=natural implies visibleOnly=true. Sending sortBy=natural with visibleOnly=false explicitly is a 400, not a silently-ignored parameter.",
+        "Creating a doc or page, and renaming a doc or page, requires the token owner to be a Doc Maker or Admin in the workspace. Editors can be auto-promoted if the workspace allows it, which means an innocuous createDoc call can change the user's role.",
+        "Insert and upsert work on base tables only. Pointing them at a view fails.",
+        "Page analytics returns 401 - not 403 - if the doc is not in an Enterprise workspace. Do not treat that 401 as a bad token.",
+        "Coda reserves the right to remove APIs with three months' notice, announced in their community rather than in the reference."
+      ],
+      "rate_limits": {
+        "note": "Per user, shared across every endpoint in the same class and across all docs - not per token and not per doc. Coda says these are subject to change without notice, so a 429 is the authority and every script must back off and retry.",
+        "read": "100 requests per 6 seconds",
+        "write": "10 requests per 6 seconds (POST/PUT/PATCH)",
+        "write_doc_content": "5 requests per 10 seconds",
+        "list_docs": "4 requests per 6 seconds",
+        "analytics": "100 requests per 6 seconds",
+        "on_exceed": "HTTP 429."
+      }
+    },
+    {
+      "id": "dualentry",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API key",
+          "where": "DualEntry dashboard > Settings > Organization > Developer access > API Keys > + . Admin role only - the tab is disabled for every other role including Controller, and the underlying endpoints reject non-admins.",
+          "prefix": "org_",
+          "notes": [
+            "The full prefix is org_{environment}_{4 hex}, where environment is production, dev, test or local - for example org_production_18e3****cSk8. That segment is the reliable way to tell two keys apart in a config file.",
+            "A key authenticates only against the environment it was created in. A production key against api-dev fails, and the reverse.",
+            "Shown once at creation and never retrievable. Losing it means revoking and issuing another.",
+            "Keys do not expire. An Active key stays valid until someone revokes it, and revocation is immediate and one-way - a revoked key cannot be reactivated and its name stays reserved, so the replacement needs a different name.",
+            "A revoked key and an unknown key return the identical error, so a sudden blanket 403 does not distinguish 'someone revoked this' from 'the header is wrong'.",
+            "The key carries its own roles and is NOT tied to the user who created it: it does not inherit their permissions or entity scoping, and it reaches every company in the organisation. An admin can change its roles later without invalidating the secret.",
+            "Actions taken with a key appear in DualEntry's audit trail attributed to 'API Key' rather than to a person. Name the key 'flux' so the history stays readable."
+          ]
+        },
+        "header": "X-API-KEY: {api_key}"
+      },
+      "api": {
+        "base_url": "https://api.dualentry.com/public/v2",
+        "dev_base_url": "https://api-dev.dualentry.com/public/v2",
+        "headers": {
+          "X-API-KEY": "{api_key}",
+          "Content-Type": "application/json"
+        },
+        "mounts": {
+          "/public/v2/": "Version 2.0.0. Current - use this.",
+          "/public/v1/": "Version 1.0.0. Supported.",
+          "/public/": "Version 1.0.0, unversioned. Deprecated; kept for existing integrations only."
+        },
+        "trailing_slash": "Paths carry a trailing slash - /public/v2/invoices/, not /public/v2/invoices. This is a Django-style API; stripping it may redirect or 404.",
+        "versioning": "The same key works against every mount, so moving from v1 to v2 is a URL change and needs no new credential.",
+        "pagination": {
+          "style": "limit and offset",
+          "limit": "Defaults to 100 and is CAPPED at 100 - asking for more silently gets 100, so page on count rather than on a short page.",
+          "response": "{ items: [...], count: <total across all pages> }"
+        },
+        "errors": {
+          "shape": "{ success: false, errors: { <field>: [ \"message\", ... ] } }",
+          "note": "Field-keyed rather than a flat list. Non-field problems come back under the __all__ key.",
+          "403_auth": "\"API key authentication failed\" - header missing or empty, or the key is unknown or revoked.",
+          "403_roles": "\"Access denied\" - the key authenticated but its roles do not permit the operation. Ask an admin to widen the key; the secret keeps working.",
+          "429": "Quota exceeded. DualEntry documents rate limiting on a separate page that has not been read - see pending."
+        }
+      },
+      "operations": {
+        "list_invoices": {
+          "method": "GET",
+          "path": "/invoices/",
+          "params": {
+            "search": "string?",
+            "company_id": "integer[]?",
+            "customer_id": "integer[]?",
+            "number": "integer[]?",
+            "code": "string[]?",
+            "start_date": "date - transaction date >=",
+            "end_date": "date - transaction date <=",
+            "due_date": "date - due date >=",
+            "due_date_until": "date - due date <=",
+            "transaction_currency": "ISO 4217[]?",
+            "record_status": "draft | posted | archived",
+            "approval_status": "string[]?",
+            "amount_gte": "number?",
+            "amount_lte": "number?",
+            "amount_due_gte": "number?",
+            "amount_due_lte": "number?",
+            "amount_due_updated_at_gte": "date-time?",
+            "updated_after": "date-time?",
+            "updated_before": "date-time?",
+            "integration_sources": "slug[]?",
+            "ordering": "string, default id",
+            "limit": "integer, default 100, max 100",
+            "offset": "integer, default 0"
+          },
+          "write_scope": "readonly",
+          "notes": "amount_due_updated_at is the field to sync on for anything about who owes what: DualEntry moves it whenever the invoice is edited OR whenever a posted customer payment or prepayment application referencing it is written. updated_after alone will miss a payment that changed the balance without touching the invoice record."
+        },
+        "list_webhooks": {
+          "method": "GET",
+          "path": "/webhooks/",
+          "params": {
+            "search": "string?",
+            "is_active": "boolean?",
+            "ordering": "string, default -created_at",
+            "limit": "integer, default 100, max 100",
+            "offset": "integer, default 0"
+          },
+          "write_scope": "readonly",
+          "notes": "Documented on the v1 mount as /public/v1/webhooks/. Returns uuid, url, topics, is_active, disabled_at and disabled_reason - disabled_reason is what says why DualEntry switched a subscription off."
+        }
+      },
+      "rate_limits": {
+        "model": "Two-layer token bucket, both checked per API key. A request must pass both.",
+        "aggregate": {
+          "burst": 50,
+          "refill_per_second": 5,
+          "sustained_per_minute": 300,
+          "scope": "all endpoints together"
+        },
+        "per_endpoint": {
+          "burst": 10,
+          "refill_per_second": 1,
+          "sustained_per_minute": 60,
+          "scope": "each endpoint separately"
+        },
+        "on_exceed": "HTTP 429 with Retry-After.",
+        "headers": "X-RateLimit-Limit, X-RateLimit-Remaining and X-RateLimit-Reset always describe whichever bucket is TIGHTEST at that moment - so a low Remaining does not say which limit is about to bite.",
+        "note": "The per-endpoint bucket is the one that actually constrains a sync: one endpoint sustains 1 request per second, so paging a large table caps at 60/min even though the key is allowed 300/min overall. Interleaving different endpoints uses the budget far better than draining one. Raising a limit is a conversation with the customer's DualEntry administrator, naming the endpoint and the throughput needed.",
+        "backoff": {
+          "strategy": "Honour Retry-After; it is present on the 429."
+        }
+      }
+    },
+    {
+      "id": "facebook_pages",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://www.facebook.com/v21.0/dialog/oauth",
+        "token_url": "https://graph.facebook.com/v21.0/oauth/access_token",
+        "scopes": [
+          "pages_show_list",
+          "pages_manage_posts",
+          "pages_read_engagement"
+        ]
+      },
+      "operations": {
+        "publish": {
+          "method": "POST",
+          "path": "/{page_id}/feed",
+          "params": {
+            "message": "string",
+            "link": "string?"
+          },
+          "write_scope": "send"
+        },
+        "schedule": {
+          "method": "POST",
+          "path": "/{page_id}/feed",
+          "params": {
+            "message": "string",
+            "published": false,
+            "scheduled_publish_time": "unix_seconds"
+          },
+          "write_scope": "send",
+          "notes": "Native scheduling - between 10 minutes and 6 months out. A recurring workflow can queue posts here and skip the browser entirely."
+        },
+        "list_posts": {
+          "method": "GET",
+          "path": "/{page_id}/posts",
+          "write_scope": "readonly"
+        },
+        "read_comments": {
+          "method": "GET",
+          "path": "/{post_id}/comments",
+          "write_scope": "readonly"
+        },
+        "insights": {
+          "method": "GET",
+          "path": "/{page_id}/insights",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "posts_per_day": 50,
+        "note": "Meta throttles rather than bans. A 429 means back off, not that the account is at risk - the opposite of the browser path."
+      }
+    },
+    {
+      "id": "github",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://github.com/login/oauth/authorize",
+        "token_url": "https://github.com/login/oauth/access_token",
+        "device_authorization_url": "https://github.com/login/device/code",
+        "client_auth": "post",
+        "scopes": [
+          "repo",
+          "read:org",
+          "read:user"
+        ],
+        "personal_token": {
+          "label": "Fine-grained personal access token",
+          "where": "github.com/settings/personal-access-tokens - pick the repositories and grant Contents, Issues and Pull requests as read-only unless a task needs to write.",
+          "prefix": "github_pat_",
+          "notes": [
+            "A fine-grained token is strictly better than the OAuth repo scope here: repo is all-or-nothing across every repository you can see, and fine-grained is per repository and per permission."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.github.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      },
+      "operations": {
+        "search_code": {
+          "method": "GET",
+          "path": "/search/code",
+          "write_scope": "readonly"
+        },
+        "search_issues": {
+          "method": "GET",
+          "path": "/search/issues",
+          "write_scope": "readonly"
+        },
+        "list_pull_requests": {
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/pulls",
+          "write_scope": "readonly"
+        },
+        "get_pull_request": {
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/pulls/{number}",
+          "write_scope": "readonly"
+        },
+        "list_issues": {
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues",
+          "write_scope": "readonly"
+        },
+        "create_issue": {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues",
+          "write_scope": "draft"
+        },
+        "create_issue_comment": {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{number}/comments",
+          "write_scope": "send",
+          "notes": "A comment notifies subscribers, so it is outbound."
+        }
+      },
+      "rate_limits": {
+        "authenticated_per_hour": 5000,
+        "note": "Search is separately limited to 30 requests per minute. Both return the remaining budget in x-ratelimit-remaining; read it rather than counting."
+      }
+    },
+    {
+      "id": "google",
+      "auth": {
+        "type": "oauth2",
+        "discovery_url": "https://accounts.google.com/.well-known/openid-configuration",
+        "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_url": "https://oauth2.googleapis.com/token",
+        "revoke_url": "https://oauth2.googleapis.com/revoke",
+        "client_auth": "post",
+        "pkce": true,
+        "scopes": [
+          "https://www.googleapis.com/auth/gmail.modify",
+          "https://www.googleapis.com/auth/gmail.compose",
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/documents",
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/calendar"
+        ],
+        "extra_authorize_params": {
+          "access_type": "offline",
+          "prompt": "consent"
+        }
+      },
+      "api": {
+        "base_url": "https://www.googleapis.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "gmail_list": {
+          "method": "GET",
+          "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+          "write_scope": "readonly"
+        },
+        "gmail_get": {
+          "method": "GET",
+          "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}",
+          "write_scope": "readonly"
+        },
+        "gmail_create_draft": {
+          "method": "POST",
+          "path": "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
+          "write_scope": "draft",
+          "notes": "Saves a draft. Sending a draft is a separate endpoint and a separate scope Flux does not hold."
+        },
+        "gmail_modify_labels": {
+          "method": "POST",
+          "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}/modify",
+          "write_scope": "draft"
+        },
+        "drive_list": {
+          "method": "GET",
+          "path": "https://www.googleapis.com/drive/v3/files",
+          "write_scope": "readonly"
+        },
+        "drive_upload": {
+          "method": "POST",
+          "path": "https://www.googleapis.com/upload/drive/v3/files",
+          "write_scope": "draft"
+        },
+        "docs_get": {
+          "method": "GET",
+          "path": "https://docs.googleapis.com/v1/documents/{documentId}",
+          "write_scope": "readonly"
+        },
+        "docs_update": {
+          "method": "POST",
+          "path": "https://docs.googleapis.com/v1/documents/{documentId}:batchUpdate",
+          "write_scope": "draft"
+        },
+        "sheets_read": {
+          "method": "GET",
+          "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
+          "write_scope": "readonly"
+        },
+        "sheets_write": {
+          "method": "PUT",
+          "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
+          "write_scope": "draft"
+        },
+        "calendar_list_events": {
+          "method": "GET",
+          "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
+          "write_scope": "readonly"
+        },
+        "calendar_create_event": {
+          "method": "POST",
+          "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
+          "write_scope": "send",
+          "notes": "Creating an event notifies attendees, which is an outbound message to other people. Scoped as send, not draft."
+        }
+      },
+      "rate_limits": {
+        "note": "Per-API quotas, published per service in the Google Cloud console for the project. A 429 means back off and retry with jitter; it is not a permanent failure."
+      }
+    },
+    {
+      "id": "google_analytics",
+      "auth": {
+        "type": "oauth2",
+        "discovery_url": "https://accounts.google.com/.well-known/openid-configuration",
+        "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_url": "https://oauth2.googleapis.com/token",
+        "revoke_url": "https://oauth2.googleapis.com/revoke",
+        "client_auth": "post",
+        "pkce": true,
+        "scopes": [
+          "https://www.googleapis.com/auth/analytics.readonly"
+        ],
+        "extra_authorize_params": {
+          "access_type": "offline",
+          "prompt": "consent"
+        }
+      },
+      "api": {
+        "base_url": "https://analyticsdata.googleapis.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "run_report": {
+          "method": "POST",
+          "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runReport",
+          "write_scope": "readonly"
+        },
+        "run_realtime_report": {
+          "method": "POST",
+          "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runRealtimeReport",
+          "write_scope": "readonly"
+        },
+        "list_accounts": {
+          "method": "GET",
+          "path": "https://analyticsadmin.googleapis.com/v1beta/accounts",
+          "write_scope": "readonly"
+        },
+        "list_properties": {
+          "method": "GET",
+          "path": "https://analyticsadmin.googleapis.com/v1beta/properties",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "GA4 enforces per-property token buckets per hour and per day. Large date ranges with many dimensions spend tokens fast; narrow the request rather than retrying."
+      }
+    },
+    {
+      "id": "grain",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://grain.com/_/public-api/oauth2/authorize",
+        "token_url": "https://api.grain.com/_/public-api/oauth2/token",
+        "client_auth": "post",
+        "pkce": true,
+        "scopes": [],
+        "personal_token": {
+          "label": "Personal Access Token",
+          "where": "grain.com/app/settings/integrations?tab=api",
+          "prefix": "",
+          "notes": [
+            "Grain publishes no fixed prefix; the field is empty deliberately.",
+            "Scoped to the generating user - the same access that user has in Grain, nothing more. This is the tier Flux should offer."
+          ]
+        },
+        "workspace_token": {
+          "label": "Workspace Access Token",
+          "where": "grain.com/app/settings/integrations?tab=api, for users with access.",
+          "notes": [
+            "Reaches ALL DATA in the workspace, in Grain's own words - every recording of every member, not only the holder's. Do not offer this by default; a meeting-notes task never needs the whole company's calls.",
+            "It also changes behaviour: the attendance filter and the private_notes include are Personal API only and simply do not apply, while the upload endpoint requires an explicit user_id to own the result."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.grain.com/_/public-api",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Public-Api-Version": "2025-10-31",
+          "Content-Type": "application/json"
+        },
+        "notes": [
+          "Public-Api-Version is mandatory on every call, not optional. 2025-10-31 is the current version; it gates which fields exist, so pin it and change it deliberately.",
+          "v1 (the API Beta) is being sunset and some features are not carried over. Nothing here uses it.",
+          "Several reads are POSTs - list recordings, get recording, list users, list teams and list meeting types all take POST with a JSON body. That is Grain's design, not a typo.",
+          "Pagination is a cursor: the response's cursor field is passed back as a param, and is null on the last page."
+        ]
+      },
+      "operations": {
+        "list_recordings": {
+          "method": "POST",
+          "path": "/v2/recordings",
+          "params": {
+            "cursor": "string?",
+            "filter": "object?",
+            "include": "object?"
+          },
+          "write_scope": "readonly"
+        },
+        "get_recording": {
+          "method": "POST",
+          "path": "/v2/recordings/{recording_id}",
+          "params": {
+            "include": "object?"
+          },
+          "write_scope": "readonly"
+        },
+        "get_transcript": {
+          "method": "GET",
+          "path": "/v2/recordings/{recording_id}/transcript",
+          "write_scope": "readonly",
+          "notes": "JSON array of { start, end, speaker, participant_id, text }, timestamps in ms from the start of the recording. Add .txt, .vtt or .srt to the path for the text forms; .txt is 'Speaker: line' and is the cheapest thing to hand a model."
+        },
+        "list_users": {
+          "method": "POST",
+          "path": "/v2/users",
+          "write_scope": "readonly"
+        },
+        "list_teams": {
+          "method": "POST",
+          "path": "/v2/teams",
+          "write_scope": "readonly",
+          "notes": "Needed to resolve the team id for the recording filter."
+        },
+        "list_meeting_types": {
+          "method": "POST",
+          "path": "/v2/meeting_types",
+          "write_scope": "readonly",
+          "notes": "Needed to resolve the meeting_type id for the recording filter. Each carries an internal/external scope."
+        }
+      },
+      "rate_limits": {
+        "requests_per_minute": 300,
+        "on_exceed": "HTTP 429.",
+        "headers": {
+          "x-ratelimit-limit": "Max requests per window.",
+          "x-ratelimit-remaining": "Requests left in the window.",
+          "Retry-After": "Seconds to wait. Only present on a 429."
+        },
+        "note": "Grain returns the budget on every response, so a client can pace itself rather than discovering the limit by hitting it. Read x-ratelimit-remaining and slow down before it reaches zero."
+      }
+    },
+    {
+      "id": "granola",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API key",
+          "where": "Granola desktop app > Settings > Connectors > API keys > Create new key. Tick the note access scopes on the creation screen.",
+          "prefix": "grn_",
+          "notes": [
+            "Keys are prefixed grn_.",
+            "A personal key needs a Business plan. On Enterprise an admin can restrict which scopes members may use in Settings > Workspace > General > API access for members - so a scope missing from the creation screen is workspace policy, not a bug.",
+            "A personal key is tied to its owner's account and expires. A workspace key does not; prefer that one for anything scheduled.",
+            "Scopes on a personal key can be edited after the fact (Settings > Connectors > API keys > Edit), unlike most vendors. Revoking is still permanent and cannot be undone.",
+            "There is no sandbox. Test against a small dedicated folder."
+          ]
+        },
+        "workspace_key": {
+          "label": "Workspace API key",
+          "where": "Granola desktop app > Settings > Connectors > Workspace API keys. Admins only.",
+          "notes": [
+            "Belongs to the workspace rather than a person, does not expire, and keeps working after the admin who made it leaves. The better choice for a workflow that has to keep running.",
+            "Reaches public notes, plus any space with 'Allow Granola API access' turned on - which is ON by default for a newly created space, including its folders and subfolders. Worth saying out loud to anyone enabling this.",
+            "Cannot read private notes or unshared folders at all.",
+            "If the workspace has 'Allow public folders' turned off, public notes are not exposed to the API even with this key."
+          ]
+        },
+        "scopes": {
+          "personal_notes": "Notes the key owner owns, notes shared directly with them, and notes in private folders shared with them.",
+          "public_notes": "Notes visible to everyone in the workspace, including the Team space.",
+          "note": "Notes are private by default. A note only appears under public_notes if it sits in a folder visible to the whole workspace. Both scopes can be on one key. An empty result is almost always a scope or folder-visibility question rather than an API fault."
+        },
+        "header": "Authorization: Bearer {api_key}"
+      },
+      "api": {
+        "base_url": "https://public-api.granola.ai/v1",
+        "headers": {
+          "Authorization": "Bearer {api_key}"
+        },
+        "pagination": {
+          "style": "cursor",
+          "request": "cursor query parameter",
+          "response": "hasMore (boolean) and cursor - note the camelCase, which the rest of the payload does not use"
+        },
+        "ids": "Note IDs are prefixed not_ and are not UUIDs. A UUID seen elsewhere in Granola is a different identifier and will not resolve here.",
+        "visibility": "The API only returns notes that have BOTH a generated AI summary and a transcript. A note still processing, or never summarised, is silently absent from the list and 404s on a direct get - so an empty result is usually processing state or scope, not a fault."
+      },
+      "operations": {
+        "list_notes": {
+          "method": "GET",
+          "path": "/notes",
+          "params": {
+            "created_after": "RFC 3339 timestamp",
+            "cursor": "string?"
+          },
+          "write_scope": "readonly",
+          "notes": "Returns { notes, hasMore, cursor }. The natural shape for an incremental sync: keep the last created_after and page until hasMore is false."
+        },
+        "get_note": {
+          "method": "GET",
+          "path": "/notes/{note_id}",
+          "params": {
+            "include": "transcript?"
+          },
+          "write_scope": "readonly",
+          "notes": "Carries title, owner, summary and, with include=transcript, the transcript inline. Returns 413 with error code TRANSCRIPT_TOO_LARGE when the transcript will not fit - fall back to the transcript endpoint rather than retrying."
+        },
+        "get_transcript": {
+          "method": "GET",
+          "path": "/notes/{note_id}/transcript",
+          "write_scope": "readonly",
+          "notes": "The complete transcript, and the required fallback for a 413 from get_note."
+        }
+      },
+      "rate_limits": {
+        "burst": 25,
+        "window_seconds": 5,
+        "sustained_per_second": 5,
+        "sustained_per_minute": 300,
+        "on_exceed": "HTTP 429.",
+        "note": "Scoped per user or per workspace depending on the key, so several workflows sharing a workspace key share one bucket."
+      }
+    },
+    {
+      "id": "hubspot",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://app.hubspot.com/oauth/authorize",
+        "token_url": "https://api.hubapi.com/oauth/v1/token",
+        "client_auth": "post",
+        "scopes": [
+          "oauth",
+          "crm.objects.contacts.read",
+          "crm.objects.companies.read",
+          "crm.objects.deals.read"
+        ]
+      },
+      "api": {
+        "base_url": "https://api.hubapi.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "search_contacts": {
+          "method": "POST",
+          "path": "/crm/v3/objects/contacts/search",
+          "write_scope": "readonly"
+        },
+        "search_companies": {
+          "method": "POST",
+          "path": "/crm/v3/objects/companies/search",
+          "write_scope": "readonly"
+        },
+        "search_deals": {
+          "method": "POST",
+          "path": "/crm/v3/objects/deals/search",
+          "write_scope": "readonly"
+        },
+        "get_deal": {
+          "method": "GET",
+          "path": "/crm/v3/objects/deals/{dealId}",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Per-app and per-account limits, commonly around 100 requests per 10 seconds. Search endpoints are lower and are the ones that trip."
+      }
+    },
+    {
+      "id": "imessage",
+      "auth": {
+        "type": "unsupported"
+      }
+    },
+    {
+      "id": "instagram",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://www.instagram.com/oauth/authorize",
+        "token_url": "https://api.instagram.com/oauth/access_token",
+        "client_auth": "post",
+        "scopes": [
+          "instagram_business_basic",
+          "instagram_business_content_publish",
+          "instagram_business_manage_comments",
+          "instagram_business_manage_messages"
+        ],
+        "long_lived": {
+          "exchange_url": "https://graph.instagram.com/access_token",
+          "exchange_grant": "ig_exchange_token",
+          "refresh_url": "https://graph.instagram.com/refresh_access_token",
+          "refresh_grant": "ig_refresh_token",
+          "lifetime_days": 60,
+          "notes": [
+            "The token from api.instagram.com/oauth/access_token is short lived and must be exchanged straight away. Store only the long-lived one.",
+            "A long-lived token lasts 60 days and is refreshed for another 60 by calling refresh_access_token with it. A connector left idle for two months is dead and has to be reconnected by hand - refresh on a schedule, not on first failure."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://graph.instagram.com",
+        "notes": [
+          "graph.instagram.com is the host for Instagram Login. graph.facebook.com is the host for the Facebook-Login variant, and the two are not interchangeable - a token from one is rejected by the other.",
+          "All edges paginate by cursor. Ordering is not supported, and only the User Insights edge supports time-based pagination.",
+          "Hashtag search and the Page node exist only under the Facebook-Login variant, so no hashtag operation is offered here."
+        ]
+      },
+      "operations": {
+        "get_profile": {
+          "method": "GET",
+          "path": "/me",
+          "params": {
+            "fields": "user_id,username,account_type,media_count"
+          },
+          "scope": "instagram_business_basic",
+          "write_scope": "readonly",
+          "notes": "The connect-time check."
+        },
+        "list_media": {
+          "method": "GET",
+          "path": "/me/media",
+          "scope": "instagram_business_basic",
+          "write_scope": "readonly"
+        },
+        "create_media_container": {
+          "method": "POST",
+          "path": "/me/media",
+          "params": {
+            "image_url": "string",
+            "video_url": "string?",
+            "caption": "string?"
+          },
+          "scope": "instagram_business_content_publish",
+          "write_scope": "send",
+          "notes": "Two-step publish: this returns a container id, which is then passed to media_publish. The media has to be reachable at a public URL - Instagram fetches it, Flux does not upload bytes."
+        },
+        "publish_media": {
+          "method": "POST",
+          "path": "/me/media_publish",
+          "params": {
+            "creation_id": "string"
+          },
+          "scope": "instagram_business_content_publish",
+          "write_scope": "send",
+          "notes": "Stories are Business-only; every other media type works for Creator accounts too."
+        },
+        "list_comments": {
+          "method": "GET",
+          "path": "/{ig_media_id}/comments",
+          "scope": "instagram_business_manage_comments",
+          "write_scope": "readonly"
+        },
+        "reply_to_comment": {
+          "method": "POST",
+          "path": "/{ig_comment_id}/replies",
+          "params": {
+            "message": "string"
+          },
+          "scope": "instagram_business_manage_comments",
+          "write_scope": "send"
+        },
+        "media_insights": {
+          "method": "GET",
+          "path": "/{ig_media_id}/insights",
+          "scope": "instagram_business_basic",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Meta throttles rather than bans; a 429 means back off. Content publishing has its own published daily cap on top of the general limit - read it before wiring a posting workflow to more than a handful of posts a day."
+      }
+    },
+    {
+      "id": "klaviyo",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://www.klaviyo.com/oauth/authorize",
+        "token_url": "https://a.klaviyo.com/oauth/token",
+        "client_auth": "basic",
+        "pkce": true,
+        "scopes": [
+          "lists:read",
+          "segments:read",
+          "campaigns:read",
+          "metrics:read",
+          "profiles:read"
+        ],
+        "personal_token": {
+          "label": "Private API key",
+          "where": "klaviyo.com > Settings > API keys > Create Private API Key, with read-only scopes selected.",
+          "prefix": "pk_",
+          "notes": [
+            "Klaviyo private keys support per-scope restriction, so a read-only key is genuinely read-only."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://a.klaviyo.com/api",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "revision": "2024-10-15",
+          "accept": "application/vnd.api+json"
+        }
+      },
+      "operations": {
+        "list_segments": {
+          "method": "GET",
+          "path": "/segments",
+          "write_scope": "readonly"
+        },
+        "list_lists": {
+          "method": "GET",
+          "path": "/lists",
+          "write_scope": "readonly"
+        },
+        "list_campaigns": {
+          "method": "GET",
+          "path": "/campaigns",
+          "write_scope": "readonly"
+        },
+        "query_metric_aggregates": {
+          "method": "POST",
+          "path": "/metric-aggregates",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Per endpoint, as a burst and a steady rate. Returns 429 with Retry-After."
+      }
+    },
+    {
+      "id": "linear",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://linear.app/oauth/authorize",
+        "token_url": "https://api.linear.app/oauth/token",
+        "client_auth": "post",
+        "scopes": [
+          "read",
+          "write",
+          "issues:create",
+          "comments:create"
+        ],
+        "personal_token": {
+          "label": "Personal API key",
+          "where": "linear.app > Settings > Security & access > Personal API keys.",
+          "prefix": "lin_api_",
+          "notes": [
+            "Sent as the Authorization header value directly, without a Bearer prefix - unlike the OAuth token."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.linear.app/graphql",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Content-Type": "application/json"
+        }
+      },
+      "operations": {
+        "query_issues": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "readonly",
+          "notes": "GraphQL query. Everything read goes through this one endpoint."
+        },
+        "create_issue": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "draft",
+          "notes": "issueCreate mutation. Draft rather than send: an issue is visible internally but is not an outbound message."
+        },
+        "create_comment": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "draft",
+          "notes": "commentCreate mutation."
+        },
+        "update_issue": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "draft",
+          "notes": "issueUpdate mutation."
+        }
+      },
+      "rate_limits": {
+        "note": "Complexity-based rather than request-based: a deeply nested GraphQL query costs more than several shallow ones. Request only the fields you need."
+      }
+    },
+    {
+      "id": "mercury",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API token",
+          "where": "app.mercury.com/settings/tokens - organisation menu > All Settings > Tokens > Create an API Token. Choose the Read Only tier.",
+          "prefix": "secret-token:mercury_",
+          "requires": "A Mercury user with permission to create tokens. If the option is not on the settings page the signed-in user does not have it, and an account admin has to grant it.",
+          "notes": [
+            "Create a Read Only token. Mercury's three tiers are Read Only, Read and Write, and Custom; only Read Only avoids the IP whitelist requirement outright, and nothing in the Flux catalogue moves money.",
+            "Read and Write tokens require an IP whitelist, which a desktop browser on a residential connection cannot satisfy. Do not offer that tier.",
+            "Shown once. Mercury's own guidance is that a token is a password and must never go into source control; if one leaks, revoke it in the dashboard and issue a new one.",
+            "A token unused for 45 days is deleted automatically, with a warning email to all account admins seven days before. Any endpoint call resets the clock, so a connector used only by an occasional workflow will die between runs unless something touches it.",
+            "A token whose granted permissions exceed what it actually used in a 45-day window is silently downgraded, again with seven days' notice by email. A downgraded token cannot be re-widened - a new token has to be created and used for a write within the window. Irrelevant to a Read Only token, and one more reason to only issue that tier.",
+            "Custom-token scopes cannot be edited after creation. Getting them wrong means making another token."
+          ]
+        },
+        "header": "Authorization: Bearer {api_token}",
+        "basic_auth": {
+          "username": "{api_token}",
+          "password": "",
+          "note": "Mercury's documented primary form is HTTP Basic with the whole token (including the secret-token: prefix) as the username and an empty password. It also accepts the token as a bearer token, which is what Flux sends because it is one header and does not depend on a library's Basic encoding."
+        },
+        "oauth": {
+          "authorize_url": null,
+          "token_url": null,
+          "scopes": [
+            "read",
+            "offline_access"
+          ],
+          "pkce": "supported - S256, code_challenge is the base64 of the SHA-256 of the verifier",
+          "notes": [
+            "Mercury does have an OAuth 2 web flow, for a client acting on behalf of other Mercury customers. Flux is a single user reaching their own account, so the API token above is the path.",
+            "The authorize and token endpoint URLs are NOT recorded here. The page supplied describes the query parameters but does not state the host. Read them out of Mercury's OAuth reference before using this block rather than assuming they sit under api.mercury.com.",
+            "Query parameters are client_id, redirect_url (note: redirect_url, not redirect_uri - it must match the registered Authorization callback URL), scope, and state.",
+            "state must be at least eight characters and must be verified when Mercury sends the user back.",
+            "read covers accounts and transactions. offline_access is required to receive a refresh token; access tokens are short lived without it."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.mercury.com/api/v1",
+        "headers": {
+          "Authorization": "Bearer {api_token}",
+          "Accept": "application/json"
+        }
+      },
+      "operations": {
+        "list_accounts": {
+          "method": "GET",
+          "path": "/accounts",
+          "write_scope": "readonly",
+          "notes": "The endpoint Mercury's own examples use to prove a token works, and the one to call periodically to stop a token being deleted for inactivity."
+        }
+      },
+      "rate_limits": {
+        "note": "Not stated in the pages supplied. Treat a 429 as authoritative and back off with jitter."
+      }
+    },
+    {
+      "id": "monday",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://auth.monday.com/oauth2/authorize",
+        "token_url": "https://auth.monday.com/oauth2/token",
+        "client_auth": "post",
+        "scopes": [
+          "me:read",
+          "boards:read",
+          "workspaces:read"
+        ]
+      },
+      "api": {
+        "base_url": "https://api.monday.com/v2",
+        "headers": {
+          "Authorization": "{access_token}",
+          "API-Version": "2024-10",
+          "Content-Type": "application/json"
+        }
+      },
+      "operations": {
+        "query_boards": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "readonly",
+          "notes": "GraphQL query."
+        },
+        "query_items": {
+          "method": "POST",
+          "path": "/",
+          "write_scope": "readonly",
+          "notes": "GraphQL query."
+        }
+      },
+      "rate_limits": {
+        "note": "Complexity budget per minute rather than a request count. A query asking for every column of every item will exhaust it in one call."
+      }
+    },
+    {
+      "id": "notion",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://api.notion.com/v1/oauth/authorize",
+        "token_url": "https://api.notion.com/v1/oauth/token",
+        "client_auth": "basic",
+        "scopes": [],
+        "extra_authorize_params": {
+          "owner": "user",
+          "response_type": "code"
+        },
+        "personal_token": {
+          "label": "Internal integration secret",
+          "where": "notion.so/profile/integrations - create an internal integration, then share each page or database with it from the page's own Connections menu.",
+          "prefix": "ntn_",
+          "notes": [
+            "Nothing is reachable until the page is explicitly shared with the integration. A 404 on a page that exists means it was not shared."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.notion.com/v1",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Notion-Version": "2025-09-03"
+        }
+      },
+      "operations": {
+        "search": {
+          "method": "POST",
+          "path": "/search",
+          "write_scope": "readonly"
+        },
+        "get_page": {
+          "method": "GET",
+          "path": "/pages/{page_id}",
+          "write_scope": "readonly"
+        },
+        "get_block_children": {
+          "method": "GET",
+          "path": "/blocks/{block_id}/children",
+          "write_scope": "readonly"
+        },
+        "query_database": {
+          "method": "POST",
+          "path": "/databases/{database_id}/query",
+          "write_scope": "readonly"
+        },
+        "create_page": {
+          "method": "POST",
+          "path": "/pages",
+          "write_scope": "draft"
+        },
+        "update_page": {
+          "method": "PATCH",
+          "path": "/pages/{page_id}",
+          "write_scope": "draft"
+        },
+        "append_blocks": {
+          "method": "PATCH",
+          "path": "/blocks/{block_id}/children",
+          "write_scope": "draft"
+        }
+      },
+      "rate_limits": {
+        "requests_per_second": 3,
+        "note": "Averaged, with bursts allowed. Returns 429 with Retry-After."
+      }
+    },
+    {
+      "id": "outlook",
+      "auth": {
+        "type": "oauth2",
+        "discovery_url": "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration",
+        "authorize_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+        "token_url": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+        "client_auth": "post",
+        "pkce": true,
+        "scopes": [
+          "offline_access",
+          "Mail.ReadWrite",
+          "Calendars.ReadWrite",
+          "Tasks.ReadWrite",
+          "User.Read"
+        ]
+      },
+      "api": {
+        "base_url": "https://graph.microsoft.com/v1.0",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "list_messages": {
+          "method": "GET",
+          "path": "/me/messages",
+          "write_scope": "readonly"
+        },
+        "get_message": {
+          "method": "GET",
+          "path": "/me/messages/{id}",
+          "write_scope": "readonly"
+        },
+        "create_draft": {
+          "method": "POST",
+          "path": "/me/messages",
+          "write_scope": "draft"
+        },
+        "list_events": {
+          "method": "GET",
+          "path": "/me/calendar/events",
+          "write_scope": "readonly"
+        },
+        "create_event": {
+          "method": "POST",
+          "path": "/me/calendar/events",
+          "write_scope": "send",
+          "notes": "Creating an event with attendees sends invitations."
+        },
+        "list_tasks": {
+          "method": "GET",
+          "path": "/me/todo/lists",
+          "write_scope": "readonly"
+        },
+        "create_task": {
+          "method": "POST",
+          "path": "/me/todo/lists/{listId}/tasks",
+          "write_scope": "draft"
+        }
+      },
+      "rate_limits": {
+        "note": "Graph throttles per app per tenant and returns 429 with Retry-After. Honour the header rather than backing off blindly."
+      }
+    },
+    {
+      "id": "plain",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API key",
+          "where": "Plain > Settings > Machine Users > Add Machine User, then Add API Key on that user and tick the permissions.",
+          "prefix": "plainApiKey_",
+          "notes": [
+            "Keys belong to a MACHINE USER, not to a person. A machine user has a Name (internal, describes the job - 'Flux') and a Public name (shown to customers if it ever interacts with them - so pick something a customer seeing it would understand).",
+            "One machine user can hold several keys, explicitly so they can be rotated without downtime. Issue a second, cut over, revoke the first.",
+            "Permissions are chosen per key at creation. Tick only thread:reply, email:create and email:read. Do NOT tick customer:impersonate - see never_expose.",
+            "Shown once. Copy it before navigating away.",
+            "When a call fails for permissions, Plain's error names the permission that was missing - so a 'you need X' error is the answer, not a puzzle."
+          ]
+        },
+        "header": "Authorization: Bearer {api_key}"
+      },
+      "api": {
+        "base_url": "https://core-api.uk.plain.com/graphql/v1",
+        "headers": {
+          "Authorization": "Bearer {api_key}",
+          "Content-Type": "application/json"
+        },
+        "schema": "https://core-api.uk.plain.com/graphql/v1/schema.graphql - the full SDL, worth diffing on upgrade.",
+        "region_caveat": "Note the `uk` in the host. Plain's published examples use the UK region, which implies other regional hosts exist and that a customer on a different region has a different URL. Confirm the right host for the account before hard-coding this one.",
+        "verified": "search - this URL came from documentation search, not from a page supplied verbatim, unlike the auth mechanics above."
+      },
+      "operations": {
+        "reply_to_thread": {
+          "mutation": "replyToThread",
+          "permissions": [
+            "thread:reply"
+          ],
+          "write_scope": "send",
+          "notes": "Only works when the thread's `channel` is API, CHAT, EMAIL, SLACK or MS_TEAMS. Read `channel` off the thread first; otherwise the mutation fails with cannot_reply_to_thread and a message saying why."
+        },
+        "reply_to_email": {
+          "mutation": "replyToEmail",
+          "permissions": [
+            "email:create",
+            "email:read"
+          ],
+          "write_scope": "send",
+          "notes": "Replies to one inbound email by inReplyToEmailId, rather than to the thread. Takes customerId plus both textContent and markdownContent - send both, they are the two renderings of the same message, not alternatives."
+        },
+        "send_new_email": {
+          "mutation": "sendNewEmail",
+          "permissions": [
+            "email:create"
+          ],
+          "write_scope": "send",
+          "notes": "Outbound, unprompted mail to a customer - Plain's own framing is proactively reaching out about issues. This is the highest-consequence operation exposed here: it starts a conversation with a real customer who did not ask for one, so it needs explicit per-send confirmation, not a standing approval."
+        }
+      }
+    },
+    {
+      "id": "posthog",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "Personal API key",
+          "where": "PostHog > Settings > Personal API keys > Create. Give it read scopes on the specific project rather than all access.",
+          "prefix": "phx_",
+          "notes": [
+            "PostHog personal keys are scoped and individually revocable, which is what makes them a reasonable choice here.",
+            "The key is for the private API. The project write key that appears in snippets is a different thing and cannot read."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://us.posthog.com/api",
+        "headers": {
+          "Authorization": "Bearer {api_token}"
+        }
+      },
+      "operations": {
+        "query": {
+          "method": "POST",
+          "path": "/projects/{project_id}/query/",
+          "write_scope": "readonly",
+          "notes": "HogQL. The general read path for anything analytical."
+        },
+        "list_insights": {
+          "method": "GET",
+          "path": "/projects/{project_id}/insights/",
+          "write_scope": "readonly"
+        },
+        "list_feature_flags": {
+          "method": "GET",
+          "path": "/projects/{project_id}/feature_flags/",
+          "write_scope": "readonly"
+        },
+        "list_experiments": {
+          "method": "GET",
+          "path": "/projects/{project_id}/experiments/",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Roughly 240 per minute and 1200 per hour for most endpoints, lower for query. Returns 429."
+      }
+    },
+    {
+      "id": "pylon",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "API token",
+          "where": "app.usepylon.com/settings/api-tokens > create a token.",
+          "prefix": "",
+          "notes": [
+            "Pylon does not publish a fixed prefix for its tokens, and the field is empty deliberately rather than forgotten.",
+            "Anything the token does is attributed in Pylon to the name of the token, not to a person. Name it 'Flux' so an audit log entry is traceable.",
+            "There is no scope selection. A token carries whatever its organisation permits, so the narrowing has to happen in Flux: only the read operations below are exposed."
+          ]
+        },
+        "header": "Authorization: Bearer {api_token}"
+      },
+      "api": {
+        "base_url": "https://api.usepylon.com",
+        "headers": {
+          "Authorization": "Bearer {api_token}",
+          "Accept": "application/json"
+        },
+        "pagination": {
+          "style": "cursor",
+          "request": "cursor query parameter; limit defaults to 100 and must be greater than 0 and less than 1000",
+          "response": "pagination.cursor and pagination.has_next_page"
+        },
+        "errors": {
+          "shape": "{ errors: string[], request_id: string, exists_id?: string }",
+          "note": "Every response carries a request_id. Log it - it is what Pylon support asks for.",
+          "403": "The caller or organisation is not allowed to use that endpoint. Audit logs in particular are gated this way."
+        }
+      },
+      "operations": {
+        "get_me": {
+          "method": "GET",
+          "path": "/me",
+          "write_scope": "readonly",
+          "notes": "Returns details about the organisation the token belongs to. The connect-time check."
+        },
+        "list_accounts": {
+          "method": "GET",
+          "path": "/accounts",
+          "write_scope": "readonly",
+          "rate_limit": "60/min"
+        },
+        "get_account": {
+          "method": "GET",
+          "path": "/accounts/{id}",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "id may be the Pylon ID or an external ID."
+        },
+        "search_accounts": {
+          "method": "POST",
+          "path": "/accounts/search",
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "A POST that reads. search_text is fuzzy and is intersected with the filter. Filterable: id (equals/in/not_in), domains and tags (contains/does_not_contain/in/not_in), name (equals/in/not_in/string_contains), external_ids and owner_id (equals/in/not_in/is_set/is_unset). Custom fields are addressed by slug in field."
+        },
+        "get_account_relationships": {
+          "method": "GET",
+          "path": "/accounts/{account_id}/relationships",
+          "write_scope": "readonly",
+          "rate_limit": "60/min"
+        },
+        "list_audit_logs": {
+          "method": "GET",
+          "path": "/audit-logs",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "Returns 403 unless the organisation is entitled to it."
+        },
+        "search_audit_logs": {
+          "method": "POST",
+          "path": "/audit-logs/search",
+          "write_scope": "readonly",
+          "rate_limit": "10/min",
+          "notes": "Filterable: action (equals/in/not_in/string_contains/string_does_not_contain), action_happened_at (time_is_after/time_is_before/time_range). Timestamps are RFC 3339."
+        },
+        "list_contacts": {
+          "method": "GET",
+          "path": "/contacts",
+          "write_scope": "readonly",
+          "rate_limit": "60/min"
+        },
+        "get_contact": {
+          "method": "GET",
+          "path": "/contacts/{id}",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "id may be the Pylon ID or an external ID."
+        },
+        "search_contacts": {
+          "method": "POST",
+          "path": "/contacts/search",
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "Filterable: id and account_id (equals/in/not_in), email and name (equals/in/not_in/string_contains). Custom fields by slug in field. search_text is fuzzy and intersects the filter."
+        },
+        "list_users": {
+          "method": "GET",
+          "path": "/users",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "Organisation members, not contacts. include_deactivated defaults to false."
+        },
+        "get_user": {
+          "method": "GET",
+          "path": "/users/{id}",
+          "write_scope": "readonly",
+          "rate_limit": "60/min"
+        },
+        "search_users": {
+          "method": "POST",
+          "path": "/users/search",
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "Only email is filterable, and only with equals/in/not_in."
+        },
+        "get_call_recording": {
+          "method": "GET",
+          "path": "/call-recordings/{id}",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "Carries title, summary, participant_emails, duration_ms and a url. source names the recorder - fathom, gong, grain, granola or custom_call_recorder."
+        },
+        "search_call_recordings": {
+          "method": "POST",
+          "path": "/call-recordings/search",
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "Filterable: account_id (equals/in/not_in/is_set/is_unset), source (equals/in/not_in), title (equals/string_contains), start_time (time_is_after/time_is_before/time_range). Timestamps are RFC 3339. This one's limit is <= 1000, not < 1000 - the only endpoint read so far that differs."
+        },
+        "list_issues": {
+          "method": "GET",
+          "path": "/issues",
+          "params": {
+            "start_time": "RFC3339, required",
+            "end_time": "RFC3339, required",
+            "cursor": "string?",
+            "limit": "1-20000, default 20000"
+          },
+          "write_scope": "readonly",
+          "rate_limit": "10/min",
+          "notes": "start_time and end_time are REQUIRED and the span must be <= 30 days. There is no 'list everything' - a wider search has to be windowed, or use search_issues."
+        },
+        "search_issues": {
+          "method": "POST",
+          "path": "/issues/search",
+          "params": {
+            "filter": "Filter",
+            "search_text": "fuzzy",
+            "cursor": "string?",
+            "limit": "1-999, default 100"
+          },
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "The practical way in, since it has no 30-day window. Filterable: created_at / resolved_at / updated_at / latest_message_activity_at (time ops), account_id / requester_id / assignee_id / ticket_form_id / issue_type (equals,in,not_in,is_set,is_unset), state / team_id / follower_user_id / follower_contact_id / slack_channel_id (equals,in,not_in), tags (contains,does_not_contain,in,not_in), title / body_html (string_contains,string_does_not_contain). Custom fields by slug in field; tags by name."
+        },
+        "get_issue": {
+          "method": "GET",
+          "path": "/issues/{id}",
+          "write_scope": "readonly",
+          "rate_limit": "60/min",
+          "notes": "Accepts the ID or the issue number. The most generous limit on the API."
+        },
+        "list_issue_statuses": {
+          "method": "GET",
+          "path": "/issue-statuses",
+          "write_scope": "readonly",
+          "rate_limit": "10/min",
+          "notes": "Resolve before filtering on state - the standard values are new, waiting_on_you, waiting_on_customer, on_hold and closed, but organisations define custom status slugs too."
+        },
+        "get_issue_followers": {
+          "method": "GET",
+          "path": "/issues/{id}/followers",
+          "write_scope": "readonly",
+          "rate_limit": "60/min"
+        },
+        "get_issue_voice_calls": {
+          "method": "GET",
+          "path": "/issues/{id}/voice-calls",
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "Phone issues only. Returns recordings with parsed transcript segments and a PRESIGNED download URL for the audio. Recordings whose transcript has not finished are silently omitted - an empty result may mean 'not yet', not 'none', so refetch before concluding."
+        },
+        "list_messages": {
+          "method": "GET",
+          "path": "/issues/{id}/messages",
+          "params": {
+            "cursor": "string?",
+            "limit": "1-1000"
+          },
+          "write_scope": "readonly",
+          "rate_limit": "20/min",
+          "notes": "Oldest first, and includes both customer-visible replies and internal notes - is_private separates them. Omitting BOTH limit and cursor returns every message for backwards compatibility; passing a cursor without a limit gives pages of 100. On a long issue the default is therefore unbounded - pass a limit."
+        },
+        "list_issue_threads": {
+          "method": "GET",
+          "path": "/issues/{id}/threads",
+          "write_scope": "readonly",
+          "rate_limit": "20/min"
+        },
+        "reply_to_issue": {
+          "method": "POST",
+          "path": "/issues/{id}/reply",
+          "params": {
+            "message_id": "required",
+            "body_html": "string",
+            "email_info": "to_emails / cc_emails / bcc_emails",
+            "attachment_urls": "string[]?",
+            "user_id": "string?",
+            "contact_id": "string?"
+          },
+          "write_scope": "send",
+          "rate_limit": "10/min",
+          "notes": "Customer-facing - the requester sees this. message_id must be the TOP-LEVEL id from list_messages, not thread_id and not email_info.message_id, and it must point at a customer-visible message rather than an internal note. On an email conversation email_info must carry at least one recipient: the referenced message sets the threading headers but its recipients are NOT copied, so a reply with no recipients goes nowhere."
+        },
+        "create_internal_note": {
+          "method": "POST",
+          "path": "/issues/{id}/note",
+          "params": {
+            "body_html": "string",
+            "thread_id": "string?",
+            "message_id": "string?",
+            "thread_name": "string?",
+            "attachment_urls": "string[]?",
+            "user_id": "string?"
+          },
+          "write_scope": "draft",
+          "rate_limit": "10/min",
+          "notes": "Internal only - the requester never sees it, which is why this is `draft` while reply_to_issue is `send`. Thread selection: thread_id posts to that thread; message_id posts to the thread holding that note; BOTH is a 400; neither falls back to the most recent Slack-backed internal thread, or creates a Pylon-only one named by thread_name. Note thread_id here is the thread's `id` field, NOT its `thread_id` field."
+        }
+      },
+      "gotchas": [
+        "Pylon threads carry BOTH an `id` and a `thread_id`, and they are different values. create_internal_note wants the `id`; `thread_id` is the external chat platform's identifier. Getting this backwards is the most likely way to fail against this API.",
+        "reply_to_issue wants the message's top-level `id` - not `thread_id`, not the nested email_info.message_id (which is the provider's own). Three plausible identifiers on one object, one correct answer.",
+        "list_issues cannot list everything: a time range is mandatory and capped at 30 days. search_issues has no such window and is the right entry point for anything open-ended.",
+        "list_messages with neither limit nor cursor returns EVERY message on the issue, by design for backwards compatibility. Always pass a limit.",
+        "Rate limits vary per endpoint from 10/min to 60/min and the cheap ones are not the ones you would guess - get_issue is 60/min, list_issues is 10/min. Read the endpoint's own figure.",
+        "Linking an external issue can silently change the issue's status, if the connected app has 'automatically change issue status when linked' enabled. A link is not a read-only annotation."
+      ],
+      "rate_limits": {
+        "note": "Per endpoint, not per account, and published on each endpoint rather than as one global figure. The pattern in what has been read: plain reads 60/min, searches 20/min, and anything expensive or destructive 10/min. Read the endpoint's own figure rather than assuming 60.",
+        "observed": {
+          "GET /accounts": "60/min",
+          "GET /accounts/{id}": "60/min",
+          "POST /accounts/search": "20/min",
+          "GET /accounts/{id}/relationships": "60/min",
+          "GET /audit-logs": "60/min",
+          "POST /audit-logs/search": "10/min",
+          "POST /attachments": "10/min",
+          "GET /contacts": "60/min",
+          "GET /contacts/{id}": "60/min",
+          "POST /contacts/search": "20/min",
+          "DELETE /contacts/{id}": "10/min",
+          "GET /users": "60/min",
+          "GET /users/{id}": "60/min",
+          "POST /users/search": "20/min",
+          "GET /call-recordings/{id}": "60/min",
+          "POST /call-recordings/search": "20/min",
+          "GET /issues": "10/min",
+          "POST /issues/search": "20/min",
+          "GET /issues/{id}": "60/min",
+          "PATCH /issues/{id}": "20/min",
+          "DELETE /issues/{id}": "20/min",
+          "GET /issue-statuses": "10/min",
+          "GET /issues/{id}/followers": "60/min",
+          "GET /issues/{id}/voice-calls": "20/min",
+          "GET /issues/{id}/messages": "20/min",
+          "GET /issues/{id}/threads": "20/min",
+          "POST /issues/{id}/reply": "10/min",
+          "POST /issues/{id}/note": "10/min",
+          "POST /issues/{id}/messages/{id}/redact": "20/min"
+        }
+      }
+    },
+    {
+      "id": "quickbooks",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://appcenter.intuit.com/connect/oauth2",
+        "token_url": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+        "revoke_url": "https://developer.api.intuit.com/v2/oauth2/tokens/revoke",
+        "client_auth": "basic",
+        "scopes": [
+          "com.intuit.quickbooks.accounting"
+        ]
+      },
+      "api": {
+        "base_url": "https://quickbooks.api.intuit.com/v3/company/{realmId}",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Accept": "application/json"
+        }
+      },
+      "operations": {
+        "query": {
+          "method": "GET",
+          "path": "/query",
+          "write_scope": "readonly",
+          "notes": "The general read path, taking a SQL-like query string."
+        },
+        "get_invoice": {
+          "method": "GET",
+          "path": "/invoice/{invoiceId}",
+          "write_scope": "readonly"
+        },
+        "get_bill": {
+          "method": "GET",
+          "path": "/bill/{billId}",
+          "write_scope": "readonly"
+        },
+        "reports_profit_and_loss": {
+          "method": "GET",
+          "path": "/reports/ProfitAndLoss",
+          "write_scope": "readonly"
+        },
+        "reports_aged_receivables": {
+          "method": "GET",
+          "path": "/reports/AgedReceivables",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests_per_minute": 500,
+        "note": "Per realm, plus a concurrency cap of around 10. Reports are expensive; cache rather than re-running per row."
+      }
+    },
+    {
+      "id": "ramp",
+      "auth": {
+        "type": "api_key",
+        "client_credentials": {
+          "label": "Client ID and secret",
+          "where": "app.ramp.com > Company > Developer > Create New App. Add the Client Credentials grant type, then Configure allowed scopes and tick only the read scopes below. The Client ID and Client Secret are shown on the app.",
+          "requires": "Ramp admin access. The Developer page is not reachable without it.",
+          "grant_type": "client_credentials",
+          "token_path": "/developer/v1/token",
+          "client_auth": "basic",
+          "notes": [
+            "Ramp authenticates the token request with HTTP Basic Auth: base64 of client_id:client_secret in the Authorization header. Ramp's docs say some clients may instead be configured to send the pair in the form body; Basic is the documented default and what Flux sends.",
+            "A client-credentials access token lasts 10 days (864000 seconds). There is no refresh token on this grant - request a new one.",
+            "Tokens are opaque, not JWTs. Do not attempt to read an expiry out of them; store the expires_in from the token response.",
+            "A token works only in the environment that issued it, and an app exists in exactly one environment. Sandbox and production need separate apps.",
+            "The token operates with the permissions of the app creator - there is no user context on this grant."
+          ]
+        },
+        "partner_oauth": {
+          "grant_type": "authorization_code",
+          "token_path": "/developer/v1/token",
+          "client_auth": "basic",
+          "authorize_url": null,
+          "notes": [
+            "For a partner reaching other businesses' Ramp accounts, which Flux is not. Recorded so the distinction is not re-derived.",
+            "The authorization endpoint URL is NOT recorded here. Ramp's authorization guide describes the flow and its five required parameters but the pages supplied did not state the host, and the API host is deliberately different from the app host. Read it out of the Ramp Developer Console before using this block - do not assume it is app.ramp.com.",
+            "Required query parameters: response_type=code, scope (space separated), client_id, redirect_uri (must exactly match one configured on the app, and must be https), state (cryptographically random and verified on return; new integrations must always send it).",
+            "Authorization codes expire in 10 minutes.",
+            "Access tokens on this grant last 1 hour, and so do tokens obtained by refresh. Refresh before expiry rather than waiting for a 401.",
+            "Only Admin and Business Owner users can authorise a Developer API application. Anyone else gets \"Business not authorized to use this application\"."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.ramp.com/developer/v1",
+        "sandbox_base_url": "https://demo-api.ramp.com/developer/v1",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        },
+        "notes": [
+          "The API host is not the app host. api.ramp.com serves the API; app.ramp.com is the customer web app, and demo-api.ramp.com / demo.ramp.com are the sandbox pair. Pointing a call at the frontend host is the mistake Ramp's own quickstart calls out.",
+          "Sandbox access is requested from Ramp; it is not self-serve."
+        ]
+      },
+      "operations": {
+        "list_transactions": {
+          "method": "GET",
+          "path": "/transactions",
+          "scope": "transactions:read",
+          "write_scope": "readonly",
+          "notes": "The endpoint Ramp's quickstart uses to prove a token works."
+        },
+        "get_current_user": {
+          "method": "GET",
+          "path": "/users",
+          "scope": "users:read",
+          "write_scope": "readonly",
+          "notes": "Client-credentials tokens have no user context, so this lists the business's users rather than identifying a caller."
+        },
+        "list_cards": {
+          "method": "GET",
+          "path": "/cards",
+          "scope": "cards:read",
+          "write_scope": "readonly"
+        },
+        "list_reimbursements": {
+          "method": "GET",
+          "path": "/reimbursements",
+          "scope": "reimbursements:read",
+          "write_scope": "readonly"
+        },
+        "list_bills": {
+          "method": "GET",
+          "path": "/bills",
+          "scope": "bills:read",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "on_exceed": "HTTP 429.",
+        "note": "Ramp documents 429 as the rate-limit response and links a separate rate limiting page that was not supplied. No numeric figure is recorded here on purpose - treat the 429 as authoritative and back off with jitter until the published figure is read."
+      }
+    },
+    {
+      "id": "salesforce",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://login.salesforce.com/services/oauth2/authorize",
+        "token_url": "https://login.salesforce.com/services/oauth2/token",
+        "client_auth": "post",
+        "pkce": true,
+        "scopes": [
+          "api",
+          "refresh_token",
+          "offline_access"
+        ]
+      },
+      "api": {
+        "base_url": "{instance_url}/services/data/v61.0",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "query": {
+          "method": "GET",
+          "path": "/query",
+          "write_scope": "readonly",
+          "notes": "SOQL via the q parameter."
+        },
+        "search": {
+          "method": "GET",
+          "path": "/search",
+          "write_scope": "readonly",
+          "notes": "SOSL via the q parameter."
+        },
+        "get_record": {
+          "method": "GET",
+          "path": "/sobjects/{sobject}/{id}",
+          "write_scope": "readonly"
+        },
+        "describe": {
+          "method": "GET",
+          "path": "/sobjects/{sobject}/describe",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "A daily API call allowance per org, not a per-second rate. Burning it affects everything else the org does, so batch with SOQL rather than looping records."
+      }
+    },
+    {
+      "id": "sanity",
+      "auth": {
+        "type": "api_key",
+        "personal_token": {
+          "label": "Robot token",
+          "where": "sanity.io/manage > your project > API > Tokens > Add API token, with Viewer permission.",
+          "prefix": "sk",
+          "notes": [
+            "Use a robot token with Viewer, not a personal token: it is scoped to one project and does not carry a human's permissions across every project they belong to."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://{projectId}.api.sanity.io/v2021-06-07",
+        "headers": {
+          "Authorization": "Bearer {api_token}"
+        }
+      },
+      "operations": {
+        "query": {
+          "method": "GET",
+          "path": "/data/query/{dataset}",
+          "write_scope": "readonly",
+          "notes": "GROQ via the query parameter. Long queries must be POSTed instead - URLs have a length limit and GROQ gets long."
+        },
+        "get_document": {
+          "method": "GET",
+          "path": "/data/doc/{dataset}/{documentId}",
+          "write_scope": "readonly"
+        },
+        "list_datasets": {
+          "method": "GET",
+          "path": "https://api.sanity.io/v2021-06-07/projects/{projectId}/datasets",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Query volume is billed rather than hard-limited on most plans; an unbounded loop costs money rather than returning 429."
+      }
+    },
+    {
+      "id": "sentry",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://sentry.io/oauth/authorize/",
+        "token_url": "https://sentry.io/oauth/token/",
+        "client_auth": "post",
+        "scopes": [
+          "org:read",
+          "project:read",
+          "team:read",
+          "member:read",
+          "event:read"
+        ],
+        "personal_token": {
+          "label": "Internal integration token",
+          "where": "sentry.io > Settings > Developer Settings > Internal Integrations - create one with read permissions.",
+          "prefix": "sntrys_",
+          "notes": [
+            "Simpler than OAuth for a single organisation and scoped the same way."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://sentry.io/api/0",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "list_issues": {
+          "method": "GET",
+          "path": "/projects/{org}/{project}/issues/",
+          "write_scope": "readonly"
+        },
+        "get_issue": {
+          "method": "GET",
+          "path": "/issues/{issue_id}/",
+          "write_scope": "readonly"
+        },
+        "list_events": {
+          "method": "GET",
+          "path": "/issues/{issue_id}/events/",
+          "write_scope": "readonly"
+        },
+        "get_latest_event": {
+          "method": "GET",
+          "path": "/issues/{issue_id}/events/latest/",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Per organisation, returned as 429 with X-Sentry-Rate-Limit headers. Issue listing is paginated by cursor, not offset."
+      }
+    },
+    {
+      "id": "slack",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://slack.com/oauth/v2/authorize",
+        "token_url": "https://slack.com/api/oauth.v2.access",
+        "client_auth": "basic",
+        "scopes": [
+          "channels:history",
+          "channels:read",
+          "groups:history",
+          "groups:read",
+          "search:read",
+          "users:read",
+          "chat:write"
+        ],
+        "personal_token": {
+          "label": "Bot User OAuth Token",
+          "where": "api.slack.com/apps > your app > OAuth & Permissions. Add the scopes first, then Install to Workspace; the token appears at the top of that page afterwards.",
+          "prefix": "xoxb-",
+          "notes": [
+            "A User OAuth Token (xoxp-) is also issued and is the one that can search - search.messages does not work with a bot token.",
+            "The \"Generate Token\" button on the Your Apps index is an App Configuration Token for managing apps programmatically. It is not this, and it will not work here."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://slack.com/api",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        }
+      },
+      "operations": {
+        "search_messages": {
+          "method": "GET",
+          "path": "/search.messages",
+          "write_scope": "readonly",
+          "notes": "Requires a user token, not a bot token - bots cannot search."
+        },
+        "list_channels": {
+          "method": "GET",
+          "path": "/conversations.list",
+          "write_scope": "readonly"
+        },
+        "channel_history": {
+          "method": "GET",
+          "path": "/conversations.history",
+          "write_scope": "readonly"
+        },
+        "list_users": {
+          "method": "GET",
+          "path": "/users.list",
+          "write_scope": "readonly"
+        },
+        "lookup_user_by_email": {
+          "method": "GET",
+          "path": "/users.lookupByEmail",
+          "write_scope": "readonly"
+        },
+        "post_message": {
+          "method": "POST",
+          "path": "/chat.postMessage",
+          "write_scope": "send",
+          "notes": "Visible to other people the moment it succeeds. Never reachable from a readonly or draft task."
+        }
+      },
+      "rate_limits": {
+        "note": "Tiered per method, roughly 1/min to 100/min, returned as 429 with Retry-After. conversations.history is Tier 3; search.messages is Tier 2 and is the one that bites."
+      }
+    },
+    {
+      "id": "stripe",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://connect.stripe.com/oauth/authorize",
+        "token_url": "https://connect.stripe.com/oauth/token",
+        "client_auth": "post",
+        "scopes": [
+          "read_only"
+        ],
+        "personal_token": {
+          "label": "Restricted API key",
+          "where": "dashboard.stripe.com/apikeys - create a restricted key with read permissions only on customers, invoices, payments and subscriptions.",
+          "prefix": "rk_",
+          "notes": [
+            "Use a restricted key, never the secret key. A restricted key with read-only permissions cannot move money even if it leaks."
+          ]
+        }
+      },
+      "api": {
+        "base_url": "https://api.stripe.com/v1",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "Stripe-Version": "2026-07-29.dahlia"
+        }
+      },
+      "operations": {
+        "list_customers": {
+          "method": "GET",
+          "path": "/customers",
+          "write_scope": "readonly"
+        },
+        "list_invoices": {
+          "method": "GET",
+          "path": "/invoices",
+          "write_scope": "readonly"
+        },
+        "list_payment_intents": {
+          "method": "GET",
+          "path": "/payment_intents",
+          "write_scope": "readonly"
+        },
+        "list_subscriptions": {
+          "method": "GET",
+          "path": "/subscriptions",
+          "write_scope": "readonly"
+        },
+        "search_customers": {
+          "method": "GET",
+          "path": "/customers/search",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "note": "Around 100 read requests per second in live mode, less in test. Search endpoints are lower. Returns 429."
+      }
+    },
+    {
+      "id": "superhuman_mail",
+      "auth": {
+        "type": "mcp",
+        "mechanism": "Browser sign-in. The Superhuman Mail Chrome extension performs the authentication; no key, token or client secret is issued to the caller, and Flux stores no credential for this connector."
+      },
+      "api": {
+        "base_url": null,
+        "note": "Deliberately null. There is no HTTP base URL to record - see `shape`."
+      },
+      "operations": {
+        "query_email_and_calendar": {
+          "tool": "query_email_and_calendar",
+          "write_scope": "readonly",
+          "notes": "Semantic search in natural language across mail and calendar. The right first call for an open-ended question."
+        },
+        "list_threads": {
+          "tool": "list_threads",
+          "write_scope": "readonly",
+          "notes": "Structured filters - From, To, Subject, Labels, Split, date. Prefer this over the semantic search when the filter is known, since it is deterministic."
+        },
+        "get_thread": {
+          "tool": "get_thread",
+          "write_scope": "readonly",
+          "notes": "Full thread including messages, drafts and comments."
+        },
+        "get_message": {
+          "tool": "get_message",
+          "write_scope": "readonly"
+        },
+        "get_attachment": {
+          "tool": "get_attachment",
+          "write_scope": "readonly"
+        },
+        "list_labels": {
+          "tool": "list_labels",
+          "write_scope": "readonly"
+        },
+        "list_splits": {
+          "tool": "list_splits",
+          "write_scope": "readonly",
+          "notes": "Split Inboxes, e.g. Important and Other."
+        },
+        "get_availability": {
+          "tool": "get_availability",
+          "write_scope": "readonly",
+          "notes": "Free time across a set of participants."
+        },
+        "get_read_statuses": {
+          "tool": "get_read_statuses",
+          "write_scope": "readonly",
+          "notes": "Who opened a sent email, when, and on what device. It is the user's own read-tracking data, but it is data about other people - worth surfacing in a summary only when the task actually asked for it."
+        },
+        "list_accounts": {
+          "tool": "list_accounts",
+          "write_scope": "readonly",
+          "notes": "Which mailboxes are linked and which is default. Worth calling first on any multi-account request: tools act on the default account unless told otherwise, so a search that looks empty is often a search of the wrong inbox."
+        },
+        "create_or_update_draft": {
+          "tool": "create_or_update_draft",
+          "write_scope": "draft",
+          "notes": "Writes in the user's voice using their Personalization settings. Drafts created here appear in Superhuman Mail; drafts made in Gmail or Outlook do not, and vice versa."
+        },
+        "create_or_update_event": {
+          "tool": "create_or_update_event",
+          "write_scope": "send",
+          "notes": "Scoped as `send`, not `draft`, on purpose: creating or moving a meeting mails invitations to the other attendees. It is outbound whatever it is called."
+        },
+        "send_draft": {
+          "tool": "send_draft",
+          "write_scope": "send",
+          "notes": "Sends immediately with no built-in delay. Superhuman's own guidance is to require confirmation on every call, and Flux must do that rather than relying on the client's tool-approval settings. Supports Smart Send (deliver when the recipient is most likely to open it), Scheduled Send, and Undo Send."
+        },
+        "undo_send": {
+          "tool": "undo_send",
+          "write_scope": "draft",
+          "notes": "Cancels a send inside the undo window. Recorded as a write rather than readonly because it changes state, but it only ever retracts - it is the safe half of send_draft and should stay available wherever send_draft is."
+        }
+      },
+      "gotchas": [
+        "Every tool acts on the default account unless the account is named. A cross-account question needs to say so explicitly, or it quietly answers from one inbox.",
+        "Superhuman's own advice is to name the MCP tool in the prompt for reliable results, which suggests the tool descriptions alone do not always route correctly.",
+        "Attachments can be read but the documentation gives no way to attach one when sending."
+      ]
+    },
+    {
+      "id": "webflow",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://webflow.com/oauth/authorize",
+        "token_url": "https://api.webflow.com/oauth/access_token",
+        "client_auth": "post",
+        "scopes": [
+          "sites:read",
+          "pages:read",
+          "cms:read"
+        ]
+      },
+      "api": {
+        "base_url": "https://api.webflow.com/v2",
+        "headers": {
+          "Authorization": "Bearer {access_token}",
+          "accept": "application/json"
+        }
+      },
+      "operations": {
+        "list_sites": {
+          "method": "GET",
+          "path": "/sites",
+          "write_scope": "readonly"
+        },
+        "list_pages": {
+          "method": "GET",
+          "path": "/sites/{site_id}/pages",
+          "write_scope": "readonly"
+        },
+        "list_collections": {
+          "method": "GET",
+          "path": "/sites/{site_id}/collections",
+          "write_scope": "readonly"
+        },
+        "list_collection_items": {
+          "method": "GET",
+          "path": "/collections/{collection_id}/items",
+          "write_scope": "readonly"
+        }
+      },
+      "rate_limits": {
+        "requests_per_minute": 60,
+        "note": "Per site. Returns 429 with X-RateLimit headers."
+      }
+    },
+    {
+      "id": "zapier",
+      "auth": {
+        "type": "oauth2",
+        "authorize_url": "https://zapier.com/oauth/authorize",
+        "token_url": "https://zapier.com/oauth/token",
+        "client_auth": "post",
+        "scopes": [
+          "external"
+        ],
+        "client_id_auth": {
+          "note": "Some Partner API endpoints authenticate with nothing but an approved application's client_id, passed as a QUERY PARAMETER, not a header. /v1/apps is one. Approval is a partner-programme step Flux has not been through, so those endpoints are recorded but not exposed."
+        },
+        "white_label": {
+          "note": "The other way into these APIs, and the one the billing and rate_limit claims belong to. Recorded so the JWT talk in the Actions API does not look like something an ordinary integration configures.",
+          "onboarding": "The partner supplies a JWKS URL for signature validation, redirect/callback URLs, expected issuer and audience, the claim names carrying user and tenant IDs, and client credentials.",
+          "token_exchange": "The partner signs a JWT and exchanges it for a user access token - a backend secret used to call the APIs, never sent to a browser. A separate exchange yields a connect token: short-lived (about 6 minutes), single-use, and only for sending the user through Connect UI or MCP authorization.",
+          "provisioning": "Zapier just-in-time provisions a workspace and user the first time a new combination of claim values appears, so the partner's users never hold Zapier accounts of their own.",
+          "applicability": "Not applicable to Flux, which authenticates one real person with their own Zapier account through authorization_code."
+        }
+      },
+      "api": {
+        "base_url": "https://api.zapier.com",
+        "headers": {
+          "Authorization": "Bearer {access_token}"
+        },
+        "pagination": {
+          "note": "Three schemes across the four APIs. Check the endpoint rather than assuming.",
+          "limit_offset_meta": "Actions and connections: results plus meta { limit, offset, count } plus links { next }.",
+          "limit_offset_flat": "Trigger inbox inboxes: count, next, previous, results.",
+          "cursor": "Trigger inbox messages: opaque cursor, next, previous, results, no count.",
+          "page_per_page": "Partner API /v1/apps: page and per_page, returning total, page, pages, per_page, objects, prev_url, next_url."
+        },
+        "errors": {
+          "shape": "{ errors: [ { code, detail, status?, title?, source?, meta? } ] }",
+          "note": "Consistent across the actions, trigger-inbox and connections APIs - Zapier follows its own published error-handling guideline. code and detail are the only guaranteed fields. source can name a JSON pointer, a query parameter or a request header, which is usually enough to fix a 400 without guessing.",
+          "codes": {
+            "bad_request": "400.",
+            "permission_denied": "403 - the token lacks the scope, not that the object is missing.",
+            "too_many_requests": "429.",
+            "external_service_error": "500 - the failure is in the connected app, not in Zapier. Retrying the same call unchanged will usually fail the same way.",
+            "service_unavaiable": "503. Spelled that way in Zapier's own spec; match their spelling if matching on the string at all, and prefer matching on status.",
+            "payment_required": "402 - the run was billable and the account has no tasks left.",
+            "partner_api_unhealthy": "424 - the connected app's own API is temporarily down. Retryable, unlike the 500.",
+            "not_found": "404."
+          },
+          "run_status_vs_http": "Three independent layers: the HTTP status of the call, the run's `status` field, and the per-error `code` in the errors array. Checking only the first is the most likely way to report a failed action as done."
+        }
+      },
+      "operations": {
+        "get_profile": {
+          "method": "GET",
+          "path": "/v1/profiles/me",
+          "scope": "profile",
+          "write_scope": "readonly",
+          "notes": "Partner API. The cheapest confirmation a token works. Returns id, names, email, email_confirmed and timezone. The response is an ARRAY containing one profile, not an object - a Partner API quirk that also applies to /v1/apps and /v1/categories."
+        },
+        "list_stored_actions": {
+          "method": "GET",
+          "path": "/actions/v1/stored-actions",
+          "scope": "external",
+          "write_scope": "readonly",
+          "notes": "A stored action binds a connection, an app, an action key and its inputs into one runnable object. This is the catalogue of what the user has already set up - Flux should offer these rather than trying to compose an action from scratch."
+        },
+        "run_stored_action": {
+          "method": "POST",
+          "path": "/actions/v1/stored-actions/{stored_action_id}/run",
+          "body": {
+            "data": {
+              "inputs": "object",
+              "page": "string? - bulk-read paging state",
+              "callback_url": "uri?, max 2048",
+              "idempotency_id": "uuid?"
+            }
+          },
+          "scope": "external",
+          "write_scope": "send",
+          "notes": "Returns 202 with a run id; it does NOT return results. Poll get_stored_action_run. Always send an idempotency_id - see gotchas. callback_url gets the same body the run-poll endpoint returns."
+        },
+        "list_inboxes": {
+          "method": "GET",
+          "path": "/trigger-inbox/v1/inboxes",
+          "params": {
+            "key": "string?",
+            "status": "active | paused | initializing | deleting | initialization_failure",
+            "limit": "integer?",
+            "offset": "integer?"
+          },
+          "scope": "external",
+          "write_scope": "readonly",
+          "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user. Each inbox also carries notification_url: a URL Zapier POSTs to when messages become available, so an inbox does not have to be polled at all. Flux has no public endpoint to register one, but it is the documented alternative and is why the read limits here are not the constraint they look like."
+        },
+        "list_messages": {
+          "method": "GET",
+          "path": "/trigger-inbox/v1/inboxes/{inbox_id}/messages",
+          "params": {
+            "cursor": "string?"
+          },
+          "scope": "external",
+          "write_scope": "readonly",
+          "notes": "Message status is available, leased, acked or quarantined. message_attributes carries lease_count, error_message and possible_duplicate_data."
+        },
+        "list_categories": {
+          "method": "GET",
+          "path": "/v1/categories",
+          "params": {
+            "limit": "number, default 10",
+            "offset": "number, default 0"
+          },
+          "write_scope": "readonly",
+          "notes": "Partner API, and the spec lists no security requirement at all for this one. Useful only for populating a directory UI."
+        },
+        "list_app_actions": {
+          "method": "GET",
+          "path": "/v2/actions",
+          "params": {
+            "app": "required - canonical App UUID or app key",
+            "action_type": "READ | READ_BULK | SEARCH | SEARCH_AND_WRITE | SEARCH_OR_WRITE | WRITE"
+          },
+          "scope": "zap",
+          "write_scope": "readonly",
+          "notes": "Partner API. What a given app can do. `key` is the developer-provided stable identifier; `id` is explicitly documented as unstable and changing when the referenced app changes - never persist `id`, match on `key`. is_instant marks a real-time trigger and can only be true when the action is a READ."
+        },
+        "list_authentications": {
+          "method": "GET",
+          "path": "/v2/authentications",
+          "params": {
+            "app": "required - canonical App UUID or app key",
+            "limit": "integer, default 10",
+            "offset": "integer"
+          },
+          "scope": "connection:read",
+          "write_scope": "readonly",
+          "notes": "Partner API. The user's own connections to an app. Returns only authentications the user OWNS, never ones shared with them, because a Zap cannot be built on a borrowed connection. is_expired true means the user has to reconnect - check it before offering an action rather than letting the run fail."
+        },
+        "get_stored_action_run": {
+          "method": "GET",
+          "path": "/actions/v1/stored-actions/{stored_action_id}/runs/{run_id}",
+          "scope": "external",
+          "write_scope": "readonly",
+          "notes": "200 carries results; 202 means still processing - poll again. Rate limited far more generously than the rest of the Actions API (600 per 5 minutes, override to 3000), which is what makes polling viable. Results are kept seven days.",
+          "response": {
+            "type": "run",
+            "status": "error | success | waiting",
+            "results": "array - can be empty even on success",
+            "next_page": "bulk-read paging state; pass back as `page` on the next run",
+            "errors": "array of partner errors"
+          }
+        },
+        "get_stored_action": {
+          "method": "GET",
+          "path": "/actions/v1/stored-actions/{stored_action_id}",
+          "scope": "external",
+          "write_scope": "readonly"
+        },
+        "create_stored_action": {
+          "method": "POST",
+          "path": "/actions/v1/stored-actions",
+          "body": {
+            "data": {
+              "selected_api": "required",
+              "action_type": "required",
+              "action_key": "required",
+              "connection_id": "uuid?",
+              "inputs": "object"
+            }
+          },
+          "scope": "external",
+          "write_scope": "draft",
+          "notes": "Saves a runnable configuration; it does NOT execute anything, which is why this is `draft` and not `send`. Returns 200 (not 201) with just the id. Only core actions - external and App Extension actions cannot be stored. The triple selected_api + action_type + action_key is mandatory; action_id is deliberately not accepted."
+        },
+        "get_action_input_fields": {
+          "method": "POST",
+          "path": "/v2/actions/{action_id}/inputs",
+          "body": {
+            "data": {
+              "authentication": "required, may be null",
+              "inputs": "required - current field values",
+              "selected_api": "optional version pin"
+            }
+          },
+          "scope": "zap:write",
+          "write_scope": "readonly",
+          "notes": "Partner API. A POST that reads - the current inputs are sent because later fields depend on earlier ones. Fields resolve against the app's CURRENT version unless selected_api pins one; pin it when editing an action built against an older version. Returns input_field, info_field or fieldset entries; invalidates_input_fields true means changing this field forces a refetch."
+        },
+        "get_action_input_choices": {
+          "method": "POST",
+          "path": "/v2/actions/{action_id}/inputs/{input_id}/choices",
+          "params": {
+            "page": "string, default '1'"
+          },
+          "scope": "zap",
+          "write_scope": "readonly",
+          "notes": "Partner API. The values behind a SELECT field."
+        },
+        "get_action_output_fields": {
+          "method": "POST",
+          "path": "/v2/actions/{action_id}/outputs",
+          "body": {
+            "data": {
+              "authentication": "required",
+              "inputs": "required",
+              "fetch_live_samples": "boolean, default false",
+              "selected_api": "optional version pin"
+            }
+          },
+          "scope": "zap:write",
+          "write_scope": "readonly",
+          "notes": "Partner API. What an action returns. fetch_live_samples calls the third-party service for real samples - slower, and not supported for WRITE actions."
+        }
+      },
+      "gotchas": [
+        "app identifiers accept four forms - fully versioned (SplitwiseCLIAPI@1.0.0), versionless (SlackCLIAPI), the @latest sentinel, or a service slug (slack). The last three resolve at creation time and the object then stores the fully versioned form forever, so a stored action or inbox does not follow the app forward. An ambiguous or unmatched identifier is a 400, not a silent miss.",
+        "possible_duplicate_data on a trigger message means Zapier's deduplication key changed and the payload may repeat data already delivered. Zapier's own guidance is that consumers should apply their own deduplication - so anything acting on these messages has to be idempotent, not merely careful.",
+        "An inbox can pause itself. paused_reason includes authentication, authentication_access_revoked, partner_revoked, subscribe_failed, migrate_failed, abandoned and upstream_failures. A connector that has quietly stopped producing messages should read status before concluding there is nothing to do.",
+        "A 500 with code external_service_error is the connected app failing, not Zapier. It is not a retryable transient in the usual sense.",
+        "Partner API list endpoints return a single-element ARRAY wrapping the page object, not the page object itself. Indexing straight into .objects will fail.",
+        "Two different action_type vocabularies. The Actions API (stored actions) uses lowercase and includes run, filter and tool: read, read_bulk, write, run, search, search_or_write, search_and_write, filter, tool. The Partner API /v2/actions uses UPPERCASE and a shorter set: READ, READ_BULK, SEARCH, SEARCH_AND_WRITE, SEARCH_OR_WRITE, WRITE. Same concept, different spelling, different API - do not map one onto the other by string equality.",
+        "In the Partner API's own schema, the Action object's `type` and `action_type` both $ref the same ActionTypeEnum, but that enum contains only the single value `action` while the action_type description lists READ, WRITE and the rest. The schema and the prose disagree; the example payload shows type: action alongside action_type: action. Read what comes back rather than validating against the enum.",
+        "Partner API pagination changed between versions. /v1 returns a single-element array wrapping { total, page, pages, per_page, objects, prev_url, next_url }. /v2 returns { links: { next, prev }, meta: { count, limit, offset }, data: [...] }. Same API title, two envelopes.",
+        "An action id from /v2/actions is documented as unstable and not reused. Anything that hardcodes one will break silently when the app updates - persist `key` plus the app identifier.",
+        "An action run status of `unknown` is not a failure and not a success - Zapier documents it as the outcome being undeterminable. Retrying it may double the effect; treating it as success may silently drop work. It needs a human, or an idempotency key on the target.",
+        "Action-run callbacks are at-least-once by Zapier's own statement. Any callback receiver must deduplicate on the run id.",
+        "Releasing a leased trigger message does not refund the lease attempt against the per-message limit.",
+        "A workflow's trigger_url embeds a trigger token in the path. Zapier flags it as sensitive - it is a credential in a URL, and it will end up in logs if handled carelessly.",
+        "Zapier Forms default to consumerAuth `none`: the published hosted_url is answerable by anyone who has it.",
+        "Unversioned app identifiers resolve at DIFFERENT times depending on the object. A trigger inbox resolves at creation and stores the fully versioned form forever, so it never follows the app forward. A stored action's selected_api, per its own schema, is resolved when the action runs - 'if no version is provided we attempt to use the latest version'. Same-looking field, opposite behaviour: pin the version explicitly if a run has to stay reproducible.",
+        "idempotency_id on a run is the answer to the `unknown` status problem. It is a client-supplied UUID, and a repeat within 72 hours is ignored and returns the original response. Send one on EVERY run: it is the only thing that makes retrying an inconclusive run safe.",
+        "connection_id here is the same UUID other Zapier APIs call authentication_id - the Partner API's /v2/actions uses that name. Zapier says so in their own note. Same value, two field names, two APIs.",
+        "PATCH on a stored action cannot change connection_id or selected_api. Zapier's guidance is to delete and recreate. An update that appears to succeed will not have moved the action to a different connection.",
+        "424 partner_api_unhealthy is the connected app being down, and is explicitly retryable later. It is distinct from 500 external_service_error, which is the app returning a failure - retrying that unchanged will fail the same way.",
+        "The run path is singular (.../run) but the result path is plural (.../runs/{run_id}). Easy to get backwards.",
+        "A stored-action run has TWO levels of success and they disagree routinely. Zapier's own words: the HTTP status of the run-results call reports Zapier's processing, not what happened in the external system, and 'you could have a success=True (Zapier succeeded) and status=error (the partner raised an error)'. Always read the body's `status` field and the `errors` array; a 200 means only that Zapier managed to run the thing.",
+        "Partner errors carry their own code vocabulary, separate from the HTTP error codes: user, authentication, partner, system, throttled, system_throttled, hydration, authentication_access. When code is throttled the error object carries `delay` - the seconds to wait - which is the retry signal, not Retry-After.",
+        "Polling is budgeted differently from acting. The run-results endpoint allows 600 requests per 5 minutes (override to 3000) while the rest of the Actions API allows 200 (override to 1000). Poll freely; run sparingly.",
+        "POST /v2/actions/{id}/test executes the step against the third-party API for real - Zapier's own description says 'tests the action (step) in the third party api'. It is not a dry run and must never be used to preview a WRITE.",
+        "Getting an action's INPUT fields needs zap:write, while getting a SELECT field's CHOICES needs only zap. Two reads, two different scopes, the stricter one on the less dangerous call. Request per endpoint rather than assuming."
+      ],
+      "rate_limits": {
+        "actions_api": {
+          "window_seconds": 300,
+          "default": 200,
+          "maximum": 1000,
+          "note": "200 requests per 5 minutes by default, and the ceiling is set on the JWT rather than per request: rate_limit.limit_override takes 1-1000, and rate_limit.exempt true skips limiting entirely. Zapier also gates the whole mechanism behind an internal feature flag, so the absence of throttling today is not a guarantee - read X-RateLimit-Remaining rather than assuming."
+        },
+        "partner_api": "Stated only as a per-hour cap in the header descriptions, with no number given.",
+        "on_exceed": "HTTP 429 with code too_many_requests and a required Retry-After in seconds.",
+        "headers": {
+          "X-RateLimit-Limit": "Ceiling for the window.",
+          "X-RateLimit-Remaining": "Requests left in the window.",
+          "X-RateLimit-Reset": "When the window resets. The actions API documents this as a unix timestamp typed as date-time; the partner API documents it as UTC epoch seconds. Parse defensively."
+        },
+        "backoff": {
+          "strategy": "Honour Retry-After exactly - it is marked required on every 429 and 503. Pace against X-RateLimit-Remaining rather than waiting to be told."
+        }
+      }
+    }
+  ]
+}

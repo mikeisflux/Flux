@@ -16,6 +16,12 @@ build_webui("resources") {
     "templates.json",
     "connectors.json",
     "skills.json",
+
+    # The connector definitions - auth endpoints, operation maps, gotchas.
+    # Packed here rather than under data/ because a resource is the only thing
+    # that survives installation, and the browser process reads it out of the
+    # same .pak by looking its path up in kFluxResources.
+    "connector_defs.json",
   ]
   ts_files = [
     "app.ts",

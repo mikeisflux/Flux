@@ -6,11 +6,7 @@ import {
   FluxPageHandlerRemote,
   RunState,
 } from './flux.mojom-webui.js';
-import type {
-  ActionRecord,
-  ApprovalRequest,
-  RunProgress,
-} from './flux.mojom-webui.js';
+import type {ActionRecord, ApprovalRequest, ConnectorStatus, RunProgress} from './flux.mojom-webui.js';
 
 import {ApprovalQueue} from './approvals.js';
 import {FluxSettingsView} from './settings_view.js';
@@ -39,7 +35,7 @@ class FluxApp {
   private handler: FluxPageHandlerRemote;
   private approvals: ApprovalQueue;
   private settings: FluxSettingsView;
-  private connectors = new ConnectorsView();
+  private connectors: ConnectorsView;
   private palette = new CommandPalette();
   private customize: CustomizeView;
   private welcome: WelcomeView;
@@ -64,6 +60,7 @@ class FluxApp {
         this.handler);
 
     this.settings = new FluxSettingsView(this.handler);
+    this.connectors = new ConnectorsView(this.handler);
     this.newTask = new NewTaskView(this.handler);
     this.customize = new CustomizeView(this.handler);
     this.welcome = new WelcomeView(this.handler);
@@ -175,6 +172,12 @@ class FluxApp {
     // The agent writing back into the Instructions buffer is shown with
     // provenance in the sidebar's run list rather than silently mutating what
     // the user wrote.
+  }
+
+  onConnectorChanged(status: ConnectorStatus, error: string|null) {
+    // Connecting finishes in another tab, so the result arrives here rather
+    // than as the answer to the click that started it.
+    this.connectors.onConnectorChanged(status, error);
   }
 }
 

@@ -24,6 +24,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Not syncable: how wide a window is set up is a property of the screen in
   // front of you, not of the account.
   registry->RegisterBooleanPref(kSidebarCollapsed, false);
+
+  // Encrypted secrets. Registered here and nowhere else - these three names
+  // are the only pref paths SecretStore ever touches, which is what makes the
+  // dictionary-of-secrets shape safe. Never syncable.
+  registry->RegisterDictionaryPref(kApiKeys);
+  registry->RegisterDictionaryPref(kConnectorTokens);
+  registry->RegisterDictionaryPref(kConnectorClients);
 }
 
 }  // namespace flux::prefs

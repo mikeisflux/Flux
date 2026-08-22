@@ -5,53 +5,22 @@
 
 #include <string>
 
-#include "base/memory/raw_ptr.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
+#include "chrome/browser/flux/secret_store.h"
 
 class Profile;
 
-namespace os_crypt_async {
-class Encryptor;
-}
-
 namespace flux {
 
-// Stores provider API keys encrypted at rest.
+// Provider API keys, encrypted at rest.
 //
-// The synchronous OSCrypt API no longer exists; encryption now goes through
-// os_crypt_async, which vends an Encryptor asynchronously. The Encryptor
-// itself has synchronous Encrypt/Decrypt, so this obtains one once at startup
-// and holds it - callers stay synchronous.
-//
-// Keys are held in the profile's pref store and are deliberately NOT syncable:
-// a key that follows a profile onto another machine is a key that leaks.
-class ApiKeyStore {
+// Just a SecretStore over the provider-key pref. It was its own copy of the
+// encryptor plumbing until connectors needed the same thing for OAuth tokens;
+// the mechanism is shared now and this names the one dictionary the LLM
+// provider keys live in.
+class ApiKeyStore : public SecretStore {
  public:
   explicit ApiKeyStore(Profile* profile);
-  ~ApiKeyStore();
-
-  ApiKeyStore(const ApiKeyStore&) = delete;
-  ApiKeyStore& operator=(const ApiKeyStore&) = delete;
-
-  // False until the encryptor arrives. Reads return empty and writes are
-  // refused before then rather than silently storing plaintext.
-  bool ready() const { return encryptor_ != nullptr; }
-
-  std::string Get(const std::string& provider) const;
-
-  // Returns false if the key could not be encrypted. Nothing is stored in that
-  // case - a plaintext fallback would defeat the point.
-  bool Set(const std::string& provider, const std::string& key);
-
-  void Clear(const std::string& provider);
-
- private:
-  void OnEncryptorReady(scoped_refptr<os_crypt_async::Encryptor> encryptor);
-
-  raw_ptr<Profile> profile_;
-  scoped_refptr<os_crypt_async::Encryptor> encryptor_;
-  base::WeakPtrFactory<ApiKeyStore> weak_factory_{this};
+  ~ApiKeyStore() override;
 };
 
 // Convenience wrappers that resolve the store from the profile's

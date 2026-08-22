@@ -13,6 +13,13 @@
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
+#include "chrome/browser/flux/connectors/connector_service.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -26,6 +33,7 @@ FluxPageHandler::FluxPageHandler(
     content::WebContents* web_contents)
     : profile_(profile),
       service_(FluxAgentServiceFactory::GetForProfile(profile)),
+      web_contents_(web_contents),
       receiver_(this, std::move(receiver)),
       observer_(std::move(observer)) {
   if (service_)
@@ -349,6 +357,155 @@ void FluxPageHandler::RemoveSkill(const std::string& command) {
   }
   ScopedDictPrefUpdate skills(profile_->GetPrefs(), prefs::kUserSkills);
   skills->Remove(command);
+}
+
+// --- Connectors -------------------------------------------------------------
+
+mojom::ConnectorStatusPtr FluxPageHandler::ToMojom(
+    const ConnectorStatus& status) const {
+  auto out = mojom::ConnectorStatus::New();
+  out->id = status.id;
+  out->connectable = status.connectable;
+  out->has_client = status.has_client;
+  out->connected = status.connected;
+  out->expired = status.expired;
+  if (!status.detail.empty())
+    out->detail = status.detail;
+  return out;
+}
+
+void FluxPageHandler::ListConnectors(ListConnectorsCallback callback) {
+  std::vector<mojom::ConnectorStatusPtr> out;
+  if (service_ && service_->connectors()) {
+    for (const ConnectorStatus& status : service_->connectors()->ListStatus())
+      out.push_back(ToMojom(status));
+  }
+  std::move(callback).Run(std::move(out));
+}
+
+void FluxPageHandler::SetConnectorClient(const std::string& connector_id,
+                                         const std::string& client_id,
+                                         const std::string& client_secret,
+                                         const std::string& redirect_uri,
+                                         SetConnectorClientCallback callback) {
+  if (!service_ || !service_->connectors()) {
+    std::move(callback).Run(false, "Connector service unavailable.");
+    return;
+  }
+  OAuthClient client;
+  client.client_id = client_id;
+  client.client_secret = client_secret;
+  client.redirect_uri = redirect_uri;
+  if (!client.valid()) {
+    std::move(callback).Run(
+        false, "A client id and a redirect URI are both required.");
+    return;
+  }
+  const bool stored = service_->connectors()->SetClient(connector_id, client);
+  std::move(callback).Run(
+      stored, stored ? std::nullopt
+                     : std::optional<std::string>(
+                           "The registration could not be stored securely, so "
+                           "it was discarded."));
+}
+
+void FluxPageHandler::GetConnectorClient(const std::string& connector_id,
+                                         GetConnectorClientCallback callback) {
+  if (!service_ || !service_->connectors()) {
+    std::move(callback).Run(std::string(), std::string(), false);
+    return;
+  }
+  const OAuthClient client = service_->connectors()->GetClient(connector_id);
+  // The secret is never returned to the renderer - only whether there is one.
+  // It goes in encrypted and does not come back out; a compromised console
+  // cannot read a credential it is never sent.
+  std::move(callback).Run(client.client_id, client.redirect_uri,
+                          !client.client_secret.empty());
+}
+
+void FluxPageHandler::BeginConnect(const std::string& connector_id,
+                                   BeginConnectCallback callback) {
+  if (!service_ || !service_->connectors() || !web_contents_) {
+    std::move(callback).Run(false, "Connector service unavailable.");
+    return;
+  }
+
+  std::string error;
+  const GURL url = service_->connectors()->BeginConnect(connector_id, &error);
+  if (!url.is_valid()) {
+    std::move(callback).Run(false, error);
+    return;
+  }
+
+  content::WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  if (!delegate) {
+    std::move(callback).Run(false, "No window to open the sign-in page in.");
+    return;
+  }
+
+  // A foreground tab, and the handle to it, so the redirect can be caught and
+  // the tab closed again without the user having to do either.
+  content::WebContents* tab = delegate->OpenURLFromTab(
+      web_contents_,
+      content::OpenURLParams(url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                             /*is_renderer_initiated=*/false),
+      /*navigation_handle_callback=*/{});
+  if (!tab) {
+    std::move(callback).Run(
+        false,
+        "Could not open the sign-in page. Nothing was sent to the service.");
+    return;
+  }
+
+  redirect_watcher_ = std::make_unique<OAuthRedirectWatcher>(
+      tab, service_->connectors(),
+      base::BindOnce(&FluxPageHandler::OnConnectFinished,
+                     weak_factory_.GetWeakPtr(), connector_id));
+  std::move(callback).Run(true, std::nullopt);
+}
+
+void FluxPageHandler::OnConnectFinished(std::string connector_id,
+                                        const std::string& error) {
+  redirect_watcher_.reset();
+  if (!observer_ || !service_ || !service_->connectors())
+    return;
+  observer_->OnConnectorChanged(
+      ToMojom(service_->connectors()->GetStatus(connector_id)),
+      error.empty() ? std::nullopt : std::optional<std::string>(error));
+}
+
+void FluxPageHandler::SetPersonalToken(const std::string& connector_id,
+                                       const std::string& token,
+                                       SetPersonalTokenCallback callback) {
+  if (!service_ || !service_->connectors()) {
+    std::move(callback).Run(false, "Connector service unavailable.");
+    return;
+  }
+  const bool stored =
+      service_->connectors()->SetPersonalToken(connector_id, token);
+  if (observer_) {
+    observer_->OnConnectorChanged(
+        ToMojom(service_->connectors()->GetStatus(connector_id)),
+        std::nullopt);
+  }
+  std::move(callback).Run(
+      stored, stored ? std::nullopt
+                     : std::optional<std::string>(
+                           "The token could not be stored securely, so it was "
+                           "discarded."));
+}
+
+void FluxPageHandler::Disconnect(const std::string& connector_id) {
+  if (!service_ || !service_->connectors())
+    return;
+  service_->connectors()->Disconnect(connector_id);
+  if (observer_) {
+    observer_->OnConnectorChanged(
+        ToMojom(service_->connectors()->GetStatus(connector_id)),
+        std::nullopt);
+  }
 }
 
 void FluxPageHandler::GetSidebarCollapsed(

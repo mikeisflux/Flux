@@ -3,12 +3,14 @@
 #ifndef CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 #define CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/flux/connectors/oauth_redirect_watcher.h"
 #include "chrome/browser/flux/flux_agent_service.h"
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -69,8 +71,29 @@ class FluxPageHandler : public mojom::FluxPageHandler,
                   const std::string& instructions,
                   AdoptSkillCallback callback) override;
   void RemoveSkill(const std::string& command) override;
+  void ListConnectors(ListConnectorsCallback callback) override;
+  void SetConnectorClient(const std::string& connector_id,
+                          const std::string& client_id,
+                          const std::string& client_secret,
+                          const std::string& redirect_uri,
+                          SetConnectorClientCallback callback) override;
+  void GetConnectorClient(const std::string& connector_id,
+                          GetConnectorClientCallback callback) override;
+  void BeginConnect(const std::string& connector_id,
+                    BeginConnectCallback callback) override;
+  void SetPersonalToken(const std::string& connector_id,
+                        const std::string& token,
+                        SetPersonalTokenCallback callback) override;
+  void Disconnect(const std::string& connector_id) override;
   void GetSidebarCollapsed(GetSidebarCollapsedCallback callback) override;
   void SetSidebarCollapsed(bool collapsed) override;
+
+  // Turns a ConnectorStatus into the mojom struct the console renders.
+  mojom::ConnectorStatusPtr ToMojom(const ConnectorStatus& status) const;
+
+  // Called by the redirect watcher when an authorization finishes, one way or
+  // the other.
+  void OnConnectFinished(std::string connector_id, const std::string& error);
 
   // Issues a minimal completion to confirm the key is accepted. Shared by
   // SetProviderKey and ValidateProviderKey.
@@ -89,6 +112,10 @@ class FluxPageHandler : public mojom::FluxPageHandler,
 
   raw_ptr<Profile> profile_;
   raw_ptr<FluxAgentService> service_;
+  raw_ptr<content::WebContents> web_contents_;
+  // Alive only while an authorization tab is open. Destroying it stops the
+  // watch, which is what closing the console mid-flow should do.
+  std::unique_ptr<OAuthRedirectWatcher> redirect_watcher_;
   // Providers whose stored key has been confirmed to work this session.
   std::set<std::string> validated_;
   mojo::Receiver<mojom::FluxPageHandler> receiver_;
