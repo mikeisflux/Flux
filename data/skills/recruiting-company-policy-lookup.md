@@ -5,25 +5,28 @@ description: Answer plain-language questions about PTO, benefits, travel, and ha
 categories: [Recruiting]
 roles: [recruiting]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Answer plain-language questions about PTO, benefits, travel, and handbook rules.
+Someone asks what the policy is, and the answer has to be right rather than approximately right.
 
-## Approach
+## Find the authoritative version
 
-1. **Define the bar.**
-2. **Source.**
-3. **Assess against the bar.**
-4. **Record the decision.**
+There is usually more than one copy and they disagree. Establish which document is authoritative, its effective date and its version, and whether it has been superseded. An answer from an intranet page last edited three years ago is a liability, not an answer.
 
-## Heuristics
+## Check what varies
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+The same policy commonly differs by jurisdiction, by employment type, by tenure and by seniority. Confirm which applies to the person asking before answering - a correct answer for the wrong population is a wrong answer.
+
+## Answer with the quote and the source
+
+Give the direct quotation from the policy, then the plain-language reading, then a link to the document and its effective date. Separating the two makes it clear where the policy stops and interpretation starts.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Do not interpret where the policy is genuinely silent. Say it is silent and route it to whoever owns the policy - HR, legal, or the manager.
+- Policy is not law; local employment law can override it and does.
+- If two documents conflict, that is the answer to report, not a problem to resolve by picking one.
+- Never answer a policy question about an individual's situation in a way that discloses their circumstances to anyone else.

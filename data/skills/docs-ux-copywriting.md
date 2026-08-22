@@ -5,25 +5,34 @@ description: Microcopy, error messages, empty states, and CTAs that help users a
 categories: [Docs]
 roles: [everyone]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Microcopy, error messages, empty states, and CTAs that help users act.
+Writing the words inside a product - buttons, labels, empty states, errors - where every word is load-bearing.
 
-## Approach
+## Write the way the user thinks about the task
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+Use the words the user would use, not the ones the system uses internally. If the codebase calls it a `workspace_membership` and the user calls it "who's on my team", the interface says team.
 
-## Heuristics
+Buttons say what happens: **Save**, **Send invite**, **Delete forever**. Never **OK**, never **Submit**. A person should be able to press a button correctly without reading the sentence above it.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Errors have three jobs
+
+1. Say what happened, without blame and without a code as the headline.
+2. Say why, if you know.
+3. Say what to do next, as an action they can take.
+
+"Something went wrong" does none of the three. "We couldn't save your changes - your session expired. Sign in again and we'll keep your draft." does all three.
+
+## Empty states are the best teaching moment
+
+The first time someone sees a screen it is empty. That is the one moment they will read an explanation. Say what goes here, why it is useful, and give them the single action that fills it.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Sentence case everywhere except proper nouns. Title Case On Buttons Reads As Shouting.
+- Cut every "please", "simply", "just", and "easily". They add length and, when the thing is not easy, insult.
+- Write the confirm dialog's button to say the verb - **Delete project**, not **Yes** - because that is what gets read at speed.
+- Test the longest plausible string. Copy that only fits in English is a bug.

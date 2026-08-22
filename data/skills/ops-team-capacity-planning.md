@@ -5,25 +5,27 @@ description: Analyze workload and utilization to decide whether to hire, delay, 
 categories: [Ops]
 roles: [ops, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Analyze workload and utilization to decide whether to hire, delay, or reprioritize.
+Working out how much a team can actually take on in a period.
 
-## Approach
+## Start from available time, not from headcount
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Headcount times working days is a fiction. Subtract holiday, public holidays, expected sick leave, meetings, on-call, interviews, and the recurring operational load. What is left is the capacity, and it is routinely 50-65% of the naive number.
 
-## Heuristics
+## Reserve for the unplanned
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Every team has interrupt work - incidents, escalations, urgent requests. Measure the historical share rather than assuming it away, and reserve it explicitly. A plan at 100% of capacity is a plan that fails on the first interruption, and then everything after it is late.
+
+## Plan in ranges
+
+Estimates are uncertain and stating them as points invites them to be treated as commitments. Give a range, and commit to the pessimistic end. A team that consistently delivers its commitment is trusted with more than one that optimistically over-promises.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- New joiners are negative capacity for their first weeks; someone is onboarding them.
+- One person being the only one who can do something is a capacity constraint and a risk. Name it.
+- Track actual against planned each period and use the ratio to correct the next plan. Without that feedback the same optimism repeats forever.

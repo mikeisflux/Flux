@@ -5,25 +5,31 @@ description: Plan headcount, team structure, and hiring sequence with healthy-or
 categories: [Recruiting]
 roles: [recruiting]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Plan headcount, team structure, and hiring sequence with healthy-org benchmarks.
+Planning what roles to open, when, and what that costs.
 
-## Approach
+## Start from the work, not from the org chart
 
-1. **Define the bar.**
-2. **Source.**
-3. **Assess against the bar.**
-4. **Record the decision.**
+List the outcomes the organisation is committed to next period, and what capacity each needs. Roles that cannot be traced to a committed outcome are aspirations, and they are the ones cut first when the plan meets the budget.
 
-## Heuristics
+## Model the timing honestly
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+A role opened in January is not capacity in January. Time to hire plus notice period plus ramp is commonly four to six months for a senior individual contributor and longer for a manager. Plan against the date they are productive, not the date they start - a headcount plan built on start dates over-promises by a quarter.
+
+## Cost fully
+
+Salary, employer taxes, benefits, equity, recruiting cost, equipment, and software seats. Loaded cost is typically well above base, and a plan built on base alone is wrong in the direction that gets noticed later.
+
+## Sequence for dependency
+
+Hire the manager before the team where the team needs managing. Hire the person who defines the work before the people who do it. A plan that hires five juniors into an unmanaged team is a plan to lose them.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Include attrition. A plan that assumes nobody leaves is short by the historical rate.
+- Distinguish backfill from growth in the plan; they are approved differently and confusing them hides shrinkage.
+- State the trigger for each hire. "Open Q2" is a wish; "open when the pipeline sustains X for two consecutive months" is a plan.

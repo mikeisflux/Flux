@@ -5,25 +5,32 @@ description: Turn call notes or a transcript into action items, a recap email, a
 categories: [Sales]
 roles: [sales, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Turn call notes or a transcript into action items, a recap email, and CRM log.
+Immediately after a call, while it is fresh: the record and the follow-up.
 
-## Approach
+## Write the record first
 
-1. **Gather context.**
-2. **Qualify.**
-3. **Draft the outreach.**
-4. **Log it.**
+Not a transcript. Six lines:
 
-## Heuristics
+- Who was on, and their role.
+- What they said their problem is, in their words.
+- What they use today and what is wrong with it.
+- The constraints: budget, timing, process, who else has to agree.
+- Objections raised, and whether they were answered.
+- The next step, with a date and an owner.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Then the follow-up email
+
+Sent same day. Three parts: what you heard, in their language; what you said you would do, with dates; one question that moves the next step. Attach only what was actually asked for.
+
+Repeating their problem back in their own words is the part that does the work - it is the only proof that the call was listened to.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Log the loss and risk signals too, not just the encouraging ones. A CRM that only records enthusiasm forecasts badly.
+- Never write down something the customer said in confidence and then send it to a group.
+- If no next step was agreed, record that plainly rather than inventing one. It is the most important thing the call told you.

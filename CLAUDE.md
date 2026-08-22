@@ -84,7 +84,15 @@ compiled - install them and run the real thing.
 - `patches/` - the Chromium patch series, applied in `patches/series` order
 - `build/` - fetch/sync/build, in both bash and PowerShell
 - `go.ps1` - the single entrypoint: pull, sync, build
-- `data/` - skills and connector definitions, read from disk at runtime
+- `data/skills/*.md` - the skill library, in the frontmatter-plus-freeform-body
+  format `docs/06` settles on. This is the authoring source;
+  `tools/build-skills-json.py` packs it into `src/resources/skills.json`, and
+  the check regenerates and diffs so the two cannot drift. `When to use` is
+  required in every body - it is the retrieval trigger the whole feature rests
+  on, and the packer refuses a file without one.
+- `data/connectors/*.json` - per-connector auth endpoints and operation maps.
+  Names, descriptions and badges live in `src/resources/connectors.json` so
+  the console and the browser process cannot disagree about them.
 - `src/resources/templates.json` - the 250-template catalog. It lives with the
   WebUI rather than in `data/` because it is packed into `flux_resources.pak`;
   `build_webui` cannot reach outside its own directory, and one copy read by

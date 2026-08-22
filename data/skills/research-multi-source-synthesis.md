@@ -5,25 +5,31 @@ description: Merge multi-source results into one cited answer with confidence le
 categories: [Research]
 roles: [analysts, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Merge multi-source results into one cited answer with confidence levels.
+Several sources on one question, and the job is one coherent answer rather than a summary of each.
 
-## Approach
+## Organise by claim, not by source
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+A summary of each source in turn is a reading list, not a synthesis. Build the other way round: list the claims, and under each, which sources support it, which contradict it, and how strong each is. The structure of the output is the structure of the disagreement.
 
-## Heuristics
+## Treat contradiction as the finding
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Where sources disagree, do not average them and do not pick the one you like. Work out *why* they disagree - different populations, different definitions, different dates, different incentives. The explanation is usually more valuable than either number.
+
+## Weight before you conclude
+
+Primary over secondary. Recent over old, where the thing changes. Method stated over method absent. Independent over funded by an interested party. Say which weightings you applied, so the reader can disagree with the weighting rather than with the conclusion.
+
+## Write the answer with its confidence
+
+State the conclusion, then how confident you are and why, then what would change it. A synthesis without a stated confidence gets read as certain.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Cite at the claim, not at the end. A paragraph with one citation at the end is unverifiable.
+- Distinguish "no evidence for" from "evidence against". They are very different findings and are routinely conflated.
+- If every source traces to one original, say so - that is one source with an echo.

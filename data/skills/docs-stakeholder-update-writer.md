@@ -5,25 +5,29 @@ description: Tailor a progress update to any audience: exec, eng, partner, custo
 categories: [Docs]
 roles: [everyone]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Tailor a progress update to any audience: exec, eng, partner, customer, board.
+A recurring written update to people who are not in the day-to-day and need to know whether to worry.
 
-## Approach
+## Lead with the verdict
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+Start with status in one word and one sentence of why: on track, at risk, or off track. A reader who only reads that line should be correctly informed. Everything after is evidence for it.
 
-## Heuristics
+## Then the three things that matter
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **What shipped or moved** since the last update, in outcomes rather than activity.
+- **What changed** in the plan, the date, or the scope - and this is the section people actually read.
+- **What you need** from the reader, specifically, with a date.
+
+## Be early about bad news
+
+A slip reported the week it becomes likely costs a conversation. The same slip reported the week it becomes undeniable costs credibility, and every subsequent green status is discounted. If you are not sure yet, say you are not sure yet and when you will know.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Keep the format identical every time. The value of a recurring update is that the reader knows where to look.
+- No jargon and no internal ticket numbers as nouns.
+- If the status has been green for eight weeks and then goes red, the problem is the previous eight updates, not the project.

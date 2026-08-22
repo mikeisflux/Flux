@@ -5,25 +5,31 @@ description: Document a system/process change with impact analysis, risks, and r
 categories: [Ops]
 roles: [ops, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Document a system/process change with impact analysis, risks, and rollback.
+Planning a change to a production system, including how to undo it.
 
-## Approach
+## Write the change down precisely
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+What is changing, on what, when, who is doing it, and how long it takes. Vague changes cannot be reviewed and cannot be rolled back. Include the exact commands or the exact configuration diff, not a description of them.
 
-## Heuristics
+## Write the rollback before the change
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+And make it specific: the exact steps to return to the previous state, how long they take, and who can authorise them. Then answer the question people avoid: **is the rollback still safe after data has been written under the new version?** If it is not, that is a schema or a migration problem to solve before the change, not after.
+
+## Define the abort criteria and who calls it
+
+What observation means stop - an error rate, a latency threshold, a failed verification step - and who has the authority to invoke rollback without further approval. In the moment nobody wants to be the one to call it, so it has to be decided beforehand.
+
+## Verify, then watch
+
+A verification step immediately after, testing the actual behaviour rather than that the deploy completed. Then a defined watch period with a named person and the specific metric they are watching.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Backwards-compatible migrations first, in a separate change, so the rollback of the code does not require a rollback of the data.
+- A change with no rollback is not a change, it is a commitment - say so explicitly and get it approved on that basis.
+- Record what actually happened against the plan. That record is what makes the next change plan realistic.

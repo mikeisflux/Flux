@@ -12,25 +12,27 @@ worksWith:
   - id: Stripe
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Confirm you can make payroll: forecast cash, rank overdue invoices, stage reminders.
+Confirming, before the payroll run, that the money will be there and that the run is right.
 
-## Approach
+## Check the cash first
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Payroll is the one payment that cannot be delayed. Confirm the cleared balance on the funding date - not today's balance, and not including receipts expected but not received. Account for the employer taxes and pension payments, which usually leave on a different date and are routinely forgotten in the check.
 
-## Heuristics
+## Then check the run against last period
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Total gross, total net, headcount, and employer cost, each compared with the prior run with every variance explained. A movement with no explanation is an error until proven otherwise. Look specifically at: starters and leavers, contract changes, one-off payments, and anyone whose net moved more than a few percent.
+
+## Check the leavers and the starters individually
+
+These are where errors concentrate. A leaver still on the run, a starter missing, a final payment without the correct accrued leave. Each one is both a cash error and an employee-relations problem.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Bank cut-off times and non-working days move the funding date. Count backwards from the pay date using the actual banking calendar.
+- Changes to bank details for an employee are a fraud vector; verify out of band, always, and never from the email that requested it.
+- Keep the check evidenced. This is a control, not a habit.

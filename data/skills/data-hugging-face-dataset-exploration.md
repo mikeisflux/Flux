@@ -8,25 +8,37 @@ worksWith:
   - id: Hugging Face
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Browse, search, filter, and paginate any Hugging Face dataset via the Dataset Viewer.
+Evaluating a Hugging Face dataset before using it - for fine-tuning, evaluation, or as a source.
 
-## Approach
+## Read the card before the data
 
-1. **Get the data.**
-2. **Validate it.**
-3. **Transform.**
-4. **Deliver.**
+The dataset card answers most of the disqualifying questions:
 
-## Heuristics
+- **Licence.** This decides whether the rest of the exercise matters. Check the licence on the dataset *and* on its upstream sources; they differ more often than not.
+- **Provenance.** Scraped, synthetic, human-annotated, or model-generated? Model-generated data used for evaluation is circular.
+- **Splits.** Are train/validation/test predefined, and is the split random or by some grouping?
+- **Known issues.** The community tab usually has the problems the card does not.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Then look at the rows
+
+Load a sample and actually read fifty examples. Every automated check misses what reading catches.
+
+- Field types and lengths; truncation at a round number means data was cut.
+- Duplicate rate, including near-duplicates.
+- Label balance, and whether labels are single or multi.
+- Language mix, if it claims to be monolingual.
+
+## Check for contamination
+
+If the dataset will be used for evaluation, check for overlap with common pretraining corpora and with any training set you use. Contaminated evaluation data produces numbers that are indistinguishable from real progress and are not.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Dataset size on the card is often before deduplication.
+- `streaming=True` avoids downloading hundreds of gigabytes to discover a licence problem.
+- A dataset can be updated in place; pin a revision hash for anything reproducible.

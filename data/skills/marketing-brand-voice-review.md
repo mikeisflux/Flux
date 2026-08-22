@@ -8,25 +8,32 @@ worksWith:
   - id: Docs
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Flag off-brand tone, terms, and claims, and rewrite them to match your style guide.
+A piece of writing needs checking against how the brand actually sounds, before it goes out.
 
-## Approach
+## Have something to check against
 
-1. **Understand the audience.**
-2. **Gather what performed.**
-3. **Produce.**
-4. **Measure.**
+A voice review is only possible if the voice is written down. If it is not, derive it from the best existing examples first: three pieces everyone agrees sound right, and what they have in common in sentence length, formality, use of humour, and how much they claim.
 
-## Heuristics
+State the voice as pairs - "confident, not boastful", "plain, not blunt" - because a single adjective is unfalsifiable.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Check the mechanics
+
+- **Person and tense** - consistent throughout, and matching the norm.
+- **Sentence length variation.** All-short reads staccato, all-long reads like a contract.
+- **Claims** - anything superlative, anything unprovable, anything that would need legal review.
+- **Jargon** the reader would not use themselves.
+- **The banned list** - the words this brand does not use, whatever they are.
+
+## Fix by rewriting one paragraph
+
+Do not annotate every sentence. Rewrite the opening paragraph in the right voice and mark the two or three patterns to apply to the rest. A page of tracked changes trains nobody; one rewritten paragraph does.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Voice varies by surface. Error messages, marketing pages and legal notices should not sound identical, and a review that flattens them is wrong.
+- Do not confuse voice with grammar preferences. Serial commas are a style guide question, not a brand one.

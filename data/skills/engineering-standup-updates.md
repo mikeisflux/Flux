@@ -10,25 +10,27 @@ worksWith:
   - id: Slack
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Turn recent activity into a clean yesterday / today / blockers update.
+The daily or async update, written so it is worth someone else's thirty seconds.
 
-## Approach
+## Three lines, in this order
 
-1. **Reproduce.**
-2. **Isolate.**
-3. **Verify the fix.**
-4. **Report.**
+1. **What moved** - what is now true that was not yesterday. Not what you touched; what changed state.
+2. **What is next** - the specific thing today, not the epic.
+3. **What is in the way** - named, with what you need and from whom.
 
-## Heuristics
+If nothing is in the way, say nothing rather than writing "no blockers".
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Write it for the reader
+
+The reader wants to know whether anything affects them and whether anything needs their help. So: name the ticket or the surface, not the internal detail; say if a date moved; and put the blocker first if there is one, because that is the only part that needs action today.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- "Continuing to work on X" for three days is a blocker that has not been named yet. Say what is actually hard.
+- Do not list every commit. A standup is not a changelog.
+- If something slipped, say so on the day it slipped, not on the day it was due.

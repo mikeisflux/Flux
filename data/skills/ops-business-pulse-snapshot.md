@@ -12,25 +12,27 @@ worksWith:
   - id: Gmail
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-One-page cross-functional snapshot of cash, sales, pipeline, and what needs you today.
+A short, regular read on the health of the business across functions, for a leadership audience.
 
-## Approach
+## Pick one number per function and hold it steady
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Revenue, pipeline, cash runway, headcount, churn, and one product or operational measure. Six numbers, the same six every time, each with its prior period and its target. Adding a metric because it looks good this period is how a pulse becomes a highlight reel.
 
-## Heuristics
+## Show direction, not just level
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Each number with its change and, where the series is noisy, a short trend rather than a single comparison. A number without a direction cannot be acted on, and month-on-month alone over-reacts to seasonality.
+
+## Flag by exception
+
+Most weeks most numbers are fine. Mark the one or two that are off, say why, and say who owns the response. A snapshot where everything is commented is a snapshot nobody reads.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Definitions must be fixed and written down; a metric redefined mid-series destroys the comparison silently.
+- Cash runway needs a stated burn assumption or it is not a number.
+- Resist adding a seventh metric. The discipline is the product.

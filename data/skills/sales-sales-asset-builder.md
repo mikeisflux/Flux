@@ -5,25 +5,32 @@ description: Generate a tailored, branded sales asset: landing page, deck, one-p
 categories: [Sales]
 roles: [sales, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Generate a tailored, branded sales asset: landing page, deck, one-pager, or demo.
+A specific deal needs a specific artefact - a one-pager, a business case, a security summary, a comparison.
 
-## Approach
+## Start from the objection
 
-1. **Gather context.**
-2. **Qualify.**
-3. **Draft the outreach.**
-4. **Log it.**
+Every good sales asset exists to answer one question that is currently blocking a deal. Name that question before writing anything. An asset that answers four questions answers none of them.
 
-## Heuristics
+## Write for the person who was not on the call
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Sales assets get forwarded to someone who has no context and no patience: a CFO, a security reviewer, a sceptical peer. So:
+
+- Lead with the outcome and the number, not with the company boilerplate.
+- Use their words for their problem, taken from the call notes.
+- Make every claim checkable - a named customer, a real figure, a source.
+- One page. A second page is a second asset.
+
+## Assemble rather than write where possible
+
+Pull from existing approved material - case studies, security documentation, pricing. A bespoke claim invented for one deal is a claim nobody has reviewed and that legal has not seen.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Never invent a customer name, a metric, or a certification. This is the single highest-risk category of sales content.
+- Check whether a named reference customer has agreed to be named, for this audience, this quarter.
+- Date the asset. Pricing and capability claims go stale and outlive the deal they were written for.

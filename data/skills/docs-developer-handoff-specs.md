@@ -8,25 +8,31 @@ worksWith:
   - id: Figma
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Spec layout, tokens, states, responsive behavior, edge cases, and motion.
+Turning a finished design into something that can be built without a stream of clarifying questions.
 
-## Approach
+## Specify the states, not just the screens
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+A screen is a snapshot; a build needs the whole state machine. For every view: default, empty, loading, partial, error, permission-denied, and success. For every input: valid, invalid, disabled, and what the validation message says and when it appears.
 
-## Heuristics
+## Give measurements as rules
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Absolute pixel positions do not survive a different viewport or a longer string. Specify spacing as tokens, layout as rules ("16px gap, wraps below 640px"), and text as truncation behaviour rather than as a fixed width. Where a component from the design system is used, name it rather than redrawing it.
+
+## Cover the behaviour a static file cannot show
+
+- What is clickable and what happens.
+- Transitions and their duration, or explicitly none.
+- Focus order and what has focus on open.
+- Scroll behaviour, and what is sticky.
+- What happens on slow network.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Provide the real content and the worst-case content, not lorem ipsum. Layouts break on real strings.
+- Export assets at the densities actually needed, and say which format and why.
+- List the open questions on the handoff itself. An unanswered question becomes an invented answer.

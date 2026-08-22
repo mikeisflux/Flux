@@ -8,25 +8,29 @@ worksWith:
   - id: Figma
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Audit consistency, document components, or design new patterns that fit.
+Documenting a component so that someone can use it correctly without asking the person who built it.
 
-## Approach
+## Per component, in this order
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+1. **What it is for**, in one sentence, and the decision it supports.
+2. **When to use it, and when not** - with the component to use instead. This section prevents more misuse than any other.
+3. **Anatomy** - the parts, named, on an annotated example.
+4. **Variants and states** - default, hover, focus, active, disabled, loading, error, and what triggers each.
+5. **Content rules** - length limits, capitalisation, what happens on overflow.
+6. **Accessibility** - the role, the keyboard behaviour, what a screen reader announces.
+7. **The code**, last, with a runnable example.
 
-## Heuristics
+## Show the wrong usage
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+A do-and-don't pair teaches faster than a paragraph. The don'ts should be real mistakes seen in the product, not invented ones - the real ones are the ones that will recur.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Documentation that lives away from the component goes stale. Generate what can be generated from the source: props, tokens, variants.
+- Every example must be one that has actually been rendered.
+- Version the documentation with the component, and say when a variant is deprecated and what replaces it.

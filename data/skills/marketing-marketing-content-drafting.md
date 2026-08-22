@@ -5,25 +5,36 @@ description: Generate blog, social, email, landing, PR, or case-study drafts in 
 categories: [Marketing]
 roles: [marketing, founders]
 writeScope: draft
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Generate blog, social, email, landing, PR, or case-study drafts in your voice.
+Drafting a piece of marketing content - a post, a page, an email - from a brief.
 
-## Approach
+## Settle four things before writing
 
-1. **Understand the audience.**
-2. **Gather what performed.**
-3. **Produce.**
-4. **Measure.**
+1. **Who it is for**, specifically enough to picture.
+2. **What they believe now**, and what they should believe after.
+3. **The one action** it should produce.
+4. **Where it will be read**, which decides length and format more than anything else.
 
-## Heuristics
+Content that skips these gets written to fill a slot and reads like it.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Write the ending first
+
+Draft the call to action and the closing argument before the opening. It forces the piece to have a point, and the opening is much easier to write once you know where it lands.
+
+## Then structure for a skimmer
+
+Most readers will read the headline, the subheadings and the first line of each section. Make those four things carry the whole argument on their own. If the piece does not work as an outline, it will not work as prose.
+
+## Make every claim checkable
+
+Replace adjectives with numbers, and numbers with sourced numbers. "Significantly faster" is worth less than "3x faster on a 10,000-row import", and both are worth nothing without the conditions.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Never invent a statistic, a customer quote, or a case study detail. This is the category of error that ends up in a screenshot.
+- Cut the first paragraph after drafting. It is almost always throat-clearing.
+- A draft goes to a human before it goes anywhere public.

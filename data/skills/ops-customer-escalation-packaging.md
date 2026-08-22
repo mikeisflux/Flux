@@ -12,25 +12,31 @@ worksWith:
   - id: Zendesk
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Bundle full reproduction context so engineering can act on an escalation fast.
+An issue needs to go up - to engineering, to management, or to a vendor - and the packaging determines how fast it moves.
 
-## Approach
+## Lead with impact, not with the symptom
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Who is affected, how many, since when, and what it is costing - revenue at risk, work blocked, contractual exposure. The technical detail matters, but it does not set priority; impact does, and an escalation that opens with a stack trace gets triaged on the stack trace.
 
-## Heuristics
+## Give them everything they need to start
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- The reproduction, or the exact steps that led to it.
+- Account, environment, timestamps with timezone, request or trace identifiers.
+- What has already been tried and ruled out.
+- Logs and screenshots attached, not described.
+- The customer's own words about what they need.
+
+## State the ask and the deadline
+
+"Please investigate" produces nothing. Say what you need - a root cause, a workaround, a decision, a date - and by when, and what happens if that is missed. An escalation without a deadline joins a queue.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Do not escalate the same issue in three channels; it produces three partial investigations.
+- Keep the customer informed on a cadence even when there is nothing new. "No update yet, next update Thursday" preserves the relationship.
+- Redact customer data that the escalation does not need.

@@ -10,25 +10,31 @@ worksWith:
   - id: Outreach
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Build a competitive brief: landscape, feature matrix, positioning, win/loss.
+Understanding a competitor well enough to make a decision, from public information.
 
-## Approach
+## Work from what they publish
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+Their site, pricing, documentation, changelog, job postings, filings and public statements. Job postings and changelogs are the two most under-read and most informative: postings say what they are building before the site does, and the changelog says what they actually shipped rather than what they announced.
 
-## Heuristics
+## Establish the shape, not the feature list
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **Who they sell to**, in their own words, and how that has changed.
+- **How they charge** - the pricing model matters more than the price, because it says what they think the value metric is.
+- **How they sell** - self-serve, sales-led, partner. This determines what they can and cannot respond to quickly.
+- **Where they are strong**, honestly.
+- **What they do not do**, and whether that looks deliberate.
+
+## Answer the decision
+
+A brief exists to inform a specific decision - how to position, whether to build something, how to respond to a deal. Say what the analysis means for that decision, or the brief is trivia.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Only public sources. Anything obtained by misrepresenting who you are is off limits and worthless in a document you might have to disclose.
+- A competitor's marketing describes their ambition, not their product. Weight documentation over marketing pages.
+- Date everything and re-check quarterly.

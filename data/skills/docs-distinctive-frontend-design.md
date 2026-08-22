@@ -5,25 +5,33 @@ description: Make intentional palette, type, and layout choices that avoid templ
 categories: [Docs]
 roles: [everyone]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Make intentional palette, type, and layout choices that avoid templated looks.
+Building an interface that does not look like every other framework default, without sacrificing usability.
 
-## Approach
+## Distinctiveness comes from a few deliberate choices
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+Not from decorating everything. Pick two or three and commit:
 
-## Heuristics
+- **Type** - a genuinely characterful typeface for headings, with a boring one for body. Type does more for identity than any other single choice.
+- **Space** - unusually generous or unusually tight, consistently. Density is a personality.
+- **One structural idea** - a persistent column, a distinctive card shape, an unusual navigation position.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Everything else stays conventional so the unconventional part is legible as a choice.
+
+## Constrain the palette
+
+Fewer colours applied more confidently beats a full palette. A near-monochrome interface with one accent reads as designed; six accent colours reads as unfinished. Decide what the accent is *for* - one job, consistently - and never use it for anything else.
+
+## Keep the conventions that carry meaning
+
+Underlined links, a focus ring, a back button that goes back, form errors near the field, a primary action on the right in a dialog. These are not stylistic - they are learned behaviour, and breaking them costs users comprehension for no aesthetic gain.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Test the distinctive choice at the smallest viewport and the longest string. Most fail there.
+- Check contrast on every colour pairing, including the accent, before falling in love with it.
+- Motion is the easiest thing to overdo and the first thing to disable under `prefers-reduced-motion`.

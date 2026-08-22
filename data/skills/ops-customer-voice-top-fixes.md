@@ -10,25 +10,31 @@ worksWith:
   - id: HubSpot
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Synthesize disputes, tickets, and reviews into themes and a top-3 fixable-issues list.
+Turning the accumulated mass of customer feedback into a short ranked list of what to fix.
 
-## Approach
+## Normalise before counting
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+The same problem arrives as a support ticket, a churn reason, a sales objection and a review. Deduplicate across sources by the underlying problem, not by the words used - otherwise the loudest channel wins rather than the biggest problem.
 
-## Heuristics
+## Rank by cost, not by volume
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Weight each theme by: how many customers, how much revenue those customers represent, whether it caused churn or a lost deal, and how often it recurs per affected customer. A problem hitting three enterprise accounts weekly outranks one that annoys two hundred free users once.
+
+## Distinguish the three kinds
+
+- **Bug** - it does not work as designed. Fix.
+- **Gap** - it works as designed and the design is wrong for them. Product decision.
+- **Comprehension** - it works and they could not find or understand it. Usually a documentation or interface fix, and the cheapest category by far.
+
+Mixing these produces a list engineering cannot act on.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Quote the customer verbatim for each theme. A theme with no quote loses its meaning by the time it reaches a planning meeting.
+- Feedback is biased towards people who complain; check the aggregate data before sizing.
+- Close the loop with the people who reported it when something ships. That is the part everyone skips and the part that produces the next round of good feedback.

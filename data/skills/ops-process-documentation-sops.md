@@ -5,25 +5,32 @@ description: Turn a process in someone's head into an SOP with RACI, steps, and 
 categories: [Ops]
 roles: [ops, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Turn a process in someone's head into an SOP with RACI, steps, and edge cases.
+Writing down how something is done, so it can be done by someone else, correctly.
 
-## Approach
+## Write it while doing it
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Documentation written from memory omits exactly the steps that are automatic to the author and unknown to everyone else. Do the process and record each action as you take it, including the ones that feel too obvious to write.
 
-## Heuristics
+## Structure for the person doing it, not describing it
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **Purpose** - what this achieves and when it is triggered.
+- **Prerequisites** - access, tools, information needed before starting.
+- **Steps** - numbered, one action each, with the expected result of each.
+- **Decision points** - stated as explicit branches.
+- **Verification** - how to know it worked.
+- **What to do when it goes wrong**, and who to ask.
+
+## Have someone else run it
+
+The only real test. Watch them without helping, and note every hesitation. Every hesitation is a defect in the document, not in the person. Fix them all before publishing.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Name a document owner and a review date, both visible on the document.
+- Screenshots go stale fastest; use them only where the interface is genuinely ambiguous.
+- If the process is so complex it needs a 40-step document, the finding is the process, not the document.

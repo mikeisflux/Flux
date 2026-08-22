@@ -12,25 +12,33 @@ worksWith:
   - id: Google Calendar
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Score inbound leads by engagement, fit, and urgency into a ranked call list.
+A pile of inbound or list-sourced leads and limited hours. The job is an ordered call list, not a scored spreadsheet.
 
-## Approach
+## Rank on two axes only
 
-1. **Gather context.**
-2. **Qualify.**
-3. **Draft the outreach.**
-4. **Log it.**
+**Fit** - do they look like the customers who succeed? **Intent** - is there evidence they are in motion right now?
 
-## Heuristics
+Intent beats fit for ordering today's calls: a mediocre-fit lead who requested a demo this morning is a better call than a perfect-fit lead who downloaded a PDF last quarter. Fit decides whether they stay on the list; intent decides the order.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Signals worth weighting
+
+- Demo or pricing page request - highest, and decays within days.
+- Multiple people from the same domain in a short window - a buying group forming.
+- Reply to an earlier sequence, even a negative one.
+- A trigger event at the account.
+- Job title matching the economic buyer rather than an end user.
+
+## Produce the list
+
+One row per lead, ordered, with: name, company, why now (the specific signal and its date), the opening line, and the next step if they do not answer. Cap it at what can genuinely be called today - a list of 200 is a list nobody works.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Deduplicate by domain, not by email. Three people from one company is one account.
+- Route rather than discard poor-fit leads with real intent; they are often referrals waiting to happen.
+- Freshness decays fast. A list built on Monday is a different list by Thursday, so rebuild rather than work down.

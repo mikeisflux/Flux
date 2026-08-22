@@ -51,6 +51,11 @@ for path in sorted(glob.glob(os.path.join(sys.argv[1], '*.ts'))):
 sys.exit(1 if bad else 0)
 PY
 
+# The packed skill library is generated from data/skills/*.md. Regenerate and
+# diff rather than trusting it: the markdown is the authoring format, and a
+# packed copy that has drifted from it ships stale instructions to the agent.
+python3 "$ROOT/tools/build-skills-json.py" || status=1
+
 # Every resource has to be listed in BUILD.gn or it is simply not packed, and
 # the failure shows up as a missing module at runtime - after a two-hour build.
 # Adding a file and forgetting the build entry has already happened once.

@@ -12,25 +12,32 @@ worksWith:
   - id: TikTok
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Pull a rival's live ads from public ad libraries and decode their messaging angles.
+Looking at what a competitor is running, to learn something actionable rather than to feel busy.
 
-## Approach
+## Gather from where it is public
 
-1. **Understand the audience.**
-2. **Gather what performed.**
-3. **Produce.**
-4. **Measure.**
+Ad libraries, the competitor's own landing pages, and their published pricing. Record for each ad: the hook in the first line, the offer, the audience it implies, the format, and how long it has been running.
 
-## Heuristics
+Longevity is the strongest available signal. An ad running for three months is working; a creative that appeared last week tells you nothing yet.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Analyse the pattern, not the individual ads
+
+- What problem do they consistently lead with? That is their positioning.
+- Who is the implied buyer - the practitioner or the executive?
+- What do they never mention? The omissions are usually where they are weak.
+- What is the offer - trial, demo, content? That says what their sales motion is.
+
+## Turn it into something you would actually do
+
+Two or three specific tests, each phrased as a hypothesis with the change and the metric. "They lead with time saved and we lead with accuracy; test a time-saved hook on the same audience." Not "we should be more like them".
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- What is visible is a fraction of what is running, and the library does not show spend.
+- Copying a competitor's message positions you as the alternative to them, which is a strategic choice and usually a bad one.
+- Date the teardown. Competitive intelligence has a half-life of about a quarter.

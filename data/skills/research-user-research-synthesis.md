@@ -10,25 +10,31 @@ worksWith:
   - id: Sheets
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Cluster interview and survey notes into themes, insights, and recommendations.
+A set of interviews or sessions, and the job is findings rather than a pile of notes.
 
-## Approach
+## Work from evidence, not from recall
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+Go back to the transcripts and the recordings. Synthesis from memory reproduces whichever session was most vivid, which is usually the most articulate participant rather than the most representative.
 
-## Heuristics
+## Code, then cluster
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Tag every observation with what it is about, staying close to what was said. Then group the tags into themes. Name each theme as the participants would recognise it, not in your own abstraction - a theme called "cognitive load in onboarding" is a researcher's phrase and loses the specifics.
+
+## Report with counts and quotes
+
+Each finding: how many participants it appeared in, out of how many, and one or two verbatim quotes. The count stops a single strong opinion becoming a finding; the quote stops the finding becoming an abstraction nobody can act on.
+
+## Separate what they did from what they said
+
+Observed behaviour and reported preference are different evidence with different reliability. Where they conflict - and they routinely do - the behaviour is the finding and the conflict itself is worth reporting.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Report the disconfirming cases. A finding with no exceptions in a sample of eight is usually a finding about the sample.
+- Say how participants were recruited. Recruitment decides what the research can generalise to, and almost nobody states it.
+- Do not include personally identifying detail in the write-up.

@@ -10,25 +10,32 @@ worksWith:
   - id: Acrobat
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Produce a job post, structured interview guide with rubric, and offer letter from a brief.
+Assembling everything a hiring decision needs into one document so the decision is made on evidence.
 
-## Approach
+## What goes in
 
-1. **Define the bar.**
-2. **Source.**
-3. **Assess against the bar.**
-4. **Record the decision.**
+1. **The role** - the competencies and the bar agreed at kickoff, before anyone was interviewed.
+2. **The candidate summary** - background, in three lines.
+3. **Per-competency evidence** - the score, the interviewer, and the specific observation supporting it. Quotes, not adjectives.
+4. **The concerns**, stated plainly, and what would resolve each.
+5. **References**, if taken, and what they added.
+6. **The recommendation**, with the reasoning.
 
-## Heuristics
+## Order it so the bar comes first
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+The bar written before the interviews, at the top. Reading the evidence first and the bar second is how bars move to fit the candidate in front of you, and that is the single most common failure in hiring.
+
+## Make the disagreement visible
+
+Where interviewers scored differently, show both and say what each saw. A packet that averages the scores into a number hides the most decision-relevant information in the process.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Only include what is job-relevant. Personal characteristics, protected or otherwise, do not belong in the packet at all.
+- Do not paraphrase an interviewer's concern into something softer; escalate it as written.
+- A packet assembled after the decision is a justification. Assemble it before.

@@ -12,25 +12,37 @@ worksWith:
   - id: GitHub
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Drive incident severity, status comms, and a blameless postmortem to closure.
+Writing the document someone will read at 3am, half awake, under pressure, having never seen the system.
 
-## Approach
+## Write for the state the reader is in
 
-1. **Reproduce.**
-2. **Isolate.**
-3. **Verify the fix.**
-4. **Report.**
+The reader is stressed, tired, and not the author. That dictates everything:
 
-## Heuristics
+- Numbered steps, one action each. No paragraphs.
+- Exact commands, copy-pasteable, with the placeholders marked clearly.
+- Expected output after each step, so the reader knows whether it worked.
+- The decision points explicit: "if X, go to step 7; otherwise continue".
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## The structure
+
+1. **How to tell this is the right runbook** - the symptom, the alert name, the dashboard.
+2. **Immediate mitigation** first, diagnosis second. Stop the bleeding before understanding it.
+3. **Diagnosis** - what to check, in the order that eliminates the most.
+4. **Resolution** for each identified cause.
+5. **Verification** - how to confirm it is actually fixed, not just quiet.
+6. **Escalation** - who to wake, with what information, and after how long.
+
+## Test it
+
+A runbook that has never been executed is fiction. Walk it in a game day with someone who did not write it, and fix every step where they hesitated. Hesitation is the defect.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Link to dashboards and consoles directly. Nobody finds a dashboard by description at 3am.
+- Include the rollback, and how to tell whether rollback is safe with respect to data.
+- Date it and name an owner. An out-of-date runbook is more dangerous than none, because it is followed.

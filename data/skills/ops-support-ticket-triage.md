@@ -12,25 +12,32 @@ worksWith:
   - id: Linear
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Categorize a ticket, set P1–P4 priority, check duplicates, and route it.
+A queue of tickets and the job is to get each to the right place quickly, not to solve them all.
 
-## Approach
+## Separate severity from priority
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+**Severity** is how broken it is. **Priority** is how soon we act, which also weighs who is affected and what is contractually owed. A cosmetic issue for a customer in an escalation can outrank a functional bug for a free user, and conflating the two makes the queue unreadable.
 
-## Heuristics
+## Triage each ticket into one of four
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+1. **Answerable now** - answer it and close it.
+2. **Known issue** - link to the existing ticket, add the customer, respond with the status.
+3. **Needs investigation** - route with the reproduction, the account and the timestamps attached.
+4. **Not a support issue** - billing, sales, legal, abuse. Route and tell the customer where it went.
+
+The failure mode is a fifth bucket - things that sit unclassified - so every ticket leaves triage in one of the four.
+
+## Respond even when you cannot resolve
+
+An acknowledgement with a realistic next step resets the customer's clock. Most dissatisfaction with support is about silence rather than about resolution time.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Check for a linked existing incident before investigating; parallel investigation of one outage is the most common waste in support.
+- Tag the root cause category at close, or the queue can never tell you what to fix.
+- A ticket reopened is a ticket that was closed wrongly. Track that rate; it says more than first-response time.

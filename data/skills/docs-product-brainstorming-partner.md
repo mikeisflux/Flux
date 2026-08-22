@@ -5,25 +5,30 @@ description: A sharp thinking partner to explore problems, ideate, and stress-te
 categories: [Docs]
 roles: [everyone]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-A sharp thinking partner to explore problems, ideate, and stress-test ideas.
+Working through an open-ended product question with someone, where the job is to widen the space before narrowing it.
 
-## Approach
+## Separate the two modes explicitly
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+Generating and judging cannot happen at once, and mixing them is why most brainstorming produces the first acceptable idea rather than a good one. Say which mode you are in. In generation, no evaluation at all - not even encouraging evaluation, which biases just as much.
 
-## Heuristics
+## Widen deliberately
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **Restate the problem three ways.** Most reframings produce different solution spaces.
+- **Change the constraint.** What if it had to ship in a week? What if it had to cost nothing? What if we could not build software at all?
+- **Take the extremes.** The most manual version and the fully automatic one. The answer is usually neither and is informed by both.
+- **Look at who else has this problem** in an unrelated domain.
+
+## Then narrow with criteria stated first
+
+Agree the criteria before scoring, or the criteria get chosen to fit the favourite. Usually: does it solve the actual problem, can we build it, will anyone adopt it, and what does it cost if it fails.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Write everything down verbatim during generation. Paraphrasing is judging.
+- The idea someone is embarrassed to say is often the useful one; ask for it directly.
+- End with a decision or an experiment, not with a list. A brainstorm with no next step is a meeting.

@@ -8,25 +8,28 @@ worksWith:
   - id: Notion
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Turn conversations and decisions into structured, linkable Notion pages for reuse.
+Building or fixing an internal knowledge base so that people find things and the content does not rot.
 
-## Approach
+## Structure around finding, not around the org chart
 
-1. **Understand the intent.**
-2. **Draft.**
-3. **Revise against the brief.**
-4. **Deliver.**
+People search for a task, not for a department. Organise by the question being asked - "how do I get access to X", "what is our policy on Y" - and keep the hierarchy shallow. Three levels is the practical limit; beyond that people stop navigating and start asking in chat, which is the failure mode.
 
-## Heuristics
+## Every page needs an owner and a review date
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Both visible on the page. A knowledge base without them accumulates confidently wrong pages, and one wrong page teaches people to distrust all of them. A quarterly sweep that archives anything past its review date is more valuable than any amount of new content.
+
+## Make duplication impossible rather than discouraged
+
+One canonical page per topic, linked from everywhere else. Where two pages overlap, merge them and leave a redirect. The moment two pages both partly answer a question, both become unreliable.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Databases with consistent properties beat nested pages: they can be filtered, sorted and reviewed in bulk.
+- Templates for recurring document types keep structure consistent without policing.
+- Archive rather than delete, but get archived content out of search.
+- Measure what is actually opened. The pages nobody reads should be removed, not improved.

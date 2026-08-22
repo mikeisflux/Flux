@@ -5,25 +5,27 @@ description: Classify legal risk by severity x likelihood and decide when to esc
 categories: [Research]
 roles: [analysts, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Classify legal risk by severity x likelihood and decide when to escalate.
+Assessing the legal exposure of a proposed course of action, for a commercial decision-maker.
 
-## Approach
+## Identify the exposures specifically
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+Not "there is legal risk". Name each one: which obligation, to whom, under what, and what the consequence of breach is - damages, injunction, regulatory penalty, termination right, reputational. A risk that cannot be named cannot be mitigated.
 
-## Heuristics
+## Score likelihood and impact separately
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+A near-certain minor breach and an unlikely catastrophic one need different responses and should never be averaged into one score. Impact should include the cost of defending a claim, not only of losing it - that is often the larger number.
+
+## Propose mitigations that are actually available
+
+For each risk: avoid, reduce, transfer (insurance, indemnity, contractual cap), or accept. "Accept" is a legitimate answer and should be written down as a decision with an owner, not left as a silence.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- This informs a decision; it is not legal advice, and anything material needs a qualified lawyer. Say that in the output.
+- Be careful about privilege: an assessment written the wrong way may be disclosable. Route through counsel where that matters.
+- Do not soften the language. A risk assessment written to be palatable is a risk assessment that does not work.

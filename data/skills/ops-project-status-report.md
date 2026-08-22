@@ -5,25 +5,29 @@ description: Turn project activity into a leadership-ready report with KPIs, ris
 categories: [Ops]
 roles: [ops, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Turn project activity into a leadership-ready report with KPIs, risks, decisions.
+A recurring report on a project, for people who need to know whether to intervene.
 
-## Approach
+## Status first, and be honest about it
 
-1. **Locate the records.**
-2. **Reconcile.**
-3. **Act.**
-4. **Leave an audit trail.**
+Green, amber or red, with one sentence of why. The most common failure in status reporting is a project that is green until the week it is red, which means every previous green was wrong and everyone knows it.
 
-## Heuristics
+A useful rule: if the plan has to go right from here, it is amber.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Report against the baseline
+
+Scope, date and budget, each against the version everyone agreed. A change to any of the three is a change to report explicitly, with who approved it, not a quiet revision of the baseline.
+
+## Risks and issues, distinguished
+
+A **risk** has not happened yet and has a mitigation and an owner. An **issue** has happened and needs a decision. Conflating them means risks get watched and issues get watched too, when issues need action.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Percentage complete is almost always fiction. Report milestones met against milestones planned instead.
+- Name the dependency owner when a dependency is late; "waiting on another team" is not a status.
+- Keep the format identical week to week so the delta is readable.

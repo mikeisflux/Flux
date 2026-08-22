@@ -5,25 +5,32 @@ description: Score pipeline health, flag at-risk deals, and get a weekly action 
 categories: [Sales]
 roles: [sales, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Score pipeline health, flag at-risk deals, and get a weekly action plan.
+A weekly or monthly look at whether the pipeline supports the number, and where it is lying.
 
-## Approach
+## Look at shape, not total
 
-1. **Gather context.**
-2. **Qualify.**
-3. **Draft the outreach.**
-4. **Log it.**
+A pipeline total is the least informative number available. Look at:
 
-## Heuristics
+- **Coverage** against target, by stage - and whether it is concentrated in one or two deals.
+- **Stage distribution.** A pipeline bulging at the earliest stage is a forecast for next quarter, not this one.
+- **Age in stage** against the historical median. Deals aging past the median close at a fraction of the rate.
+- **Close date integrity** - how many have been pushed, and how many times.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Interrogate the individual deals
+
+For anything material, three questions: is there a named economic buyer, is there a documented next step with a date, and has the customer done work on their side? A deal with none of the three is not a deal regardless of its stage.
+
+## Report the honest number
+
+Give a committed figure, a likely figure, and the gap to target, and state which specific deals move the number between them. A forecast without named deals is a hope.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Stage is self-reported. Age in stage and next-step evidence are not; weight them higher.
+- A deal pushed twice is usually lost and not yet admitted. Say so early.
+- Look at what left the pipeline as well as what is in it - the loss reasons are where the pattern is.

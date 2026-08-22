@@ -5,25 +5,31 @@ description: Daily, topic, or incident briefings synthesized across your legal s
 categories: [Research]
 roles: [analysts, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Daily, topic, or incident briefings synthesized across your legal sources.
+Preparing a brief for legal so they can advise without a round of clarifying questions.
 
-## Approach
+## Lead with the question and the deadline
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+The single most common failure is a brief that describes a situation without asking anything. State the decision to be made, the specific question, and when the answer is needed. Then the facts.
 
-## Heuristics
+## Give the facts, all of them
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+Chronological, dated, and including the unhelpful ones. Legal advice given on a partial picture is worse than none, and the fact left out is usually the one that changes the answer. Attach the documents rather than describing them.
+
+## Separate fact from assumption from inference
+
+Mark each. "The contract auto-renews on 1 March" is a fact if it is in the contract; "we believe they intend to renew" is an inference. Legal will treat them differently and needs to know which is which.
+
+## Say what has already happened
+
+Who has said what to the counterparty, in writing and verbally. Any position already taken constrains the advice, and discovering it afterwards is how advice gets given that cannot be followed.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Keep it to what is needed; a brief that buries the question in twelve pages gets read late.
+- Flag anything time-critical at the top, not in the body.
+- If a document might be privileged or disclosable, say so rather than assuming legal will notice.

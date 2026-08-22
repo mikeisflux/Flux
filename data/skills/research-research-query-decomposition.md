@@ -5,25 +5,29 @@ description: Break a question into targeted per-source queries and rank the resu
 categories: [Research]
 roles: [analysts, founders]
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Break a question into targeted per-source queries and rank the results.
+A research question is too broad to answer directly, and the job is to break it into questions that can actually be answered.
 
-## Approach
+## Split until each part is checkable
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+Keep splitting until every sub-question has a source that could settle it. "Should we enter the German market" is not answerable; "what is the regulatory requirement for our product category in Germany", "who are the three incumbents and what do they charge", and "what does localisation cost" are.
 
-## Heuristics
+A sub-question that still needs judgement rather than evidence is not decomposed yet.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Separate fact from judgement explicitly
+
+Mark each sub-question as one or the other. Facts get sources; judgements get an argument and a named assumption. Mixing them is how a research output becomes an opinion wearing citations.
+
+## Order by what could kill the answer
+
+Do the disqualifying questions first. If the regulatory answer makes the whole thing impossible, nothing else needed doing. Most research effort is wasted by answering the interesting questions before the decisive ones.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- State what you decided not to investigate, and why. An unexamined branch is a risk the reader should know about.
+- If two sub-questions keep collapsing into each other, they are one question and the split was wrong.
+- Re-check the decomposition after the first few answers; early findings usually reveal the real question.

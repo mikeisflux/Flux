@@ -10,25 +10,40 @@ worksWith:
   - id: PayPal
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Compute unit economics by product and model +5/+10/+15% pricing scenarios; data only.
+A pricing decision, a margin that moved, or a question about which products and customers actually make money.
 
-## Approach
+## Get the cost base right first
 
-1. **Get the data.**
-2. **Validate it.**
-3. **Transform.**
-4. **Deliver.**
+Margin analysis is mostly a costing problem wearing an analysis hat.
 
-## Heuristics
+- **Gross margin** = revenue minus direct cost. Be explicit about what is direct: COGS, payment fees, delivery, and for software, hosting and third-party API cost per unit.
+- **Contribution margin** subtracts variable selling cost too - commission, ad spend attributable to the sale.
+- Allocated overhead does not belong in either. Once overhead is allocated, every per-unit conclusion becomes an artefact of the allocation key.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Segment before concluding
+
+Blended margin hides everything worth knowing. Cut by:
+
+- Product or SKU
+- Customer or customer tier
+- Channel
+- Cohort or vintage
+
+Rank by contribution in currency and by margin percentage separately. The two rankings disagreeing is usually the finding: the biggest revenue line is often not the biggest profit line.
+
+## Pricing moves
+
+- Compute the **volume you can afford to lose** at a given price rise: at a 40% margin, a 10% price rise can lose 20% of volume and break even. Do that arithmetic before the debate, not during it.
+- Check discount leakage: list price against realised price per segment. A discount policy nobody measures is a discount policy nobody follows.
+- Look for price points crossing a psychological or contractual threshold before recommending a rise.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Mix shift moves blended margin with no price or cost change at all. Always decompose margin movement into price, cost and mix before explaining it.
+- Refunds and chargebacks belong against the period of the original sale, not the period they land in.
+- A negative-margin product can be correct if it drives attach. Say so explicitly rather than recommending a cut.

@@ -8,25 +8,34 @@ worksWith:
   - id: GitHub
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Structured review for security, performance, correctness, and maintainability.
+Reviewing someone's change before it merges, in a way that catches what matters and does not waste their week.
 
-## Approach
+## Read in this order
 
-1. **Reproduce.**
-2. **Isolate.**
-3. **Verify the fix.**
-4. **Report.**
+1. **The description.** What is this trying to do, and is that the right thing to do? A well-implemented wrong change is the most expensive kind.
+2. **The tests.** They tell you what the author believes the change does, and what they think can break.
+3. **The interfaces** - new public functions, schema changes, API shapes. These are the parts that are expensive to change later.
+4. **The implementation**, last. It is the easiest part to fix and the part reviewers over-index on.
 
-## Heuristics
+## What to actually look for
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **Correctness at the edges**: empty, null, one, many, concurrent, and the error path. The happy path is usually fine.
+- **What happens on failure** - is a partial write possible, and is it recoverable?
+- **Data changes** - a migration that is not reversible, or that locks a large table.
+- **Security** - anything taking user input into a query, a path, a shell, or a template.
+- **Removed tests or assertions**, which are almost never incidental.
+
+## How to say it
+
+Separate what blocks merge from what does not, explicitly, on every comment. Say why, not just what - a reviewer's reasoning is what makes the next change better. Ask rather than assert when you are not sure: "what happens if this is called twice?" is better than "this is not idempotent" when it might be.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Do not review formatting a linter could catch. If it is not automated, that is the finding.
+- A very large diff gets a worse review than three small ones, and saying so is more useful than pretending otherwise.
+- Approving with unaddressed questions teaches everyone that questions are optional.

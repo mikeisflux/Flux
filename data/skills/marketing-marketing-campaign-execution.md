@@ -12,25 +12,34 @@ worksWith:
   - id: PayPal
     transport: browser
 writeScope: draft
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Orchestrate a campaign: sales analysis, content brief, assets, segment, staged send.
+Running a campaign that has already been planned, and keeping it honest while it is live.
 
-## Approach
+## Pre-flight everything
 
-1. **Understand the audience.**
-2. **Gather what performed.**
-3. **Produce.**
-4. **Measure.**
+The checks that catch the expensive mistakes:
 
-## Heuristics
+- Every link, clicked, in the final environment - including the tracking parameters.
+- Conversion tracking firing, verified with a real test conversion.
+- Rendering on mobile, in dark mode, and in the two clients that matter.
+- Spelling of every proper noun, especially the customer's and the reader's.
+- Budget caps and end dates set, not left at default.
+- Personalisation tokens with a fallback that reads sensibly when the field is empty.
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+## Watch the right things in the first 48 hours
+
+Delivery before performance. A campaign that is not being delivered has no performance to read. Then early-signal metrics - open, click, landing page bounce - which are readable long before conversions are. Do not judge conversion rate on a sample too small to distinguish from noise, which is nearly always the first day.
+
+## Change one thing at a time
+
+Mid-flight changes are how a campaign becomes unanalysable. If something must change, note the timestamp and treat before and after as two campaigns. Resist the temptation to fix everything at once on day two.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- A paused ad set that is restarted usually re-enters learning; check before pausing.
+- Suppression lists and frequency caps matter more than the creative for anything sent repeatedly.
+- Keep a dated log of every change. Without it the retrospective is guesswork.

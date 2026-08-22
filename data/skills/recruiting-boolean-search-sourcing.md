@@ -12,25 +12,35 @@ worksWith:
   - id: Google
     transport: api
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Build precise boolean strings to surface candidates on LinkedIn, GitHub, and more.
+Finding candidates who are not applying, by searching precisely rather than broadly.
 
-## Approach
+## Build the query from the work, not the title
 
-1. **Define the bar.**
-2. **Source.**
-3. **Assess against the bar.**
-4. **Record the decision.**
+Titles are unreliable and vary by company. Search for the evidence of the work: the tools, the certifications, the specific responsibilities. A query built on "Kubernetes AND Terraform AND (SRE OR reliability OR platform)" finds people a title search misses and excludes people a title search wrongly includes.
 
-## Heuristics
+## Structure it so it can be tuned
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+```
+(title OR synonym OR synonym)
+AND (skill AND skill)
+AND (location OR remote)
+NOT (recruiter OR "seeking opportunities" OR intern)
+```
+
+Change one clause at a time and watch the result count. A query changed in three places at once cannot be debugged. Keep the versions that worked.
+
+## Iterate from the results
+
+Read the first twenty profiles. The vocabulary those people use for their own work is better than the vocabulary you guessed - feed it back into the synonym list. This loop is where most of the improvement comes from, not from operator cleverness.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- Quote multi-word phrases or they are treated as separate terms.
+- Different platforms honour different operators; a query that works on one silently degrades on another.
+- Exclude your own employees and current candidates before reviewing, not after.
+- Boolean finds people who describe their work in writing. That skews by function and by seniority, and it is worth saying so rather than treating the result as the market.

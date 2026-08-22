@@ -12,25 +12,30 @@ worksWith:
   - id: Acrobat
     transport: browser
 writeScope: readonly
-body_status: skeleton   # frontmatter transcribed; body authored
+body_status: authored
 ---
+
 ## When to use
 
-Screen an NDA against standard carveouts and classify it green, yellow, or red.
+An NDA arrives and needs a quick decision: sign, redline, or escalate.
 
-## Approach
+## Check the six things that decide it
 
-1. **Scope the question.**
-2. **Gather primary sources.**
-3. **Cross-check.**
-4. **Report with citations.**
+1. **Mutual or one-way?** A one-way NDA where you will also disclose is the most common problem.
+2. **Definition of confidential information** - is it bounded, and are the standard exclusions present (already known, independently developed, publicly available, required by law)?
+3. **Term** - of the agreement and, separately, of the confidentiality obligation. Perpetual obligations on ordinary commercial information are a redline.
+4. **Permitted disclosure** - can you tell your own advisers, affiliates and contractors?
+5. **Residuals** - a residuals clause substantially weakens the protection; know which side of it you are on.
+6. **Governing law and jurisdiction** - a far jurisdiction makes enforcement theoretical.
 
-## Heuristics
+## Triage to one of three outcomes
 
-- State what you could not determine rather than filling the gap.
-- Cite the source for every claim a reader would want to check.
-- Stop and ask when the request is ambiguous in a way that changes the output.
+- **Standard, sign** - mutual, bounded, standard exclusions, sensible term.
+- **Redline** - one or two specific clauses, with the replacement wording ready.
+- **Escalate** - non-compete or non-solicit language, IP assignment, anything unusual in the definitions. These are not NDA clauses and their presence in an NDA is the finding.
 
 ## Gotchas
 
-Verify the result against its source before reporting it as done.
+- An NDA containing IP assignment or exclusivity is not an NDA. Always escalate.
+- Check whether it binds affiliates you cannot actually bind.
+- This is triage, not legal advice; anything not clearly standard goes to a lawyer.
