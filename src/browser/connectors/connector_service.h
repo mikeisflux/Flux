@@ -82,6 +82,15 @@ class ConnectorService {
   void Execute(ConnectorClient::Request request,
                ConnectorClient::ResponseCallback callback);
 
+  // Fetches a next-page URL the provider itself handed back. Separate from
+  // Execute because the URL is already complete: re-deriving it from an
+  // operation path would be guesswork, and Basecamp's docs ask outright that
+  // clients not build pagination URLs themselves.
+  void FollowPage(const std::string& connector_id,
+                  const std::string& url,
+                  mojom::WriteScope granted_scope,
+                  ConnectorClient::ResponseCallback callback);
+
  private:
   void OnTokenReceived(std::string connector_id,
                        ConnectCallback callback,

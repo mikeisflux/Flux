@@ -331,6 +331,14 @@ void ConnectorService::Execute(ConnectorClient::Request request,
   client_.Execute(std::move(request), std::move(callback));
 }
 
+void ConnectorService::FollowPage(
+    const std::string& connector_id,
+    const std::string& url,
+    mojom::WriteScope granted_scope,
+    ConnectorClient::ResponseCallback callback) {
+  client_.Follow(connector_id, url, granted_scope, std::move(callback));
+}
+
 void ConnectorService::OnRefreshed(ConnectorClient::Request request,
                                    ConnectorClient::ResponseCallback callback,
                                    ConnectorToken token,
