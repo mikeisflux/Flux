@@ -7,7 +7,8 @@
       "actions": "/actions/v1/... - stored actions and the runs that execute them. This is the one the connector's description is actually about. OAuth, scope `external`.",
       "trigger-inbox": "/trigger-inbox/v1/... - durable queues that receive trigger events. OAuth, scope `external`.",
       "connections": "/connections/v1/... - webhook subscriptions telling a White Label partner that a managed connection is expiring. OAuth, scopes connection:webhook:read / :write. Partner-only; not applicable to Flux.",
-      "partner": "/v1/... - the Partner (Workflow) API: app directory, categories, Zap templates, profile. Version 2026.7.0. Mixed auth - some endpoints take a query-string client_id, some take OAuth with a completely different and much finer scope list."
+      "partner": "/v1/... - the Partner (Workflow) API: app directory, categories, Zap templates, profile. Version 2026.7.0. Mixed auth - some endpoints take a query-string client_id, some take OAuth with a completely different and much finer scope list.",
+      "sdk": "@zapier/zapier-sdk - a TypeScript client that is not merely a wrapper: it documents semantics the OpenAPI specs do not, and reaches surfaces (Tables, Code Workflows, Forms) that have no spec above. Flux cannot call it - it is Node, and Flux is a C++ browser - but it is the best description of how the API behaves."
     }
   },
   "auth": {
@@ -159,7 +160,13 @@
     "Two different action_type vocabularies. The Actions API (stored actions) uses lowercase and includes run, filter and tool: read, read_bulk, write, run, search, search_or_write, search_and_write, filter, tool. The Partner API /v2/actions uses UPPERCASE and a shorter set: READ, READ_BULK, SEARCH, SEARCH_AND_WRITE, SEARCH_OR_WRITE, WRITE. Same concept, different spelling, different API - do not map one onto the other by string equality.",
     "In the Partner API's own schema, the Action object's `type` and `action_type` both $ref the same ActionTypeEnum, but that enum contains only the single value `action` while the action_type description lists READ, WRITE and the rest. The schema and the prose disagree; the example payload shows type: action alongside action_type: action. Read what comes back rather than validating against the enum.",
     "Partner API pagination changed between versions. /v1 returns a single-element array wrapping { total, page, pages, per_page, objects, prev_url, next_url }. /v2 returns { links: { next, prev }, meta: { count, limit, offset }, data: [...] }. Same API title, two envelopes.",
-    "An action id from /v2/actions is documented as unstable and not reused. Anything that hardcodes one will break silently when the app updates - persist `key` plus the app identifier."
+    "An action id from /v2/actions is documented as unstable and not reused. Anything that hardcodes one will break silently when the app updates - persist `key` plus the app identifier.",
+    "An action run status of `unknown` is not a failure and not a success - Zapier documents it as the outcome being undeterminable. Retrying it may double the effect; treating it as success may silently drop work. It needs a human, or an idempotency key on the target.",
+    "Action-run callbacks are at-least-once by Zapier's own statement. Any callback receiver must deduplicate on the run id.",
+    "Releasing a leased trigger message does not refund the lease attempt against the per-message limit.",
+    "A workflow's trigger_url embeds a trigger token in the path. Zapier flags it as sensitive - it is a credential in a URL, and it will end up in logs if handled carelessly.",
+    "Zapier Forms default to consumerAuth `none`: the published hosted_url is answerable by anyone who has it.",
+    "Unversioned app identifiers resolve at DIFFERENT times depending on the object. A trigger inbox resolves at creation and stores the fully versioned form forever, so it never follows the app forward. A stored action's selected_api, per its own schema, is resolved when the action runs - 'if no version is provided we attempt to use the latest version'. Same-looking field, opposite behaviour: pin the version explicitly if a run has to stay reproducible."
   ],
   "rate_limits": {
     "actions_api": {
@@ -188,11 +195,11 @@
     "mcp": "Zapier serves a docs MCP server at docs.zapier.com/mcp. That is documentation search, not action invocation - do not confuse the two."
   },
   "pending_operations": {
-    "note": "Only endpoints whose OpenAPI blocks were supplied are recorded. Their specs name more that has not been read, and no path for any of it is guessed here.",
+    "note": "The SDK settles most of the semantics. What is still missing is REST paths, which is what Flux actually needs, since it cannot run the Node SDK.",
     "wanted": [
-      "actions.yaml in full - the create / update / delete stored-action paths, and above all the run endpoint's own paths block, to confirm the prefix noted on run_stored_action.",
-      "trigger-inbox lease / acknowledge / release message paths, and create / pause / resume / delete inbox paths.",
-      "The Partner API's Zaps, Zap Templates, Inputs and Outputs tags - what the user has automated, and how to prefill a Zap."
+      "actions.yaml in full - the paths block. Still the one place the run endpoint's real path is written down; the prefix on run_stored_action remains inferred.",
+      "The REST paths behind the trigger-inbox lease / ack / release and create / pause / resume / delete methods.",
+      "Whether Tables, Code Workflows and Forms have public REST specs at all, or exist only through the SDK."
     ]
   },
   "source": {
@@ -205,12 +212,60 @@
       "https://api.zapier.com/api-reference/specs/connections.yaml",
       "https://api.zapier.com/schema",
       "https://docs.zapier.com/llms.txt",
-      "https://docs.zapier.com/powered-by-zapier/api-reference/authentication"
+      "https://docs.zapier.com/powered-by-zapier/api-reference/authentication",
+      "https://docs.zapier.com/sdk/api-reference"
     ],
     "notes": [
       "Every host, path, scope, pagination scheme, error code and rate-limit figure above is taken verbatim from the OpenAPI 3.1 specs embedded in Zapier's own reference pages.",
       "The one exception is the run_stored_action path prefix, which the spec gives only in prose. It is flagged in place rather than presented as verified.",
-      "docs.zapier.com and api.zapier.com are not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining specs need supplying the same way."
+      "docs.zapier.com and api.zapier.com are not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining specs need supplying the same way.",
+      "The SDK reference supplied by the user is the source for the sdk block, the run-status vocabulary, the callback delivery guarantee and the trigger-inbox lifecycle. Those are SDK method names, not REST paths, and the file says so rather than presenting them as endpoints."
     ]
-  }
+  },
+  "sdk": {
+    "note": "Recorded for its semantics, not because Flux runs it. Method names below are SDK methods, NOT REST paths; the paths behind most of them are still unknown.",
+    "install": "npm install @zapier/zapier-sdk (plus @zapier/zapier-sdk-cli as a dev dependency for the CLI auth path).",
+    "auth_modes": {
+      "cli": "npx zapier-sdk login - the SDK picks the CLI's session up automatically. Interactive; no use for a headless caller.",
+      "client_credentials": "npx zapier-sdk create-client-credentials, then pass clientId and clientSecret. The server/serverless path. Note this mints credentials from the CLI, which is a different route to the same client_credentials grant the OpenAPI specs describe.",
+      "token": "Pass a Zapier token directly. Documented as being for partner OAuth or internal Zapier use."
+    },
+    "running_an_action": {
+      "note": "The thing the connector's description is actually about, and it is asynchronous. This is the clearest statement of the model anywhere in Zapier's docs.",
+      "one_call": "runAction(app, actionType, action, inputs) starts a run and waits. timeoutSeconds defaults to 180.",
+      "two_call": "createActionRun returns a run id immediately; getActionRun fetches the outcome. Use this pair to fan out, hand the id to another process, or survive a restart.",
+      "retention": "Run results are kept for seven days after creation.",
+      "vs_stored_actions": "createActionRun takes app + actionType + action + inputs ad hoc. The stored-actions endpoints in the REST spec run a SAVED configuration by id. Related but not the same call - do not conflate them."
+    },
+    "status_values": "waiting (still executing), error (the app failed; see errors[]), and unknown - which Zapier documents as 'the response carried no status, so the outcome could not be determined'. Their own instruction is to treat unknown as INCONCLUSIVE, not as success. An action may or may not have happened.",
+    "callbacks": {
+      "note": "createActionRun accepts a callbackUrl so a finished run is pushed rather than polled. The body matches what getActionRun returns.",
+      "requirements": "HTTPS and a publicly resolvable host - a local receiver needs a tunnel.",
+      "signature": "Verify the Zapier-Callback-Signature header.",
+      "delivery": "Zapier says to expect the same run to arrive MORE THAN ONCE. At-least-once, so the receiver must deduplicate."
+    },
+    "trigger_inbox_lifecycle": {
+      "note": "Closes what was previously recorded as unknown - the capability and its semantics, though still not the REST paths.",
+      "create": "createTriggerInbox always makes a new inbox. ensureTriggerInbox is the get-or-create on a stable key, idempotent per (user, account, key), and throws a conflict if the key exists with a different subscription. Prefer ensure.",
+      "consume": "leaseTriggerInboxMessages (leaseLimit 1-100, leaseSeconds default 300) then ackTriggerInboxMessages. Unacked messages return to the pool when the lease expires.",
+      "release": "releaseTriggerInboxMessages returns messages immediately without acking - but the lease attempt still counts against the per-message lease limit. Releasing does not refund it, so a message repeatedly released will eventually exhaust its attempts.",
+      "higher_level": "drainTriggerInbox processes until empty; watchTriggerInbox drains then subscribes to SSE for new arrivals, with a safety drain every maxDrainIntervalSeconds (default 300) because SSE events can be missed.",
+      "other": "pauseTriggerInbox, resumeTriggerInbox, deleteTriggerInbox, updateTriggerInbox (notificationUrl)."
+    },
+    "other_surfaces": {
+      "tables": "Zapier Tables - create/list/delete tables, fields and records. keyMode chooses whether record data is keyed by human field name (default) or raw field id (f1, f2). Batch writes cap at 100 records.",
+      "code_workflows": "Experimental. Durable TypeScript workflows: publish source files, run them, poll runs. See never_expose.",
+      "forms": "Experimental. Create a Zapier Form and get a shareable hosted_url; consumerAuth defaults to `none`, meaning anyone with the link can answer it."
+    }
+  },
+  "never_expose": [
+    "zapier.fetch() - it proxies an arbitrary URL through Zapier's Relay and INJECTS the user's stored credentials for a named connection into the outgoing request. An agent holding this can call any endpoint on the internet carrying the user's OAuth token or API key. It is a credential-lending primitive wearing an HTTP client's interface, and no task in the Flux catalogue needs it.",
+    "runDurable and publishWorkflowVersion - both take TypeScript source files and execute them on Zapier's runner. That is arbitrary remote code execution commissioned by the agent, and it runs with the account's connections bound to it.",
+    "triggerWorkflow, enableWorkflow, disableWorkflow, deleteWorkflow - firing or altering the user's existing automations from inside a task, where the blast radius is whatever that workflow does.",
+    "importWorkflow - converts an existing Zap and creates a workflow; harmless-sounding but it writes to the account.",
+    "createConnection, getConnectionStartUrl and waitForNewConnection - these mint a signed, single-use, time-limited URL bound to the current session that completes an OAuth grant. Connecting an account belongs in the console's own setup flow in front of the user, not in a tool call. The same rule already applies to Superhuman Mail's add_account, and for the same reason.",
+    "createClientCredentials and deleteClientCredentials - minting or revoking API credentials.",
+    "deleteTable, deleteTableFields, deleteTableRecords, discardWorkflowDraft - destructive, and Tables holds real user data.",
+    "createForm - it publishes by default to a public URL."
+  ]
 }
