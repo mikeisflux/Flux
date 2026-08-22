@@ -40,6 +40,13 @@ FluxUI::FluxUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc,
       "img-src chrome://resources chrome://image data: blob: 'self';");
+
+  // The template catalog is a packed resource the console fetches at runtime
+  // rather than a Mojo call: it never changes, and every screen that shows it
+  // wants all 250 rows. Stated explicitly rather than left to default-src, so
+  // that narrowing the default later cannot silently break the catalog.
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc, "connect-src 'self';");
 }
 
 FluxUI::~FluxUI() = default;
