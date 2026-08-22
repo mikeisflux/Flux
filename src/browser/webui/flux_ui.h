@@ -4,19 +4,29 @@
 #define CHROME_BROWSER_FLUX_WEBUI_FLUX_UI_H_
 
 #include <memory>
+#include <string_view>
 
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "chrome/browser/flux/webui/flux_page_handler.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_webui_config.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/webui_config.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace flux {
 
+class FluxUI;
+
+// A TopChrome config rather than a plain one: WebUIContentsWrapperT looks the
+// page up through TopChromeWebUIConfig::From() before it will host it in a
+// side panel, and returns null for anything else.
+class FluxUIConfig : public DefaultTopChromeWebUIConfig<FluxUI> {
+ public:
+  FluxUIConfig();
+};
 
 // Serves chrome://flux - the agent console (sidebar, templates, workflows,
 // connectors, customize, and the run view).
@@ -24,10 +34,15 @@ namespace flux {
 // Running the console as WebUI rather than as a bundled web app is what lets
 // it talk to the browser process over Mojo with no network hop, and keeps it
 // out of reach of any page the agent visits.
-class FluxUI : public ui::MojoWebUIController,
+class FluxUI : public TopChromeWebUIController,
                public mojom::FluxPageHandlerFactory {
  public:
   explicit FluxUI(content::WebUI* web_ui);
+
+  // Required by WebUIContentsWrapperT; also names the renderer
+  // process in the task manager.
+  static constexpr std::string_view GetWebUIName() { return "Flux"; }
+
   ~FluxUI() override;
 
   FluxUI(const FluxUI&) = delete;
@@ -46,15 +61,6 @@ class FluxUI : public ui::MojoWebUIController,
   mojo::Receiver<mojom::FluxPageHandlerFactory> factory_receiver_{this};
 
   WEB_UI_CONTROLLER_TYPE_DECL();
-};
-
-// Declared after FluxUI so the DefaultWebUIConfig template sees a complete
-// type - its CreateWebUIController static_asserts on constructibility.
-class FluxUIConfig : public content::DefaultWebUIConfig<FluxUI> {
- public:
-  FluxUIConfig()
-      : DefaultWebUIConfig(content::kChromeUIScheme,
-                           chrome::kChromeUIFluxHost) {}
 };
 
 }  // namespace flux

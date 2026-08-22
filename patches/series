@@ -10,3 +10,6 @@
 0005-pack-flux-resources.patch
 0006-grit-resource-ids.patch
 0007-flux-mojo-binder.patch
+0008-flux-side-panel.patch
+0009-flux-side-panel-placement.patch
+0010-flux-product-name.patch

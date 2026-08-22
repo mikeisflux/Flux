@@ -1,0 +1,160 @@
+Subject: [flux] Add the Flux side panel entry
+
+The console had nowhere to live: chrome://flux was reachable by URL and
+nothing else. This registers it as a first-class side panel entry, which is
+what puts it in the browser shell rather than in a tab.
+
+Four pieces are all mandatory, and each fails differently if left out:
+
+  - SIDE_PANEL_ENTRY_IDS gains kFlux. SidePanelHelper::GetActionItem CHECKs
+    that an entry's id maps to an action, so kFlux gets a real ActionId
+    rather than the std::nullopt that kWebView and kSidePanelDev use.
+  - chrome_action_id.h gains kActionSidePanelShowFlux, with no IDC, the same
+    shape as kActionSidePanelShowAssistant.
+  - browser_actions.cc builds the ActionItem. Its text is what the side panel
+    header and the toolbar button show. IDS_PRODUCT_NAME is the browser's own
+    name, which is also the console's - a brand, so nothing to translate.
+  - histograms.xml gains a .Flux WebUIName variant. WebUIContentsWrapperT
+    static_asserts the name against the allowlist generated from that file,
+    so without it this is a compile error, not a missing metric.
+
+The entry itself needs no coordinator: Flux has no per-window state for one
+to own, so a free function in side_panel_helper.cc builds the view directly.
+
+--- a/chrome/browser/ui/side_panel/side_panel_entry_id.h
++++ b/chrome/browser/ui/side_panel/side_panel_entry_id.h
+@@ -26,6 +26,7 @@
+   V(kFeed, kActionSidePanelShowFeed, "Feed")                                  \
+   V(kWebView, std::nullopt, "WebView")                                        \
+   V(kContextualTasks, kActionSidePanelShowContextualTasks, "ContextualTasks") \
++  V(kFlux, kActionSidePanelShowFlux, "Flux")                                  \
+   /* Contextual Entries */                                                    \
+   V(kSideSearch, kActionSidePanelShowSideSearch, "SideSearch")                \
+   V(kLens, kActionSidePanelShowLens, "Lens")                                  \
+--- a/chrome/browser/ui/actions/chrome_action_id.h
++++ b/chrome/browser/ui/actions/chrome_action_id.h
+@@ -476,6 +476,7 @@
+   E(kActionSidePanelShowCustomizeChromeToolbar, \
+     IDC_SHOW_CUSTOMIZE_CHROME_TOOLBAR) \
+   E(kActionSidePanelShowFeed) \
++  E(kActionSidePanelShowFlux) \
+   E(kActionSidePanelShowGlic) \
+   E(kActionSidePanelShowContextualTasks) \
+   E(kActionSidePanelShowHistoryCluster, IDC_SHOW_HISTORY_CLUSTERS_SIDE_PANEL) \
+--- a/chrome/browser/ui/browser_actions.cc
++++ b/chrome/browser/ui/browser_actions.cc
+@@ -461,6 +461,13 @@
+                                                         : kReadingListOldIcon,
+                       kActionSidePanelShowReadingList, bwi, true)
+           .Build());
++  // Flux. IDS_PRODUCT_NAME is the browser's own name, which is also the name
++  // of the console - it is a brand, so there is nothing here to translate.
++  root_action_item_->AddChild(
++      SidePanelAction(SidePanelEntryId::kFlux, IDS_PRODUCT_NAME,
++                      IDS_PRODUCT_NAME, vector_icons::kChatIcon,
++                      kActionSidePanelShowFlux, bwi, true)
++          .Build());
+   if (TabsFromOtherDevicesSidePanelCoordinator::IsSupported(profile)) {
+     root_action_item_->AddChild(
+         SidePanelAction(SidePanelEntryId::kTabsFromOtherDevices,
+--- a/tools/metrics/histograms/metadata/page/histograms.xml
++++ b/tools/metrics/histograms/metadata/page/histograms.xml
+@@ -635,6 +635,7 @@
+   <variant name=".ExtensionsWebStoreZeroStatePromo"/>
+   <variant name=".Feed"/>
+   <variant name=".Feedback"/>
++  <variant name=".Flux"/>
+   <variant name=".HistoryClustersSidePanel"/>
+   <variant name=".HistorySidePanel"/>
+   <variant name=".LensOverlayUntrusted"/>
+--- a/chrome/browser/ui/views/side_panel/side_panel_helper.cc
++++ b/chrome/browser/ui/views/side_panel/side_panel_helper.cc
+@@ -4,11 +4,18 @@
+ 
+ #include "chrome/browser/ui/views/side_panel/side_panel_helper.h"
+ 
++#include <memory>
++
++#include "base/functional/bind.h"
++#include "base/functional/callback_helpers.h"
++#include "chrome/browser/flux/webui/flux_ui.h"
+ #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/ui/browser_actions.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
++#include "chrome/browser/ui/side_panel/side_panel_entry.h"
++#include "chrome/browser/ui/side_panel/side_panel_entry_scope.h"
+ #include "chrome/browser/ui/side_panel/side_panel_registry.h"
+ #include "chrome/browser/ui/side_panel/side_panel_ui.h"
+ #include "chrome/browser/ui/ui_features.h"
+@@ -17,11 +24,46 @@
+ #include "chrome/browser/ui/views/side_panel/history/history_side_panel_coordinator.h"
+ #include "chrome/browser/ui/views/side_panel/history_clusters/history_clusters_side_panel_coordinator.h"
+ #include "chrome/browser/ui/views/side_panel/reading_list/reading_list_side_panel_coordinator.h"
++#include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
+ #include "chrome/browser/ui/views/side_panel/tabs_from_other_devices/tabs_from_other_devices_side_panel_coordinator.h"
++#include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper.h"
+ #include "chrome/browser/ui/webui_browser/webui_browser.h"
++#include "chrome/common/webui_url_constants.h"
++#include "chrome/grit/branded_strings.h"
+ #include "components/history_clusters/core/features.h"
+ #include "components/history_clusters/core/history_clusters_service.h"
+ #include "ui/actions/actions.h"
++#include "ui/base/metadata/metadata_impl_macros.h"
++#include "ui/views/view.h"
++#include "url/gurl.h"
++
++// SidePanelWebUIViewT declares its metadata with METADATA_TEMPLATE_HEADER,
++// which leaves the definitions to whoever instantiates it. Omitting this is a
++// link error, not a compile error.
++using SidePanelWebUIViewT_FluxUI = SidePanelWebUIViewT<flux::FluxUI>;
++BEGIN_TEMPLATE_METADATA(SidePanelWebUIViewT_FluxUI, SidePanelWebUIViewT)
++END_METADATA
++
++namespace {
++
++// Flux has no per-window state of its own, so unlike the panels around it
++// there is no coordinator to own - the view is all there is.
++std::unique_ptr<views::View> CreateFluxWebView(SidePanelEntryScope& scope) {
++  return std::make_unique<SidePanelWebUIViewT<flux::FluxUI>>(
++      scope, base::RepeatingClosure(), base::RepeatingClosure(),
++      std::make_unique<WebUIContentsWrapperT<flux::FluxUI>>(
++          GURL(chrome::kChromeUIFluxURL),
++          scope.GetBrowserWindowInterface().GetProfile(), IDS_PRODUCT_NAME,
++          /*esc_closes_ui=*/false));
++}
++
++// The reference design's sidebar width. This is a starting width: once the
++// user drags the resize handle, prefs::kSidePanelIdToWidth wins instead.
++int FluxDefaultContentWidth() {
++  return 305;
++}
++
++}  // namespace
+ 
+ // static
+ void SidePanelHelper::PopulateGlobalEntries(
+@@ -41,6 +83,12 @@
+     return;
+   }
+ 
++  // Add Flux.
++  window_registry->Register(std::make_unique<SidePanelEntry>(
++      SidePanelEntry::Key(SidePanelEntry::Id::kFlux),
++      base::BindRepeating(&CreateFluxWebView),
++      base::BindRepeating(&FluxDefaultContentWidth)));
++
+   // Add tabs from other devices.
+   if (TabsFromOtherDevicesSidePanelCoordinator::IsSupported(
+           browser->GetProfile())) {
+--- a/chrome/browser/ui/views/side_panel/BUILD.gn
++++ b/chrome/browser/ui/views/side_panel/BUILD.gn
+@@ -105,6 +105,7 @@
+     "//chrome/app/vector_icons",
+     "//chrome/browser/contextual_tasks",
+     "//chrome/browser/favicon",
++    "//chrome/browser/flux",
+     "//chrome/browser/glic",
+     "//chrome/browser/media/webrtc",
+     "//chrome/browser/new_tab_page",

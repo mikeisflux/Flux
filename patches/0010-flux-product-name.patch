@@ -1,0 +1,22 @@
+Subject: [flux] Call the product Flux
+
+IDS_PRODUCT_NAME is what the window title, the task manager, the about page
+and a few dozen other surfaces read from - patch 0001 only rewrote the
+BRANDING file, which does not reach any of them. It is also the string the
+side panel header shows for the Flux entry.
+
+--- a/chrome/app/chromium_strings.grd
++++ b/chrome/app/chromium_strings.grd
+@@ -294,10 +294,10 @@
+         </then>
+         <else>
+           <message name="IDS_PRODUCT_NAME" desc="The Chrome application name" translateable="false">
+-            Chromium
++            Flux
+           </message>
+           <message name="IDS_SHORT_PRODUCT_NAME" desc="The Chrome application short name." translateable="false">
+-            Chromium
++            Flux
+           </message>
+         </else>
+       </if>

@@ -51,6 +51,7 @@ source_set("flux") {
     "//base",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/resources/flux:resources",
+    "//chrome/browser/ui/webui/top_chrome",
     "//chrome/common",
     "//components/input",
     "//components/keyed_service/core",

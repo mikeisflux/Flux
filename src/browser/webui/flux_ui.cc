@@ -15,7 +15,12 @@
 
 namespace flux {
 
-FluxUI::FluxUI(content::WebUI* web_ui) : ui::MojoWebUIController(web_ui) {
+FluxUIConfig::FluxUIConfig()
+    : DefaultTopChromeWebUIConfig(content::kChromeUIScheme,
+                                  chrome::kChromeUIFluxHost) {}
+
+FluxUI::FluxUI(content::WebUI* web_ui)
+    : TopChromeWebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source =
       content::WebUIDataSource::CreateAndAdd(profile, chrome::kChromeUIFluxHost);
