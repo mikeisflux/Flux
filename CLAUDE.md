@@ -89,6 +89,10 @@ compiled - install them and run the real thing.
   WebUI rather than in `data/` because it is packed into `flux_resources.pak`;
   `build_webui` cannot reach outside its own directory, and one copy read by
   both the console and the browser process beats two that drift.
+- `branding/` - the Flux mark and the icon files generated from it by
+  `tools/build-icons.py`. The output is committed, so a build machine needs
+  nothing installed; `build/sync` copies it over `chrome/app/theme/chromium`
+  after the patches apply, which keeps binaries out of the patch series.
 - `docs/` - the Polar teardown these features are specified from
 
 ## Patches
@@ -115,6 +119,18 @@ Hard-won, each one from a failed build:
   `chrome_web_ui_controller_factory.cc` handles DevTools only now.
 - Native tools write progress to stderr, which `$ErrorActionPreference='Stop'`
   treats as fatal. Run them through `Invoke-Native`.
+
+## Brand
+
+Flux lime is `#b4f03c`, and it is a **fill** colour: near-black `#14200a` on
+lime clears 13:1, lime on white fails at any size. `--accent-text` (`#4f7a08`)
+is the darkened version for the rare case where the accent has to be text.
+
+Spend it deliberately. The reference product has no accent at all, so that
+connector icons are the only saturated pixels and the eye goes straight to
+"what does this task touch". Flux keeps that discipline and buys exactly three
+things with the accent: the composer's send button, keyboard focus, and the
+first-run flow. Active pills and primary buttons stay black.
 
 ## Product constraints
 

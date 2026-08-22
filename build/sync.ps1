@@ -114,6 +114,22 @@ if ($failed) {
   exit 1
 }
 
+Log "Applying Flux branding"
+# Copied over Chromium's own files rather than patched in: these are binaries,
+# and a binary in the patch series is a merge conflict waiting to happen on
+# every uprev. sync resets the tree first, so this stays idempotent.
+$iconRoot = Join-Path $FluxRoot 'branding\icons'
+if (Test-Path $iconRoot) {
+  $themeDir = Join-Path $Src 'chrome\app\theme\chromium'
+  Get-ChildItem -Path $iconRoot -Recurse -File | ForEach-Object {
+    $rel = $_.FullName.Substring($iconRoot.Length).TrimStart('\')
+    $dest = Join-Path $themeDir $rel
+    New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
+    Copy-Item -Force -LiteralPath $_.FullName -Destination $dest
+  }
+  Write-Host "    branded  chrome\app\theme\chromium" -ForegroundColor DarkGray
+}
+
 Log "Sync complete. Next: .\build\build.ps1 -CheckoutDrive $CheckoutDrive"
 } finally {
   Pop-Location

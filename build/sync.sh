@@ -34,4 +34,18 @@ $CHROMIUM_VERSION, or re-pin with build/repin.sh."
   fi
 done < "$FLUX_ROOT/patches/series"
 
+log "Applying Flux branding"
+# Copied over Chromium's own files rather than patched in: these are binaries,
+# and a binary in the patch series is a merge conflict waiting to happen on
+# every uprev. The reset above keeps this idempotent.
+if [ -d "$FLUX_ROOT/branding/icons" ]; then
+  (cd "$FLUX_ROOT/branding/icons" && find . -type f -print0) |
+    while IFS= read -r -d '' rel; do
+      dest="$SRC/chrome/app/theme/chromium/${rel#./}"
+      mkdir -p "$(dirname "$dest")"
+      cp -f "$FLUX_ROOT/branding/icons/${rel#./}" "$dest"
+    done
+  printf '    branded  chrome/app/theme/chromium\n'
+fi
+
 log "Sync complete. Next: build/build.sh"

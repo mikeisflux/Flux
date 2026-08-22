@@ -8,6 +8,7 @@ build_webui("resources") {
     "index.html",
     "sidebar.html",
     "app.css",
+    "flux-mark.svg",
 
     # Catalogues the console fetches at runtime. Static resources rather than
     # Mojo calls: neither changes while the browser is running, and every
@@ -23,6 +24,7 @@ build_webui("resources") {
     "connectors_view.ts",
     "customize_view.ts",
     "skills.ts",
+    "welcome_view.ts",
     "new_task_view.ts",
     "templates_view.ts",
     "workflows_view.ts",

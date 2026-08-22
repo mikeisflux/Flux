@@ -19,11 +19,14 @@
   --sidebar-w: 305px;
   --titlebar-h: 44px;
 
-  /* The only accent in the product, and it is spent on exactly one control:
-   * the composer's send button. Nothing else is allowed to be saturated, so
-   * that button needs no label to read as the primary action. */
-  --accent: #2ab5e8;
-  --accent-fg: #fff;
+  /* Flux lime. The product is otherwise black, white and grey, so the accent
+   * is spent deliberately: the send button, focus, and a run that is actually
+   * running. Two tokens because lime is a fill colour, not a text colour -
+   * near-black on lime clears 13:1, whereas lime on white would fail at any
+   * size, so --accent-text is the darkened version for the rare text use. */
+  --accent: #b4f03c;
+  --accent-fg: #14200a;
+  --accent-text: #4f7a08;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,6 +39,9 @@
     --invert-bg: #f2f2f0;
     --invert-fg: #111;
     --danger: #e8705f;
+
+    /* On a dark ground lime is already legible as text. */
+    --accent-text: #b4f03c;
   }
 }
 
@@ -1184,3 +1190,163 @@ body.tab {
 }
 
 .adopt { width: min(640px, 92vw); }
+
+/* Brand, welcome and loading --------------------------------------------- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+}
+
+.brand-name {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.welcome {
+  display: flex;
+  max-width: 720px;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.centered { text-align: center; }
+
+.steps {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 34px;
+}
+
+.step-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.step-dot[data-done] { background: var(--fg-muted); }
+
+.step-dot[data-current] {
+  width: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.welcome-field {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.welcome-field input {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.welcome-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 34px;
+}
+
+/* The one button style that carries the brand colour. Near-black on lime,
+ * because lime behind white text is unreadable at any size. */
+.accent {
+  background: var(--accent);
+  color: var(--accent-fg);
+  text-decoration: none;
+}
+
+.welcome-picks {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.pick {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pick:hover { background: var(--hover); }
+
+.pick[data-chosen] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.pick strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pick span {
+  display: block;
+  margin-top: 3px;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+/* Shaped like the content it stands in for, not a spinner: a spinner says
+ * something is happening, a skeleton says what is about to appear. */
+.skeleton {
+  border-radius: 8px;
+  background: var(--hover);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: 220px;
+  height: 30px;
+  margin-bottom: 26px;
+}
+
+.skeleton-row {
+  height: 62px;
+  margin-bottom: 14px;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* Keyboard focus, in the brand colour. Chromium's default ring disappears
+ * against the lime button, which is the one control it matters most on. */
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
