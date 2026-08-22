@@ -1,0 +1,156 @@
+{
+  "id": "ramp",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "client_credentials": {
+      "label": "Client ID and secret",
+      "where": "app.ramp.com > Company > Developer > Create New App. Add the Client Credentials grant type, then Configure allowed scopes and tick only the read scopes below. The Client ID and Client Secret are shown on the app.",
+      "requires": "Ramp admin access. The Developer page is not reachable without it.",
+      "grant_type": "client_credentials",
+      "token_path": "/developer/v1/token",
+      "client_auth": "basic",
+      "notes": [
+        "Ramp authenticates the token request with HTTP Basic Auth: base64 of client_id:client_secret in the Authorization header. Ramp's docs say some clients may instead be configured to send the pair in the form body; Basic is the documented default and what Flux sends.",
+        "A client-credentials access token lasts 10 days (864000 seconds). There is no refresh token on this grant - request a new one.",
+        "Tokens are opaque, not JWTs. Do not attempt to read an expiry out of them; store the expires_in from the token response.",
+        "A token works only in the environment that issued it, and an app exists in exactly one environment. Sandbox and production need separate apps.",
+        "The token operates with the permissions of the app creator - there is no user context on this grant."
+      ]
+    },
+    "partner_oauth": {
+      "grant_type": "authorization_code",
+      "token_path": "/developer/v1/token",
+      "client_auth": "basic",
+      "authorize_url": null,
+      "notes": [
+        "For a partner reaching other businesses' Ramp accounts, which Flux is not. Recorded so the distinction is not re-derived.",
+        "The authorization endpoint URL is NOT recorded here. Ramp's authorization guide describes the flow and its five required parameters but the pages supplied did not state the host, and the API host is deliberately different from the app host. Read it out of the Ramp Developer Console before using this block - do not assume it is app.ramp.com.",
+        "Required query parameters: response_type=code, scope (space separated), client_id, redirect_uri (must exactly match one configured on the app, and must be https), state (cryptographically random and verified on return; new integrations must always send it).",
+        "Authorization codes expire in 10 minutes.",
+        "Access tokens on this grant last 1 hour, and so do tokens obtained by refresh. Refresh before expiry rather than waiting for a 401.",
+        "Only Admin and Business Owner users can authorise a Developer API application. Anyone else gets \"Business not authorized to use this application\"."
+      ]
+    },
+    "notes": [
+      "Scopes are bound to the token when it is issued and cannot be widened afterwards. Changing scope means a new token.",
+      "A scope not configured on the app is rejected at request time with invalid_scope, so the app configuration and the requested scope have to agree."
+    ]
+  },
+  "permissions": {
+    "note": "Scope names follow resource:permission. Flux requests read only; the write halves exist and are deliberately not used.",
+    "read_scopes": [
+      "transactions:read",
+      "cards:read",
+      "users:read",
+      "business:read",
+      "departments:read",
+      "locations:read",
+      "merchants:read",
+      "receipts:read",
+      "reimbursements:read",
+      "bills:read",
+      "vendors:read",
+      "statements:read",
+      "transfers:read",
+      "treasury:read",
+      "cashbacks:read",
+      "entities:read",
+      "memos:read",
+      "spend_programs:read",
+      "purchase_orders:read",
+      "accounting:read",
+      "bank_accounts:read",
+      "custom_records:read",
+      "funds:read",
+      "item_receipts:read",
+      "leads:read",
+      "receipt_integrations:read",
+      "applications:read"
+    ],
+    "never_request": [
+      "cards:read_vault - returns the PAN and CVV, needs a security review, and nothing in the Flux catalogue has any use for a card number.",
+      "Every :write scope. Ramp's own guidance is to start read-only and add write as needed; Flux never needs it."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.ramp.com/developer/v1",
+    "sandbox_base_url": "https://demo-api.ramp.com/developer/v1",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    },
+    "notes": [
+      "The API host is not the app host. api.ramp.com serves the API; app.ramp.com is the customer web app, and demo-api.ramp.com / demo.ramp.com are the sandbox pair. Pointing a call at the frontend host is the mistake Ramp's own quickstart calls out.",
+      "Sandbox access is requested from Ramp; it is not self-serve."
+    ]
+  },
+  "operations": {
+    "list_transactions": {
+      "method": "GET",
+      "path": "/transactions",
+      "scope": "transactions:read",
+      "write_scope": "readonly",
+      "notes": "The endpoint Ramp's quickstart uses to prove a token works."
+    },
+    "get_current_user": {
+      "method": "GET",
+      "path": "/users",
+      "scope": "users:read",
+      "write_scope": "readonly",
+      "notes": "Client-credentials tokens have no user context, so this lists the business's users rather than identifying a caller."
+    },
+    "list_cards": {
+      "method": "GET",
+      "path": "/cards",
+      "scope": "cards:read",
+      "write_scope": "readonly"
+    },
+    "list_reimbursements": {
+      "method": "GET",
+      "path": "/reimbursements",
+      "scope": "reimbursements:read",
+      "write_scope": "readonly"
+    },
+    "list_bills": {
+      "method": "GET",
+      "path": "/bills",
+      "scope": "bills:read",
+      "write_scope": "readonly"
+    }
+  },
+  "errors": {
+    "401": "Token missing, expired or invalid.",
+    "403": "Token is valid but lacks the scope for that resource. Check the endpoint's own scope requirement rather than assuming the app's scope list covers it.",
+    "429": "Rate limited.",
+    "invalid_client": "Client ID or secret wrong.",
+    "invalid_grant": "Authorization code expired or already used.",
+    "invalid_scope": "Scope requested that is not configured on the app.",
+    "unauthorized_client": "Grant type not enabled on the app - the Client Credentials grant has to be added explicitly after creating it.",
+    "access_denied": "The user declined, or lacked the role to approve."
+  },
+  "rate_limits": {
+    "on_exceed": "HTTP 429.",
+    "note": "Ramp documents 429 as the rate-limit response and links a separate rate limiting page that was not supplied. No numeric figure is recorded here on purpose - treat the 429 as authoritative and back off with jitter until the published figure is read."
+  },
+  "also_ships": {
+    "cli": "github.com/ramp-public/ramp-cli - an open-source CLI that authenticates by browser OAuth and acts as the signed-in user, with its own agent skill system and a --agent JSON output mode.",
+    "mcp": "Ramp publishes three MCP servers scoped to different audiences.",
+    "note": "Neither is used by this connector - Flux talks to the REST API directly - but both are relevant if a skill ever wants a shell path instead."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.ramp.com/developer-api/v1/getting-started",
+      "https://docs.ramp.com/developer-api/v1/authorization",
+      "https://docs.ramp.com/developer-api/v1/cli",
+      "https://docs.ramp.com/developer-api/v1/mcp",
+      "https://docs.ramp.com/developer-api/v1/build-with-ramp"
+    ],
+    "notes": [
+      "Hosts, the /developer/v1 prefix, the Basic-auth token request, the 10-day and 1-hour token lifetimes, the scope list and the error table are taken verbatim from Ramp's quickstart and authorization pages.",
+      "docs.ramp.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so this was written from the pages the user supplied rather than fetched. The authorization endpoint host and the numeric rate limits are the two things those pages did not state, and both are marked unknown above rather than guessed.",
+      "Ramp's scope table is explicitly described as not exhaustive; each endpoint's own reference lists what it needs. Check before adding an operation."
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "id": "mercury",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API token",
+      "where": "app.mercury.com/settings/tokens - organisation menu > All Settings > Tokens > Create an API Token. Choose the Read Only tier.",
+      "prefix": "secret-token:mercury_",
+      "requires": "A Mercury user with permission to create tokens. If the option is not on the settings page the signed-in user does not have it, and an account admin has to grant it.",
+      "notes": [
+        "Create a Read Only token. Mercury's three tiers are Read Only, Read and Write, and Custom; only Read Only avoids the IP whitelist requirement outright, and nothing in the Flux catalogue moves money.",
+        "Read and Write tokens require an IP whitelist, which a desktop browser on a residential connection cannot satisfy. Do not offer that tier.",
+        "Shown once. Mercury's own guidance is that a token is a password and must never go into source control; if one leaks, revoke it in the dashboard and issue a new one.",
+        "A token unused for 45 days is deleted automatically, with a warning email to all account admins seven days before. Any endpoint call resets the clock, so a connector used only by an occasional workflow will die between runs unless something touches it.",
+        "A token whose granted permissions exceed what it actually used in a 45-day window is silently downgraded, again with seven days' notice by email. A downgraded token cannot be re-widened - a new token has to be created and used for a write within the window. Irrelevant to a Read Only token, and one more reason to only issue that tier.",
+        "Custom-token scopes cannot be edited after creation. Getting them wrong means making another token."
+      ]
+    },
+    "header": "Authorization: Bearer {api_token}",
+    "basic_auth": {
+      "username": "{api_token}",
+      "password": "",
+      "note": "Mercury's documented primary form is HTTP Basic with the whole token (including the secret-token: prefix) as the username and an empty password. It also accepts the token as a bearer token, which is what Flux sends because it is one header and does not depend on a library's Basic encoding."
+    },
+    "oauth": {
+      "authorize_url": null,
+      "token_url": null,
+      "scopes": [
+        "read",
+        "offline_access"
+      ],
+      "pkce": "supported - S256, code_challenge is the base64 of the SHA-256 of the verifier",
+      "notes": [
+        "Mercury does have an OAuth 2 web flow, for a client acting on behalf of other Mercury customers. Flux is a single user reaching their own account, so the API token above is the path.",
+        "The authorize and token endpoint URLs are NOT recorded here. The page supplied describes the query parameters but does not state the host. Read them out of Mercury's OAuth reference before using this block rather than assuming they sit under api.mercury.com.",
+        "Query parameters are client_id, redirect_url (note: redirect_url, not redirect_uri - it must match the registered Authorization callback URL), scope, and state.",
+        "state must be at least eight characters and must be verified when Mercury sends the user back.",
+        "read covers accounts and transactions. offline_access is required to receive a refresh token; access tokens are short lived without it."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.mercury.com/api/v1",
+    "headers": {
+      "Authorization": "Bearer {api_token}",
+      "Accept": "application/json"
+    }
+  },
+  "operations": {
+    "list_accounts": {
+      "method": "GET",
+      "path": "/accounts",
+      "write_scope": "readonly",
+      "notes": "The endpoint Mercury's own examples use to prove a token works, and the one to call periodically to stop a token being deleted for inactivity."
+    }
+  },
+  "pending_operations": {
+    "note": "Only /accounts is recorded, because it is the only endpoint the supplied pages actually show. Transactions, statements and recipients all exist - the OAuth read scope is documented as covering accounts and transactions - but their paths were not stated and are not guessed here. They need docs.mercury.com's API reference pages, which the Flux container cannot reach.",
+    "wanted": [
+      "account transactions",
+      "statements",
+      "recipients"
+    ]
+  },
+  "rate_limits": {
+    "note": "Not stated in the pages supplied. Treat a 429 as authoritative and back off with jitter."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.mercury.com/getting-started",
+      "https://docs.mercury.com/api-token-security-policies",
+      "https://docs.mercury.com/start-oauth2-web-flow"
+    ],
+    "notes": [
+      "The base URL, both authentication forms, the token prefix, the three permission tiers, the IP whitelist rule, the 45-day deletion and downgrade behaviour and the OAuth parameter list are taken verbatim from Mercury's own pages.",
+      "docs.mercury.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so this was written from the pages the user supplied rather than fetched. The OAuth endpoint hosts and the rate limits are the gaps, and both are marked unknown above rather than guessed.",
+      "Mercury's docs illustrate tokens with a full-looking literal value. It is an example from published documentation, not a live credential, and it is deliberately not reproduced in this file."
+    ]
+  }
+}

@@ -208,7 +208,7 @@
       "description": "Inspect cards, expenses, bills, banking, users, and accounting records",
       "transport": "api",
       "badge": "Requires approval",
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "mercury",
@@ -216,7 +216,7 @@
       "description": "Check balances, transactions, and team activity",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "ramp",
@@ -224,7 +224,7 @@
       "description": "Track card spend, invoices, and bills",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "cal_com",
@@ -264,7 +264,7 @@
       "description": "Investigate customer issues, accounts, and conversations",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "sanity",
@@ -296,7 +296,7 @@
       "description": "Publish posts, review insights and comments, and reply to existing customer DMs",
       "transport": "api",
       "badge": "Business & Creator accounts only",
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "facebook_pages",

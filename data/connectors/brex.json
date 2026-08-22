@@ -1,0 +1,179 @@
+{
+  "id": "brex",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "User token",
+      "where": "dashboard.brex.com/settings/developer > Create Token. Scopes are chosen on the creation screen and are fixed at that point.",
+      "prefix": "bxt_",
+      "notes": [
+        "Requires signing in as an account admin or card admin; a normal user cannot reach the developer page at all.",
+        "The company must have accepted Brex's developer API agreement first. That is what the \"Requires approval\" badge means, and it is a person-in-a-dashboard step Flux cannot do.",
+        "Shown once, never readable again.",
+        "Expires after 90 days without an API call - a connector used only by a quarterly workflow will silently stop working between runs.",
+        "A token belonging to a user who becomes inactive stops working immediately. That is the usual cause of a connection that broke with nobody touching it."
+      ]
+    },
+    "partner_oauth": {
+      "discovery_url": "https://accounts-api.brex.com/oauth2/default/.well-known/openid-configuration",
+      "authorize_url": "https://accounts-api.brex.com/oauth2/default/v1/authorize",
+      "token_url": "https://accounts-api.brex.com/oauth2/default/v1/token",
+      "revoke_url": "https://accounts-api.brex.com/oauth2/default/v1/revoke",
+      "staging_base": "https://accounts-api.staging.brexapps.com/oauth2/default",
+      "client_auth": "post",
+      "pkce": true,
+      "scopes": [
+        "openid",
+        "offline_access"
+      ],
+      "notes": [
+        "Brex says in its own documentation to treat the well-known OpenID configuration as the source of truth for the base URL, because these may change without notice. Resolve it at connect time rather than trusting the URLs recorded here.",
+        "state is required and must be longer than 8 characters - Brex rejects the request otherwise, which is stricter than the spec.",
+        "PKCE is supported but not required. Use it anyway; this is a desktop client with nowhere to keep a secret.",
+        "Access tokens last 1 hour. Refresh tokens last 90 days and are rotated on every exchange, so the new one must be persisted each time or the connection dies at the next refresh.",
+        "The grant type differs by API: client_credentials for the onboarding API, authorization_code for everything else.",
+        "openid and offline_access are added automatically by Brex; a partner does not list them. They are recorded here because the token response depends on them."
+      ]
+    },
+    "notes": [
+      "Two entirely separate mechanisms. A Brex customer reaching their own account uses a user token from the dashboard; a partner building for other Brex customers uses OAuth with credentials issued by Brex support. Flux is the former.",
+      "Scopes for the user token are chosen in Brex's own token editor rather than requested in a URL, so the narrowing happens there. Grant read only."
+    ]
+  },
+  "permissions": {
+    "note": "Brex gates the APIs on the Brex role of the user who owns the token, not only on scopes. A token created by someone without the role returns 401 or 403 no matter which scopes were ticked.",
+    "roles": [
+      "Most APIs require an account admin.",
+      "The accounting API is additionally reachable by a bookkeeper.",
+      "Scopes are additive: a token carries the union of everything ticked at creation."
+    ],
+    "read_scopes": {
+      "_": "Transcribed from Brex's per-API scope tables. Read-only scopes only; the write halves exist and are deliberately not listed, because no task in the Flux catalogue needs to move money or issue a card. This transcription covers the scopes for the operations below and is not the complete set of every scope Brex publishes - check the table for the specific API before adding an operation.",
+      "team": [
+        "cards.readonly",
+        "users.readonly",
+        "companies.readonly",
+        "departments.readonly"
+      ],
+      "transactions": [
+        "transactions.card.readonly",
+        "accounts.cash.readonly",
+        "statements.card.readonly"
+      ],
+      "budgets": [
+        "budgets.readonly"
+      ],
+      "expenses": [
+        "expenses.card.readonly"
+      ],
+      "accounting": [
+        "accounting.record.read"
+      ],
+      "travel": [
+        "travel.trips.readonly"
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.brex.com",
+    "staging_base_url": "https://api-staging.brex.com",
+    "headers": {
+      "Authorization": "Bearer {api_token}"
+    }
+  },
+  "operations": {
+    "get_current_user": {
+      "method": "GET",
+      "path": "/v2/users/me",
+      "scope": "users.readonly",
+      "write_scope": "readonly",
+      "notes": "The cheapest confirmation that a token works and has not expired. Worth calling on connect."
+    },
+    "list_transactions": {
+      "method": "GET",
+      "path": "/v2/transactions/card/primary",
+      "scope": "transactions.card.readonly",
+      "write_scope": "readonly"
+    },
+    "list_expenses": {
+      "method": "GET",
+      "path": "/v1/expenses",
+      "scope": "expenses.card.readonly",
+      "write_scope": "readonly"
+    },
+    "list_cards": {
+      "method": "GET",
+      "path": "/v2/cards",
+      "scope": "cards.readonly",
+      "write_scope": "readonly"
+    },
+    "list_budgets": {
+      "method": "GET",
+      "path": "/v2/budgets",
+      "scope": "budgets.readonly",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests": "1000 per 60 seconds, counted per Client ID and per Brex account.",
+    "daily": [
+      "1000 transfers per 24 hours",
+      "100 international wires per 24 hours",
+      "5000 cards created per 24 hours"
+    ],
+    "on_exceed": "HTTP 429.",
+    "note": "Brex's own guidance is a token bucket keyed on the client ID plus exponential backoff with jitter on a 429, and webhooks instead of polling where a webhook exists for the event. The per-60-second window is the one that a Flux workflow can realistically hit; the daily caps are all on write operations Flux does not perform.",
+    "backoff": {
+      "strategy": "exponential",
+      "jitter": true
+    }
+  },
+  "webhooks": {
+    "note": "The documented alternative to polling. Flux does not register one today - it needs a public HTTPS endpoint, which a desktop browser does not have - but the mechanism is recorded so nobody re-derives it.",
+    "register": {
+      "method": "POST",
+      "path": "/v1/webhooks"
+    },
+    "secret": {
+      "method": "GET",
+      "path": "/v1/webhooks/secrets"
+    },
+    "one_endpoint_per_client_id": true,
+    "events": [
+      "REFERRAL_CREATED",
+      "REFERRAL_ACTIVATED",
+      "REFERRAL_APPLICATION_STATUS_CHANGED",
+      "TRANSFER_PROCESSED",
+      "TRANSFER_FAILED",
+      "USER_UPDATED"
+    ],
+    "signature": {
+      "algorithm": "HMAC-SHA256",
+      "payload": "${webhook_id}.${webhook_timestamp}.${raw_body}",
+      "secret_encoding": "base64 - decode the secret from GET /v1/webhooks/secrets before using it as the HMAC key",
+      "comparison": "constant-time",
+      "replay": "Reject a timestamp outside the tolerance window as well as a bad signature; the signature alone does not stop a replay.",
+      "raw_body": "Sign the bytes as received. Parsing and re-serialising the JSON changes them and the signature will not match."
+    },
+    "ip_allowlist": "Brex publishes source IPs for webhook delivery; an endpoint behind a firewall should allow those rather than the world."
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developer.brex.com/docs/quickstart",
+      "https://developer.brex.com/guides/authentication",
+      "https://developer.brex.com/guides/partner_authentication",
+      "https://developer.brex.com/guides/rate_limits",
+      "https://developer.brex.com/guides/webhooks",
+      "https://developer.brex.com/guides/roles_permissions_scopes"
+    ],
+    "notes": [
+      "Base URLs, token prefix, header format, the 90-day expiries, the state-length rule and the grant-type split are taken verbatim from Brex's own quickstart, authentication and partner authentication pages.",
+      "The rate limits, the webhook event list and the signature construction are taken verbatim from Brex's rate limits and webhooks pages. An earlier revision of this file said the limits were not published as a fixed figure; that was wrong.",
+      "The old hosts platform.brexapis.com and platform.staging.brexapps.com still resolve as of Brex's January 2026 transition note. Do not use them in anything new.",
+      "Staging data may be purged at any time, so it is for point-in-time testing only - not for a workflow to run against."
+    ]
+  }
+}

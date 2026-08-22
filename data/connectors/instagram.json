@@ -1,0 +1,123 @@
+{
+  "id": "instagram",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://www.instagram.com/oauth/authorize",
+    "token_url": "https://api.instagram.com/oauth/access_token",
+    "client_auth": "post",
+    "scopes": [
+      "instagram_business_basic",
+      "instagram_business_content_publish",
+      "instagram_business_manage_comments",
+      "instagram_business_manage_messages"
+    ],
+    "long_lived": {
+      "exchange_url": "https://graph.instagram.com/access_token",
+      "exchange_grant": "ig_exchange_token",
+      "refresh_url": "https://graph.instagram.com/refresh_access_token",
+      "refresh_grant": "ig_refresh_token",
+      "lifetime_days": 60,
+      "notes": [
+        "The token from api.instagram.com/oauth/access_token is short lived and must be exchanged straight away. Store only the long-lived one.",
+        "A long-lived token lasts 60 days and is refreshed for another 60 by calling refresh_access_token with it. A connector left idle for two months is dead and has to be reconnected by hand - refresh on a schedule, not on first failure."
+      ]
+    },
+    "notes": [
+      "This is Instagram API with Instagram Login, the setup that does NOT require a Facebook Page to be linked. That is the reason it is chosen over the Facebook-Login variant, which routes through graph.facebook.com and needs a linked Page.",
+      "The scope names above are the current ones. business_basic, business_content_publish, business_manage_comments and business_manage_messages are the old spellings and were deprecated on 27 January 2025; anything still sending them fails.",
+      "Requires an Instagram professional account - Business or Creator. Consumer accounts cannot be reached by any Instagram API, which is what the connector's badge means.",
+      "Needs a Meta app the user owns. Standard Access covers professional accounts the user themselves owns or manages and has added in the App Dashboard; reaching anyone else's account needs App Review. Flux is the former case.",
+      "The token exchange takes a client secret, which a desktop binary cannot keep. The user supplies their own Meta app's ID and secret, as with the Facebook connector - Flux ships no shared credential."
+    ]
+  },
+  "api": {
+    "base_url": "https://graph.instagram.com",
+    "notes": [
+      "graph.instagram.com is the host for Instagram Login. graph.facebook.com is the host for the Facebook-Login variant, and the two are not interchangeable - a token from one is rejected by the other.",
+      "All edges paginate by cursor. Ordering is not supported, and only the User Insights edge supports time-based pagination.",
+      "Hashtag search and the Page node exist only under the Facebook-Login variant, so no hashtag operation is offered here."
+    ]
+  },
+  "operations": {
+    "get_profile": {
+      "method": "GET",
+      "path": "/me",
+      "params": {
+        "fields": "user_id,username,account_type,media_count"
+      },
+      "scope": "instagram_business_basic",
+      "write_scope": "readonly",
+      "notes": "The connect-time check."
+    },
+    "list_media": {
+      "method": "GET",
+      "path": "/me/media",
+      "scope": "instagram_business_basic",
+      "write_scope": "readonly"
+    },
+    "create_media_container": {
+      "method": "POST",
+      "path": "/me/media",
+      "params": {
+        "image_url": "string",
+        "video_url": "string?",
+        "caption": "string?"
+      },
+      "scope": "instagram_business_content_publish",
+      "write_scope": "send",
+      "notes": "Two-step publish: this returns a container id, which is then passed to media_publish. The media has to be reachable at a public URL - Instagram fetches it, Flux does not upload bytes."
+    },
+    "publish_media": {
+      "method": "POST",
+      "path": "/me/media_publish",
+      "params": {
+        "creation_id": "string"
+      },
+      "scope": "instagram_business_content_publish",
+      "write_scope": "send",
+      "notes": "Stories are Business-only; every other media type works for Creator accounts too."
+    },
+    "list_comments": {
+      "method": "GET",
+      "path": "/{ig_media_id}/comments",
+      "scope": "instagram_business_manage_comments",
+      "write_scope": "readonly"
+    },
+    "reply_to_comment": {
+      "method": "POST",
+      "path": "/{ig_comment_id}/replies",
+      "params": {
+        "message": "string"
+      },
+      "scope": "instagram_business_manage_comments",
+      "write_scope": "send"
+    },
+    "media_insights": {
+      "method": "GET",
+      "path": "/{ig_media_id}/insights",
+      "scope": "instagram_business_basic",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Meta throttles rather than bans; a 429 means back off. Content publishing has its own published daily cap on top of the general limit - read it before wiring a posting workflow to more than a handful of posts a day."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login",
+      "https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login",
+      "https://developers.facebook.com/documentation/instagram-platform/reference",
+      "https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/",
+      "https://developers.facebook.com/docs/instagram-platform/reference/oauth-access-token/",
+      "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login/"
+    ],
+    "notes": [
+      "The capability list, the two host URLs, the scope rename and its January 2025 deprecation, the professional-account restriction and the pagination and ordering limits are taken verbatim from the Meta pages the user supplied.",
+      "The four OAuth URLs and the 60-day long-lived token lifetime come from Meta's own oauth-authorize, oauth-access-token and business-login reference pages via search, not from the supplied text - developers.facebook.com is not reachable from the Flux container. Verified as `search` rather than `vendor-docs` for that reason; re-check them against the reference before the first live connect.",
+      "Operation paths follow the /me and /{node-id}/{edge} shape the reference documents. The node and edge names are from Meta's reference; the exact field lists are not, and a first call should ask for a minimal fields set and widen from what comes back."
+    ]
+  }
+}

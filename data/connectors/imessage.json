@@ -4,18 +4,21 @@
   "auth": {
     "type": "unsupported",
     "notes": [
-      "iMessage has no API, public or private. The reference product reads the local chat database on the Mac it runs on, which is a filesystem integration wearing a connector's clothes.",
-      "Flux builds for Windows, where that database does not exist. There is nothing to connect to and nothing to authenticate against.",
-      "Listed rather than removed because the reference lists it, and a gap in the catalogue is more honest than a quietly shorter list. The console shows it as unavailable on this platform rather than as pending.",
-      "If Flux is ever built for macOS this becomes a local integration: read ~/Library/Messages/chat.db, which requires Full Disk Access and should be read-only and never copied off the machine."
+      "Apple does publish a Messages framework, so \"no API\" was wrong. What it is not, is a connector API.",
+      "The framework builds app extensions that run inside Messages: an MSMessagesAppViewController presented in the app drawer, with an MSConversation that can insert or send text into the conversation the user is currently looking at. It cannot enumerate conversations, cannot read message history, and cannot act while the user is elsewhere - all three of which are what a connector is for.",
+      "It is iOS, iPadOS and macOS only, and it ships as an extension inside an App Store app, not as something a browser can call.",
+      "Reading history at all means reading ~/Library/Messages/chat.db on the Mac directly, which is what the reference product does. That needs Full Disk Access, is unsupported by Apple, and does not exist on Windows.",
+      "So on this platform there is nothing to connect to. Listed rather than removed, with a badge, because a stated gap is more honest than a quietly shorter list."
     ]
   },
   "source": {
-    "verified": "not-applicable",
+    "verified": "vendor-docs",
     "checked": "2026-08-22",
-    "refs": [],
+    "refs": [
+      "https://developer.apple.com/documentation/messages"
+    ],
     "notes": [
-      "Nothing to verify - Apple publishes no iMessage API."
+      "Checked against Apple's own framework documentation after the first version of this file claimed Apple published no iMessage API at all. It publishes one; it does not do this job."
     ]
   }
 }

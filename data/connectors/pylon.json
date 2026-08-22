@@ -1,0 +1,236 @@
+{
+  "id": "pylon",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API token",
+      "where": "app.usepylon.com/settings/api-tokens > create a token.",
+      "prefix": "",
+      "notes": [
+        "Pylon does not publish a fixed prefix for its tokens, and the field is empty deliberately rather than forgotten.",
+        "Anything the token does is attributed in Pylon to the name of the token, not to a person. Name it 'Flux' so an audit log entry is traceable.",
+        "There is no scope selection. A token carries whatever its organisation permits, so the narrowing has to happen in Flux: only the read operations below are exposed."
+      ]
+    },
+    "header": "Authorization: Bearer {api_token}",
+    "notes": [
+      "RFC 6750 bearer auth, nothing more. No OAuth flow is published for the Pylon API.",
+      "GET /me is the documented way to confirm a token works - it returns the organisation the token belongs to."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.usepylon.com",
+    "headers": {
+      "Authorization": "Bearer {api_token}",
+      "Accept": "application/json"
+    },
+    "pagination": {
+      "style": "cursor",
+      "request": "cursor query parameter; limit defaults to 100 and must be greater than 0 and less than 1000",
+      "response": "pagination.cursor and pagination.has_next_page"
+    },
+    "errors": {
+      "shape": "{ errors: string[], request_id: string, exists_id?: string }",
+      "note": "Every response carries a request_id. Log it - it is what Pylon support asks for.",
+      "403": "The caller or organisation is not allowed to use that endpoint. Audit logs in particular are gated this way."
+    }
+  },
+  "operations": {
+    "get_me": {
+      "method": "GET",
+      "path": "/me",
+      "write_scope": "readonly",
+      "notes": "Returns details about the organisation the token belongs to. The connect-time check."
+    },
+    "list_accounts": {
+      "method": "GET",
+      "path": "/accounts",
+      "write_scope": "readonly",
+      "rate_limit": "60/min"
+    },
+    "get_account": {
+      "method": "GET",
+      "path": "/accounts/{id}",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "id may be the Pylon ID or an external ID."
+    },
+    "search_accounts": {
+      "method": "POST",
+      "path": "/accounts/search",
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "A POST that reads. search_text is fuzzy and is intersected with the filter. Filterable: id (equals/in/not_in), domains and tags (contains/does_not_contain/in/not_in), name (equals/in/not_in/string_contains), external_ids and owner_id (equals/in/not_in/is_set/is_unset). Custom fields are addressed by slug in field."
+    },
+    "get_account_relationships": {
+      "method": "GET",
+      "path": "/accounts/{account_id}/relationships",
+      "write_scope": "readonly",
+      "rate_limit": "60/min"
+    },
+    "list_audit_logs": {
+      "method": "GET",
+      "path": "/audit-logs",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "Returns 403 unless the organisation is entitled to it."
+    },
+    "search_audit_logs": {
+      "method": "POST",
+      "path": "/audit-logs/search",
+      "write_scope": "readonly",
+      "rate_limit": "10/min",
+      "notes": "Filterable: action (equals/in/not_in/string_contains/string_does_not_contain), action_happened_at (time_is_after/time_is_before/time_range). Timestamps are RFC 3339."
+    },
+    "list_contacts": {
+      "method": "GET",
+      "path": "/contacts",
+      "write_scope": "readonly",
+      "rate_limit": "60/min"
+    },
+    "get_contact": {
+      "method": "GET",
+      "path": "/contacts/{id}",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "id may be the Pylon ID or an external ID."
+    },
+    "search_contacts": {
+      "method": "POST",
+      "path": "/contacts/search",
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "Filterable: id and account_id (equals/in/not_in), email and name (equals/in/not_in/string_contains). Custom fields by slug in field. search_text is fuzzy and intersects the filter."
+    },
+    "list_users": {
+      "method": "GET",
+      "path": "/users",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "Organisation members, not contacts. include_deactivated defaults to false."
+    },
+    "get_user": {
+      "method": "GET",
+      "path": "/users/{id}",
+      "write_scope": "readonly",
+      "rate_limit": "60/min"
+    },
+    "search_users": {
+      "method": "POST",
+      "path": "/users/search",
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "Only email is filterable, and only with equals/in/not_in."
+    },
+    "get_call_recording": {
+      "method": "GET",
+      "path": "/call-recordings/{id}",
+      "write_scope": "readonly",
+      "rate_limit": "60/min",
+      "notes": "Carries title, summary, participant_emails, duration_ms and a url. source names the recorder - fathom, gong, grain, granola or custom_call_recorder."
+    },
+    "search_call_recordings": {
+      "method": "POST",
+      "path": "/call-recordings/search",
+      "write_scope": "readonly",
+      "rate_limit": "20/min",
+      "notes": "Filterable: account_id (equals/in/not_in/is_set/is_unset), source (equals/in/not_in), title (equals/string_contains), start_time (time_is_after/time_is_before/time_range). Timestamps are RFC 3339. This one's limit is <= 1000, not < 1000 - the only endpoint read so far that differs."
+    }
+  },
+  "filters": {
+    "note": "Pylon's search endpoints share one filter object across resources, so this is worth knowing once.",
+    "shape": "{ field, operator, value | values, subfilters }",
+    "operators": [
+      "equals",
+      "not_equals",
+      "contains",
+      "does_not_contain",
+      "in",
+      "not_in",
+      "and",
+      "or",
+      "time_is_after",
+      "time_is_before",
+      "time_range",
+      "string_contains",
+      "string_does_not_contain",
+      "is_set",
+      "is_unset",
+      "greater_than",
+      "less_than",
+      "greater_than_or_equals",
+      "less_than_or_equals"
+    ],
+    "rules": [
+      "value is for single-valued operators, values for in and not_in.",
+      "subfilters are only valid under and / or, and the tree may be at most 3 deep.",
+      "Which fields are filterable is per endpoint - the shared operator list does not mean a field accepts all of them."
+    ]
+  },
+  "pending_operations": {
+    "note": "Pylon's reference also lists Activities, Custom Fields, Custom Objects, Feature Requests, Issues, Knowledge Base, Macros, Messages, Surveys, Tags, Tasks & Projects, Teams, Ticket Forms, Training Data and User roles. Only resources whose OpenAPI blocks were supplied are recorded above; no path in this file is inferred from the index. Issues and Messages are what a support-triage task actually needs and are the two to get next.",
+    "wanted": [
+      "issues",
+      "messages",
+      "tags",
+      "teams",
+      "custom-fields",
+      "knowledge-base"
+    ]
+  },
+  "rate_limits": {
+    "note": "Per endpoint, not per account, and published on each endpoint rather than as one global figure. The pattern in what has been read: plain reads 60/min, searches 20/min, and anything expensive or destructive 10/min. Read the endpoint's own figure rather than assuming 60.",
+    "observed": {
+      "GET /accounts": "60/min",
+      "GET /accounts/{id}": "60/min",
+      "POST /accounts/search": "20/min",
+      "GET /accounts/{id}/relationships": "60/min",
+      "GET /audit-logs": "60/min",
+      "POST /audit-logs/search": "10/min",
+      "POST /attachments": "10/min",
+      "GET /contacts": "60/min",
+      "GET /contacts/{id}": "60/min",
+      "POST /contacts/search": "20/min",
+      "DELETE /contacts/{id}": "10/min",
+      "GET /users": "60/min",
+      "GET /users/{id}": "60/min",
+      "POST /users/search": "20/min",
+      "GET /call-recordings/{id}": "60/min",
+      "POST /call-recordings/search": "20/min"
+    }
+  },
+  "never_expose": [
+    "POST /accounts/merge - permanently deletes the merged accounts, is explicitly not undoable, and is not transactional across the batch, so a failure halfway leaves the earlier merges done. Nothing in the Flux catalogue needs it.",
+    "DELETE /accounts/{id} - permanent.",
+    "PATCH /accounts - bulk-edits up to 100 accounts in one call, and tags default to replace rather than append.",
+    "DELETE /contacts/{id} and DELETE /call-recordings/{id} - both permanent.",
+    "PATCH /users/{id} - can change a colleague's role_id, which is a permissions change, not a data edit."
+  ],
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.usepylon.com/pylon-docs/developer/api/quick-start",
+      "https://docs.usepylon.com/pylon-docs/developer/api/authentication",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/accounts",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/audit-logs",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/attachments",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/contacts",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/users",
+      "https://docs.usepylon.com/pylon-docs/developer/api/api-reference/call-recordings",
+      "https://docs.usepylon.com/pylon-docs/developer/custom-apps"
+    ],
+    "notes": [
+      "The base URL, the bearer scheme, every path and every rate limit above come out of the OpenAPI documents embedded in Pylon's own reference pages, which the user supplied. Nothing here is inferred from the resource index.",
+      "docs.usepylon.com is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the remaining resources need their pages supplying the same way."
+    ]
+  },
+  "custom_apps": {
+    "note": "Not a Flux connector operation. Pylon Custom Apps run the other way round - Pylon GETs an endpoint you host and renders the JSON it returns in the issue sidebar. A desktop browser has no public endpoint, so Flux cannot be a custom app. Recorded so it is not mistaken for an API surface.",
+    "handshake": "GET with request_type=verify and a one-time code; the endpoint must echo the code back, as JSON {\"code\":...} or as text/plain. Repeated whenever the app disconnects.",
+    "fetch": "GET with request_type=fetch_data plus app_id, widget_id, issue_id, organization_id, account_id, requester_id and requester_email.",
+    "response": "{ version, header, components } where components are card, text, date_time, badge, button, link or divider. Badge colours are limited to blue, green, red, orange, gray."
+  }
+}
