@@ -8,6 +8,7 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/flux/connectors/connector_registry.h"
 #include "chrome/browser/flux/connectors/connector_tokens.h"
@@ -82,7 +83,10 @@ class OAuthFlow {
   void ExchangeCode(const std::string& code, CompleteCallback callback);
 
   raw_ptr<Profile> profile_;
-  const ConnectorDef& def_;
+  // raw_ref, not a native reference: the chromium-rawref plugin rejects
+  // reference-typed fields outright. The registry owns the definitions in a
+  // std::map and outlives every flow, so the referent is stable.
+  const raw_ref<const ConnectorDef> def_;
   OAuthClient client_;
   std::string code_verifier_;
   std::string state_;

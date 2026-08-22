@@ -34,10 +34,11 @@ ConnectorToken ConnectorTokenStore::Get(const std::string& connector_id) const {
   if (blob.empty())
     return token;
 
-  std::optional<base::Value> parsed = base::JSONReader::Read(blob);
-  if (!parsed || !parsed->is_dict())
+  std::optional<base::DictValue> parsed =
+      base::JSONReader::ReadDict(blob, base::JSON_PARSE_RFC);
+  if (!parsed)
     return token;
-  const base::DictValue& dict = parsed->GetDict();
+  const base::DictValue& dict = *parsed;
 
   if (const std::string* v = dict.FindString("access_token"))
     token.access_token = *v;

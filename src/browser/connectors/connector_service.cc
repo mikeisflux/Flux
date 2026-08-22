@@ -21,12 +21,12 @@ namespace {
 // making a request.
 std::string FindBaseUrl(const std::string& body,
                         const AccountDiscovery& discovery) {
-  std::optional<base::Value> parsed = base::JSONReader::Read(body);
-  if (!parsed || !parsed->is_dict())
+  std::optional<base::DictValue> parsed =
+      base::JSONReader::ReadDict(body, base::JSON_PARSE_RFC);
+  if (!parsed)
     return std::string();
 
-  const base::ListValue* accounts =
-      parsed->GetDict().FindList(discovery.accounts_path);
+  const base::ListValue* accounts = parsed->FindList(discovery.accounts_path);
   if (!accounts)
     return std::string();
 
@@ -125,10 +125,11 @@ OAuthClient ConnectorService::GetClient(const std::string& connector_id) const {
   const std::string blob = clients_.Get(connector_id);
   if (blob.empty())
     return client;
-  std::optional<base::Value> parsed = base::JSONReader::Read(blob);
-  if (!parsed || !parsed->is_dict())
+  std::optional<base::DictValue> parsed =
+      base::JSONReader::ReadDict(blob, base::JSON_PARSE_RFC);
+  if (!parsed)
     return client;
-  const base::DictValue& dict = parsed->GetDict();
+  const base::DictValue& dict = *parsed;
   if (const std::string* v = dict.FindString("client_id"))
     client.client_id = *v;
   if (const std::string* v = dict.FindString("client_secret"))

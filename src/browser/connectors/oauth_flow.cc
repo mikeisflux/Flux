@@ -90,12 +90,13 @@ ConnectorToken ParseTokenResponse(const std::string& body,
                                   std::string* error) {
   ConnectorToken token;
 
-  std::optional<base::Value> parsed = base::JSONReader::Read(body);
-  if (!parsed || !parsed->is_dict()) {
+  std::optional<base::DictValue> parsed =
+      base::JSONReader::ReadDict(body, base::JSON_PARSE_RFC);
+  if (!parsed) {
     *error = "The service's token endpoint did not return JSON.";
     return token;
   }
-  const base::DictValue& dict = parsed->GetDict();
+  const base::DictValue& dict = *parsed;
 
   // RFC 6749 error response. Prefer the human-readable description where the
   // provider bothered to send one.
@@ -227,7 +228,7 @@ GURL OAuthFlow::BuildAuthorizeUrl() {
   code_verifier_ = RandomUrlSafeString(32);
   state_ = RandomUrlSafeString(16);
 
-  GURL url(def_.auth.authorize_url);
+  GURL url(def_->auth.authorize_url);
   if (!url.is_valid())
     return GURL();
 
@@ -243,9 +244,9 @@ GURL OAuthFlow::BuildAuthorizeUrl() {
   // parameter at all, and Basecamp's authorize endpoint does not take one.
   // Sending scope= empty is not the same as omitting it and some providers
   // reject it.
-  if (!def_.auth.scopes.empty()) {
+  if (!def_->auth.scopes.empty()) {
     url = net::AppendQueryParameter(url, "scope",
-                                    JoinScopes(def_.id, def_.auth.scopes));
+                                    JoinScopes(def_->id, def_->auth.scopes));
   }
   return url;
 }
@@ -306,7 +307,7 @@ void OAuthFlow::ExchangeCode(const std::string& code,
       {"redirect_uri", client_.redirect_uri},
       {"code_verifier", code_verifier_},
   };
-  PostToTokenEndpoint(profile_, def_, client_, std::move(form),
+  PostToTokenEndpoint(profile_, *def_, client_, std::move(form),
                       ConnectorToken(), &loader_, std::move(callback));
 }
 

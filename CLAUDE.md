@@ -76,6 +76,27 @@ Node and npm are available in this container, so there is no excuse for
 hand-formatting CSS to satisfy a linter, or for shipping TypeScript nobody
 compiled - install them and run the real thing.
 
+### The C++ is checked against the mistakes that have cost builds
+
+`tools/check-cpp.sh` is not a compiler and cannot be one - Chromium does not
+build in this container. It is a list of the specific Chromium-isms that have
+each broken a real build once, as greps over `src/browser`:
+
+- `JSONReader::Read` and friends lost their single-argument overloads; the
+  `options` argument is required and the providers already pass
+  `base::JSON_PARSE_RFC`.
+- A reference-typed field is rejected outright by the `chromium-rawref`
+  plugin. Use `raw_ref<T>`.
+- A raw pointer field is rejected by the raw-ptr plugin. Use `raw_ptr<T>`.
+
+Add a rule when something new costs a build, and **break it on purpose to
+prove it fires** before trusting it - two checks in this repo have already
+passed while the thing they were supposed to catch went through.
+
+The deeper lesson each of these encodes: **match the surrounding code**. All
+three were already done correctly elsewhere in `src/browser`, and grepping for
+an existing use would have been faster than getting it wrong.
+
 ### The patch series is applied before it is handed over
 
 `tools/check-patches.sh` fetches only the files the series touches from the

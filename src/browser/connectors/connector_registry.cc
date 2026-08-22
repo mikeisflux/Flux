@@ -86,11 +86,12 @@ ConnectorRegistry::ConnectorRegistry() {
 ConnectorRegistry::~ConnectorRegistry() = default;
 
 bool ConnectorRegistry::LoadFromJson(const std::string& json) {
-  std::optional<base::Value> parsed = base::JSONReader::Read(json);
-  if (!parsed || !parsed->is_dict())
+  std::optional<base::DictValue> parsed =
+      base::JSONReader::ReadDict(json, base::JSON_PARSE_RFC);
+  if (!parsed)
     return false;
 
-  const base::ListValue* list = parsed->GetDict().FindList("connectors");
+  const base::ListValue* list = parsed->FindList("connectors");
   if (!list)
     return false;
 
