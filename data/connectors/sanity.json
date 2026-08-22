@@ -1,0 +1,56 @@
+{
+  "id": "sanity",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "Robot token",
+      "where": "sanity.io/manage > your project > API > Tokens > Add API token, with Viewer permission.",
+      "prefix": "sk",
+      "notes": [
+        "Use a robot token with Viewer, not a personal token: it is scoped to one project and does not carry a human's permissions across every project they belong to."
+      ]
+    },
+    "notes": [
+      "A public dataset needs no token at all. A token is only required for a private dataset or for mutations, and this connector is read-only.",
+      "The API host is per project - {projectId}.api.sanity.io - so the base URL cannot be fixed and has to be built from the project id.",
+      "The date in the path is the API version and pins response shape. Left unpinned, Sanity uses the newest and the shape can change under you."
+    ]
+  },
+  "api": {
+    "base_url": "https://{projectId}.api.sanity.io/v2021-06-07",
+    "headers": {
+      "Authorization": "Bearer {api_token}"
+    }
+  },
+  "operations": {
+    "query": {
+      "method": "GET",
+      "path": "/data/query/{dataset}",
+      "write_scope": "readonly",
+      "notes": "GROQ via the query parameter. Long queries must be POSTed instead - URLs have a length limit and GROQ gets long."
+    },
+    "get_document": {
+      "method": "GET",
+      "path": "/data/doc/{dataset}/{documentId}",
+      "write_scope": "readonly"
+    },
+    "list_datasets": {
+      "method": "GET",
+      "path": "https://api.sanity.io/v2021-06-07/projects/{projectId}/datasets",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Query volume is billed rather than hard-limited on most plans; an unbounded loop costs money rather than returning 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://www.sanity.io/docs/content-lake/http-auth",
+      "https://www.sanity.io/docs/http-query",
+      "https://www.sanity.io/docs/content-lake/datasets"
+    ]
+  }
+}

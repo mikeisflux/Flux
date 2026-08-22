@@ -1,0 +1,71 @@
+{
+  "id": "cal_com",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://app.cal.com/auth/oauth2/authorize",
+    "token_url": "https://api.cal.com/v2/oauth/{clientId}/exchange",
+    "client_auth": "post",
+    "scopes": [
+      "READ_BOOKING",
+      "READ_PROFILE"
+    ],
+    "notes": [
+      "Cal.com OAuth is part of its Platform product and the token exchange path embeds the client id, which is unusual - it is not a fixed URL.",
+      "For a single account an API key is simpler and is what this connector offers first.",
+      "Self-hosted instances expose the same v2 API on their own host, so the base URL must be configurable."
+    ],
+    "personal_token": {
+      "label": "API key",
+      "where": "cal.com > Settings > Security > API keys.",
+      "prefix": "cal_",
+      "notes": [
+        "cal_live_ prefixes a live-mode key; cal_ alone is test mode. Connecting a test key against live data returns empty results rather than an error."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.cal.com/v2",
+    "headers": {
+      "Authorization": "Bearer {api_key}"
+    }
+  },
+  "operations": {
+    "list_bookings": {
+      "method": "GET",
+      "path": "/bookings",
+      "write_scope": "readonly"
+    },
+    "get_booking": {
+      "method": "GET",
+      "path": "/bookings/{uid}",
+      "write_scope": "readonly"
+    },
+    "list_event_types": {
+      "method": "GET",
+      "path": "/event-types",
+      "write_scope": "readonly"
+    },
+    "list_schedules": {
+      "method": "GET",
+      "path": "/schedules",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "requests_per_minute": 120,
+    "note": "Documented starting point; higher on paid plans."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://cal.com/docs/api-reference/v2/introduction",
+      "https://apis.io/apis/calcom/rest-api-v2/",
+      "https://github.com/calcom/cal.diy/issues/19456"
+    ],
+    "notes": [
+      "Cal.com has an open issue about third-party OAuth for API v2, so the OAuth path here may not be generally available. The API key path is the one to rely on."
+    ]
+  }
+}

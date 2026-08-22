@@ -1,0 +1,66 @@
+{
+  "id": "attio",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://app.attio.com/authorize",
+    "token_url": "https://app.attio.com/oauth/token",
+    "client_auth": "post",
+    "scopes": [
+      "record:read",
+      "object_configuration:read",
+      "list:read"
+    ],
+    "notes": [
+      "OAuth is only needed to publish an integration. For one workspace an access token is the documented and simpler route.",
+      "Read scopes only: a CRM an agent can write is a CRM a misread field corrupts quietly, and the damage is discovered months later in a report."
+    ],
+    "personal_token": {
+      "label": "Access token",
+      "where": "Attio > Workspace Settings > Developers > Generate API key.",
+      "prefix": "",
+      "notes": [
+        "Scoped to a single workspace, which is the natural boundary here."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.attio.com/v2",
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  },
+  "operations": {
+    "list_objects": {
+      "method": "GET",
+      "path": "/objects",
+      "write_scope": "readonly"
+    },
+    "query_records": {
+      "method": "POST",
+      "path": "/objects/{object}/records/query",
+      "write_scope": "readonly"
+    },
+    "get_record": {
+      "method": "GET",
+      "path": "/objects/{object}/records/{record_id}",
+      "write_scope": "readonly"
+    },
+    "list_lists": {
+      "method": "GET",
+      "path": "/lists",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Per workspace; returns 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.attio.com/api-reference/oauth-20/token-endpoint",
+      "https://docs.attio.com/rest-api/tutorials/connect-an-app-through-oauth"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "apollo",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "api_key",
+    "personal_token": {
+      "label": "API key",
+      "where": "Apollo > Settings > Integrations > API. Master keys exist; prefer a key scoped to the endpoints you need.",
+      "prefix": "",
+      "notes": [
+        "Sent in the x-api-key header, not as a Bearer token and not as a query parameter - Apollo removed query-parameter auth in September 2024."
+      ]
+    },
+    "notes": [
+      "Apollo's OAuth flow is for approved partners only; a direct customer uses an API key, which is what this connector assumes.",
+      "Apollo's API terms restrict what may be done with exported contact data. A task that bulk-exports and re-sells is a terms breach, not just an unusual use."
+    ]
+  },
+  "api": {
+    "base_url": "https://api.apollo.io/api/v1",
+    "headers": {
+      "x-api-key": "{api_key}",
+      "Content-Type": "application/json"
+    }
+  },
+  "operations": {
+    "people_search": {
+      "method": "POST",
+      "path": "/mixed_people/search",
+      "write_scope": "readonly"
+    },
+    "organization_search": {
+      "method": "POST",
+      "path": "/mixed_companies/search",
+      "write_scope": "readonly"
+    },
+    "people_enrich": {
+      "method": "POST",
+      "path": "/people/match",
+      "write_scope": "readonly"
+    },
+    "organization_enrich": {
+      "method": "GET",
+      "path": "/organizations/enrich",
+      "write_scope": "readonly"
+    }
+  },
+  "rate_limits": {
+    "note": "Per minute, hour and day, varying by plan, returned in x-rate-limit headers. Enrichment is metered as credits separately from the rate limit - a loop over a sheet can exhaust the credit balance without ever hitting a 429."
+  },
+  "source": {
+    "verified": "search",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://docs.apollo.io/reference/authentication",
+      "https://docs.apollo.io/docs",
+      "https://www.apollo.io/terms/api"
+    ]
+  }
+}

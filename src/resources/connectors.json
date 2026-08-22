@@ -40,7 +40,7 @@
       "description": "Find leads, enrich data, and sequence outreach",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "granola",
@@ -80,7 +80,7 @@
       "description": "Manage CRM contacts, companies, and deals",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "stripe",
@@ -232,7 +232,7 @@
       "description": "Manage scheduling links, bookings, and availability",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "klaviyo",
@@ -272,7 +272,7 @@
       "description": "Query schemas and manage structured content",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "dualentry",
