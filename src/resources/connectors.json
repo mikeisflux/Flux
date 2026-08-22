@@ -314,6 +314,15 @@
       "transport": "api",
       "badge": null,
       "definition": "authored"
+    },
+    {
+      "id": "basecamp",
+      "_": "Not in the reference. Added at the user's request; appended rather than sorted in so the reference order above stays intact.",
+      "name": "Basecamp",
+      "description": "Read and post to projects: to-dos, message boards, Campfires, schedules and docs",
+      "transport": "api",
+      "badge": null,
+      "definition": "authored"
     }
   ]
 }

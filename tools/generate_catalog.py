@@ -19,6 +19,10 @@ API_CONNECTORS = {
     "Calendly","Airtable","Grain","Salesforce","Brex","Mercury","Ramp",
     "Cal.com","Klaviyo","Coda","PostHog","Pylon","Sanity","DualEntry",
     "Google Analytics","Instagram",
+    # Beyond the reference, added on request. They belong in this set for the
+    # same reason as the rest: a catalog row naming one of them derives
+    # transport=api, and without the name it would silently derive browser.
+    "Plain","Basecamp",
 }
 
 DAYS = {"monday":1,"tuesday":2,"wednesday":3,"thursday":4,"friday":5,

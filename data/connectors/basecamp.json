@@ -1,0 +1,326 @@
+{
+  "id": "basecamp",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://launchpad.37signals.com/authorization/new",
+    "token_url": "https://launchpad.37signals.com/authorization/token",
+    "client_auth": "post",
+    "scopes": [],
+    "notes": [
+      "OAuth 2 only. Basecamp's own authorization document mentions personal access tokens in passing, but nothing in the API reference says where a user creates one, so Flux does not offer that path - offering a field with no instructions is worse than not offering it.",
+      "The scope list is empty deliberately, not forgotten: Basecamp's authorize URL takes response_type, client_id and redirect_uri and no scope parameter. A Basecamp-issued token reports a scope back on the authorization document (\"full\"), but there is no documented way to ask for a narrower one, so the narrowing has to happen in Flux - which is what the write_scope on each operation below is for.",
+      "Register the app at launchpad.37signals.com/integrations to get client_id and client_secret.",
+      "The legacy type=web_server and type=refresh parameters still work but response_type=code and grant_type=refresh_token are the documented form."
+    ],
+    "token": {
+      "expires_in": 1209600,
+      "note": "Access tokens last two weeks. The token response always carries a refresh_token; POST grant_type=refresh_token with client_id and client_secret to the same token_url. A connector that does not refresh silently stops working a fortnight after the user connects it."
+    },
+    "account_discovery": {
+      "endpoint": "GET https://launchpad.37signals.com/authorization.json",
+      "note": "This is the mandatory first call after authorizing - it is where the base URL comes from. Pick the account whose \"product\" is \"bc3\" and use its \"href\" verbatim as the API base. Do not build https://3.basecampapi.com/{account_id} yourself; the href is the contract.",
+      "also": "Basecamp serves its own copy at GET https://3.basecampapi.com/authorization.json (no account prefix). It omits identity name/email and replaces \"product\"/\"app_href\" with an RFC 8707 \"resource\" (urn:bc:account:{id}), so a client reading both must select accounts by href or resource and treat product as optional."
+    }
+  },
+  "api": {
+    "base_url": "https://3.basecampapi.com/{account_id}",
+    "base_url_note": "Templated only for documentation. At runtime it is the href from the authorization document - see auth.account_discovery.",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "User-Agent": "Flux (https://github.com/mikeisflux/Flux)",
+      "Content-Type": "application/json; charset=utf-8",
+      "Accept": "application/json"
+    },
+    "pagination": {
+      "style": "link-header",
+      "request": "Follow the URL in the RFC 5988 Link header with rel=\"next\". Never construct a page URL.",
+      "response": "A blank Link header is the last page. X-Total-Count carries the size of the whole collection.",
+      "note": "Page size is geared, not fixed: 15 on page 1, 30 on page 2, 50 on page 3, 100 from page 4 on. Code that assumes a constant page size will miscount."
+    },
+    "caching": {
+      "note": "Basecamp asks that clients use freshness headers, not as an optimisation but as a condition of use. Store the ETag and Last-Modified from every response and send them back as If-None-Match and If-Modified-Since; a 304 costs no bandwidth and no rate-limit goodwill."
+    },
+    "errors": {
+      "400": "Almost always a missing or malformed User-Agent header. See gotchas.",
+      "415": "Content-Type was not application/json; charset=utf-8 on a POST or PUT.",
+      "429": "Read Retry-After (seconds) and wait exactly that long. Do not use a fixed backoff.",
+      "404": "Deleted content, insufficient permission, or an inactive account. Never retried automatically.",
+      "404 with Reason: Account Inactive": "The whole account is suspended or its trial expired. Every request to it will fail. Disable the connection in Flux and tell the user; retrying is pure noise.",
+      "5xx": "500, 502, 503 and 504 are retryable with exponential backoff."
+    }
+  },
+  "gotchas": [
+    "The User-Agent header is mandatory and must name the app AND a way to contact its author. Without it every request is 400 Bad Request - not 401, not 403, which is why it reads like a bug in the request body.",
+    "Creating a message or a document WITHOUT a status field creates a draft, not a post. It notifies nobody and does not appear on the board. Pass status: \"active\" to publish. Schedule entries invert this: they publish immediately unless you pass status: \"drafted\".",
+    "Flat routes (/todos/{id}.json) are canonical. The /buckets/{project_id}/... form still works in perpetuity but is legacy. Three endpoint families are the exception and are still project-scoped only: message types (/buckets/{id}/categories.json), the webhooks index and create, and adding a tool to a dock.",
+    "bucket_id and project id are the same number. A project has exactly one bucket, so anywhere the docs say bucket, the project ID is the value.",
+    "Everything in a project is a \"recording\", which is why comments are posted to /recordings/{id}/comments.json regardless of whether the thing being commented on is a message, a to-do or an upload.",
+    "Check a project's dock before assuming a tool exists. Message boards, to-do sets, schedules and campfires can each be disabled per project, and the dock array in the project payload is what says which are enabled and what their IDs are.",
+    "The search endpoint's project filter is bucket_ids[] (plural, array). The recordings endpoint uses bucket. They are different parameter names for the same idea and swapping them silently returns unfiltered results.",
+    "Campfires are /chats.json, not /campfires.json.",
+    "Rich text is HTML with a fixed allowed tag set: div, h1, br, strong, em, strike, a (with href), pre, ol, ul, li and blockquote. Anything else is stripped silently, so content that looked right in the request comes back missing.",
+    "A to-do can live directly under the todoset, outside any list - the todoset payload counts them as completed_loose_todos_count. Walking only the to-do lists misses them."
+  ],
+  "operations": {
+    "get_authorization": {
+      "method": "GET",
+      "path": "https://launchpad.37signals.com/authorization.json",
+      "write_scope": "readonly",
+      "notes": "Absolute, not relative to base_url - this is the call that produces the base URL. Also returns expires_at, which is the cheapest way to know a token is about to lapse."
+    },
+    "list_projects": {
+      "method": "GET",
+      "path": "/projects.json",
+      "write_scope": "readonly",
+      "notes": "Active projects visible to the user, newest first. Each carries its dock, which is where the message_board, todoset, schedule and chat IDs come from."
+    },
+    "get_project": {
+      "method": "GET",
+      "path": "/projects/{project_id}.json",
+      "write_scope": "readonly"
+    },
+    "get_todoset": {
+      "method": "GET",
+      "path": "/todosets/{todoset_id}.json",
+      "write_scope": "readonly",
+      "notes": "The todoset ID comes from the project's dock, not from a list endpoint."
+    },
+    "list_todolists": {
+      "method": "GET",
+      "path": "/todosets/{todoset_id}/todolists.json",
+      "write_scope": "readonly"
+    },
+    "list_todos": {
+      "method": "GET",
+      "path": "/todolists/{todolist_id}/todos.json",
+      "write_scope": "readonly",
+      "notes": "Returns only active, pending to-dos by default. completed=true returns only completed ones; status=archived or status=trashed returns archived or trashed to-dos including both pending and completed. The two combine."
+    },
+    "get_todo": {
+      "method": "GET",
+      "path": "/todos/{todo_id}.json",
+      "write_scope": "readonly"
+    },
+    "create_todo": {
+      "method": "POST",
+      "path": "/todolists/{todolist_id}/todos.json",
+      "write_scope": "draft",
+      "notes": "Requires content. Optional description (HTML), assignee_ids, completion_subscriber_ids, due_on, starts_on, and notify. Draft rather than send while notify is false: the to-do is visible in the project but nobody is messaged. Set notify true only under a send-scoped task."
+    },
+    "update_todo": {
+      "method": "PUT",
+      "path": "/todos/{todo_id}.json",
+      "write_scope": "draft"
+    },
+    "complete_todo": {
+      "method": "POST",
+      "path": "/todos/{todo_id}/completion.json",
+      "write_scope": "draft"
+    },
+    "uncomplete_todo": {
+      "method": "DELETE",
+      "path": "/todos/{todo_id}/completion.json",
+      "write_scope": "draft"
+    },
+    "list_messages": {
+      "method": "GET",
+      "path": "/message_boards/{message_board_id}/messages.json",
+      "write_scope": "readonly"
+    },
+    "get_message": {
+      "method": "GET",
+      "path": "/messages/{message_id}.json",
+      "write_scope": "readonly"
+    },
+    "draft_message": {
+      "method": "POST",
+      "path": "/message_boards/{message_board_id}/messages.json",
+      "write_scope": "draft",
+      "notes": "Omit status. Requires subject; content is optional HTML. The message is created as a draft and notifies nobody, which is what makes this the draft-scoped form of the same endpoint as post_message."
+    },
+    "post_message": {
+      "method": "POST",
+      "path": "/message_boards/{message_board_id}/messages.json",
+      "write_scope": "send",
+      "notes": "Same endpoint with status: \"active\". Publishes and notifies. Everyone on the project is notified and subscribed unless subscriptions is given as an array of person IDs."
+    },
+    "publish_message": {
+      "method": "PUT",
+      "path": "/messages/{message_id}.json",
+      "write_scope": "send",
+      "notes": "Publishes an existing draft with a body of {\"status\": \"active\"} and nothing else. The update merges, so subject, content and subscribers are preserved - resending them is how you change who gets notified by accident. Documents publish the same way via PUT /documents/{id}.json."
+    },
+    "list_comments": {
+      "method": "GET",
+      "path": "/recordings/{recording_id}/comments.json",
+      "write_scope": "readonly"
+    },
+    "create_comment": {
+      "method": "POST",
+      "path": "/recordings/{recording_id}/comments.json",
+      "write_scope": "send",
+      "notes": "Send, not draft: every subscriber to the recording is notified the moment it posts, and there is no draft state for a comment. Requires content as HTML."
+    },
+    "list_campfires": {
+      "method": "GET",
+      "path": "/chats.json",
+      "write_scope": "readonly"
+    },
+    "list_campfire_lines": {
+      "method": "GET",
+      "path": "/chats/{chat_id}/lines.json",
+      "write_scope": "readonly"
+    },
+    "create_campfire_line": {
+      "method": "POST",
+      "path": "/chats/{chat_id}/lines.json",
+      "write_scope": "send",
+      "notes": "Requires content. Pass content_type: \"text/html\" for rich text; plain text is the default. A campfire line cannot be drafted, so this is always send."
+    },
+    "get_my_assignments": {
+      "method": "GET",
+      "path": "/my/assignments.json",
+      "write_scope": "readonly",
+      "notes": "Grouped into priorities (\"Up Next\") and non_priorities. Card table steps are folded into their parent card as children."
+    },
+    "get_assignments_due": {
+      "method": "GET",
+      "path": "/my/assignments/due.json",
+      "write_scope": "readonly",
+      "notes": "scope is one of overdue, due_today, due_tomorrow, due_later_this_week, due_next_week, due_later; defaults to overdue. An unrecognised scope is a 400 that lists the valid ones."
+    },
+    "get_completed_assignments": {
+      "method": "GET",
+      "path": "/my/assignments/completed.json",
+      "write_scope": "readonly"
+    },
+    "prioritize_assignment": {
+      "method": "POST",
+      "path": "/my/priorities.json",
+      "write_scope": "draft",
+      "notes": "Adds a recording to Up Next. Returns 204 No Content - no body to parse."
+    },
+    "deprioritize_assignment": {
+      "method": "DELETE",
+      "path": "/my/priorities/{recording_id}.json",
+      "write_scope": "draft",
+      "notes": "Returns 204 No Content."
+    },
+    "list_schedule_entries": {
+      "method": "GET",
+      "path": "/schedules/{schedule_id}/entries.json",
+      "write_scope": "readonly"
+    },
+    "get_schedule_entry": {
+      "method": "GET",
+      "path": "/schedule_entries/{entry_id}.json",
+      "write_scope": "readonly"
+    },
+    "create_schedule_entry": {
+      "method": "POST",
+      "path": "/schedules/{schedule_id}/entries.json",
+      "write_scope": "send",
+      "notes": "Requires summary, starts_at and ends_at (ISO 8601). Send, not draft, because a schedule entry over the API publishes immediately unless status: \"drafted\" is passed - the opposite default to messages and documents. participant_ids, all_day, url (returned as join_url), highlighted, notify and recurrence_schedule are optional."
+    },
+    "list_people": {
+      "method": "GET",
+      "path": "/people.json",
+      "write_scope": "readonly"
+    },
+    "list_project_people": {
+      "method": "GET",
+      "path": "/projects/{project_id}/people.json",
+      "write_scope": "readonly",
+      "notes": "The source of the person IDs that assignee_ids, subscriptions and participant_ids take."
+    },
+    "get_person": {
+      "method": "GET",
+      "path": "/people/{person_id}.json",
+      "write_scope": "readonly"
+    },
+    "get_my_profile": {
+      "method": "GET",
+      "path": "/my/profile.json",
+      "write_scope": "readonly",
+      "notes": "The correct way to learn who the token belongs to inside Basecamp. The identity on the authorization document is a Basecamp ID, not a person, and the docs say plainly not to use it for this."
+    },
+    "get_search_metadata": {
+      "method": "GET",
+      "path": "/searches/metadata.json",
+      "write_scope": "readonly",
+      "notes": "Fetch this before searching rather than hardcoding type names - the docs say the available types vary. Keys look like Kanban::Card and Schedule::Entry, not \"card\" and \"event\"."
+    },
+    "search": {
+      "method": "GET",
+      "path": "/search.json",
+      "write_scope": "readonly",
+      "notes": "Requires q. Optional type_names[], bucket_ids[], creator_ids[], file_type, exclude_chat, since (last_7_days | last_30_days | last_90_days | last_12_months | forever), sort (best_match | recency), page, per_page. The singular type, bucket_id and creator_id are deprecated."
+    },
+    "list_documents": {
+      "method": "GET",
+      "path": "/vaults/{vault_id}/documents.json",
+      "write_scope": "readonly"
+    },
+    "get_document": {
+      "method": "GET",
+      "path": "/documents/{document_id}.json",
+      "write_scope": "readonly"
+    },
+    "create_document": {
+      "method": "POST",
+      "path": "/vaults/{vault_id}/documents.json",
+      "write_scope": "draft",
+      "notes": "Requires title and content (HTML). Draft-scoped because status is omitted; passing status: \"active\" publishes and notifies, which is a send-scoped act."
+    },
+    "get_notifications": {
+      "method": "GET",
+      "path": "/my/readings.json",
+      "write_scope": "readonly",
+      "notes": "Grouped into unreads, reads, memories, bubble_ups and scheduled_bubble_ups."
+    }
+  },
+  "rate_limits": {
+    "first_limit": "50 requests per 10 seconds per IP address, as of the docs' own wording (\"currently\").",
+    "note": "Several limits run at once - separate ones for GET and POST, and per-second, per-hour and per-day windows - and Basecamp adjusts them dynamically. That makes a hardcoded client-side limiter wrong by design. Obey Retry-After on a 429 and treat backpressure as normal rather than exceptional.",
+    "retry": "429 carries Retry-After in seconds. 5xx is retried with exponential backoff. 404 is never retried."
+  },
+  "webhooks": {
+    "note": "Available, and project-scoped only: GET and POST /buckets/{project_id}/webhooks.json, then GET, PUT and DELETE /webhooks/{id}.json. Not wired into Flux yet - the agent polls - so they are listed here rather than in operations.",
+    "payload_url": "Requires a publicly reachable URL, which a desktop browser does not have. This stays unimplemented until there is somewhere for Basecamp to POST to."
+  },
+  "not_implemented": {
+    "note": "Basecamp has 50-plus resource types. What is above is the set a task can actually be built on; these are known, documented, and deliberately left out for now.",
+    "wanted": [
+      "card_tables",
+      "uploads",
+      "vaults",
+      "questionnaires",
+      "client_approvals",
+      "timesheets",
+      "hill_charts",
+      "templates",
+      "inboxes"
+    ]
+  },
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://github.com/basecamp/bc-api/blob/main/README.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/authentication.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/projects.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/todos.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/messages.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/comments.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/campfires.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/my_assignments.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/schedule_entries.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/people.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/search.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/documents.md",
+      "https://github.com/basecamp/bc-api/blob/main/sections/webhooks.md"
+    ],
+    "note": "Read from a clone of basecamp/bc-api at commit a2899b2, which is Basecamp's own API reference, rather than from search results."
+  }
+}

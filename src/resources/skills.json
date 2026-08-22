@@ -1358,6 +1358,96 @@
       "body": "## When to use\n\nRecurring charges have accumulated and no single place lists them. The user\nwants the full picture and wants the dead ones gone.\n\n## Find every recurring charge\n\nStatements are the source of truth, not memory — the whole problem is that\npeople cannot remember what they signed up for.\n\n1. Pull 12 months of transactions. A year, not 90 days, because annual\n   renewals are exactly the ones people forget.\n2. Group by normalized merchant. Descriptors drift (`GOOGLE *YOUTUBEPRE`,\n   `GOOGLE*YouTube`), so match on the stem, not the string.\n3. Keep any merchant billing on a regular cadence — monthly, quarterly, or\n   annual. Note the amount, the cadence, and the next expected date.\n4. Sweep the inbox for `receipt`, `your subscription`, `renews on`,\n   `payment confirmation`. This catches trials that have not billed yet, which\n   statements cannot show you.\n5. Flag **price increases**: same merchant, higher amount than six months ago.\n   These are almost never noticed and are frequently the reason a subscription\n   is no longer worth it.\n\n## Build the picture before touching anything\n\nProduce a sheet: merchant, amount, cadence, annualized cost, first seen, last\nseen, price change, and a **used / unsure / dead** column. Sort by annualized\ncost — a $9/month forgotten subscription outranks a $40 one that gets used.\n\nDo not guess at usage. If there is no evidence either way, mark it `unsure`\nand let the user decide. Cancelling something in use is a much worse outcome\nthan leaving one extra month on something dead.\n\n## Cancel, one at a time, with approval each time\n\nCancellation flows are built to exhaust you: buried links, retention offers,\n\"are you sure\" chains, and some that require chat or a phone call. That\ntedium is the entire reason this is worth automating.\n\nFor each item the user approved:\n\n1. Find the cancellation path — account settings, then billing, then\n   subscription. If the site hides it, search the help centre for\n   \"cancel <service>\" rather than hunting the UI.\n2. Work through the retention flow. **Capture any retention offer and stop.**\n   A 50%-off-for-12-months offer changes the decision, and the user should\n   make it, not you. Report the offer and wait.\n3. Complete the cancellation and **screenshot the confirmation**.\n4. Record the confirmation number and the effective end date. Access usually\n   runs to the end of the paid period — that is not a failed cancellation.\n\nIf a service can only be cancelled by phone or live chat, say so plainly and\nhand over the number and the account details. Do not pretend it was handled.\n\n## Verify\n\nA cancellation is not done until it is confirmed. Check for the confirmation\nemail, and re-check the account a week later — a non-trivial number of\ncancellations silently do not take.\n\n## Heuristics\n\n- Annualize everything. $12/month reads as small; $144/year does not.\n- A free trial with a card on file is a subscription. Include it.\n- Never cancel anything not explicitly approved, even when it is obviously dead.\n\n## Gotchas\n\nApp Store and Play Store subscriptions cannot be cancelled from the merchant's\nsite — they must be cancelled in the store account, and the merchant will not\ntell you that. Check there for anything showing as `APPLE.COM/BILL` or\n`GOOGLE *`."
     },
     {
+      "command": "ops-basecamp-daily-brief",
+      "name": "Start the day from Basecamp",
+      "description": "One brief of what is overdue, due today, and what was said while you were away",
+      "categories": [
+        "Ops"
+      ],
+      "roles": [
+        "ops",
+        "founders",
+        "everyone"
+      ],
+      "worksWith": [
+        {
+          "id": "Basecamp",
+          "transport": "api"
+        }
+      ],
+      "writeScope": "readonly",
+      "bodyStatus": "authored",
+      "whenToUse": "First thing in the morning, or after a day away, when the question is \"what needs me today\" and the honest answer is spread across four projects.",
+      "body": "## When to use\n\nFirst thing in the morning, or after a day away, when the question is \"what needs me today\" and the honest answer is spread across four projects.\n\n## Read in this order\n\n`/my/assignments/due.json?scope=overdue` first, then `due_today`. Overdue comes first because it is the only part of the brief where the answer might be \"this should have shipped and did not\". Then `/my/assignments.json`, whose `priorities` array is the user's own Up Next list - what they already decided mattered, which outranks anything the brief infers.\n\nThen `/my/readings.json` for what happened while they were away: `unreads` is the real inbox, `bubble_ups` is what Basecamp itself thought was worth resurfacing.\n\n## Write it as a decision list, not a feed\n\nThree sections, and nothing else:\n\n- **Late** - each item with how many days, the project, and who else is on it.\n- **Today** - due today, plus anything from Up Next that has no date.\n- **Waiting on you** - unread mentions and comments where a reply unblocks someone.\n\nEverything else in the notification list is FYI and belongs in a single line at the bottom: \"17 other updates across 4 projects.\" A brief that reprints the notification feed has not done the work.\n\n## Say what is actually late\n\n`due_on` is a date, not a datetime. Something due today is not late. Something due yesterday is one day late, and saying \"overdue\" without the number lets a two-month-old to-do hide behind a one-day one.\n\n## Gotchas\n\n- Campfire chatter is not in `/my/readings.json`. If a project runs on its Campfire, read `/chats/{id}/lines.json` for that project explicitly - otherwise the brief will confidently miss the conversation where the decision was made.\n- `priorities` being empty means the user has not set an Up Next, not that nothing is urgent. Do not report it as \"nothing prioritised\".\n- Assignments span every project the user can see, including archived-adjacent ones they have stopped caring about. Group by project so a dead project's backlog does not pad the count."
+    },
+    {
+      "command": "ops-basecamp-thread-to-todos",
+      "name": "Turn a Basecamp thread into to-dos",
+      "description": "Pull the real commitments out of a message and its comments, and put them on the list",
+      "categories": [
+        "Ops"
+      ],
+      "roles": [
+        "ops",
+        "founders"
+      ],
+      "worksWith": [
+        {
+          "id": "Basecamp",
+          "transport": "api"
+        }
+      ],
+      "writeScope": "draft",
+      "bodyStatus": "authored",
+      "whenToUse": "A message board thread has run to thirty comments, several people have agreed to do several things, and none of it is on a to-do list.",
+      "body": "## When to use\n\nA message board thread has run to thirty comments, several people have agreed to do several things, and none of it is on a to-do list.\n\n## Read the whole thread before writing anything\n\n`/messages/{id}.json` then `/recordings/{id}/comments.json` - the comments are on the *recording*, and a message is a recording, which is why the path does not say \"messages\". Paginate to the end. The last comment is where a decision gets reversed, and a to-do created from comment four that comment twenty-eight cancelled is worse than no to-do at all.\n\n## What counts as a commitment\n\nA named person, a verb, and something that can be finished. \"We should look at pricing\" is not a to-do. \"Sam is going to send the revised pricing before Friday\" is three fields: assignee Sam, content \"Send the revised pricing\", `due_on` the coming Friday.\n\nIf any of the three is missing, still create the to-do - but leave the field empty rather than inventing it, and say in the summary which ones you left blank. A guessed due date reads as a commitment somebody never made.\n\n## Put it on the right list\n\n`GET /projects/{id}.json`, find the `todoset` in the dock, `GET /todosets/{id}/todolists.json`. Match on the thread's subject before creating a new list. Most projects already have the list this belongs on and the failure mode here is a fourteenth list called \"Follow-ups\".\n\nThen `POST /todolists/{id}/todos.json` with `content`, `description` (a one-line quote of the comment it came from, and a link), `assignee_ids`, and `due_on`.\n\n## Leave notify off, then say so\n\n`notify: false` is the default and the right one here. The people in the thread already had the conversation; a notification for each of nine extracted to-dos is a way to teach them to mute the project. Post one comment back on the thread listing what was created instead - that is the notification, and it is one.\n\n## Gotchas\n\n- `assignee_ids` needs person IDs, not names. `GET /projects/{id}/people.json` for the project's own roster; the account-wide `/people.json` will happily give you the ID of somebody who cannot see the project, and the to-do will be created assigned to a person who never sees it.\n- Rich text is HTML, and the allowed tag set is narrow. Wrap the description in `<div>` and keep to `<strong>`, `<em>`, `<a>`, `<ul>`, `<li>`, `<blockquote>`.\n- Check the existing to-dos on the list before creating. Threads get re-read, and running this twice on the same thread should add nothing the second time."
+    },
+    {
+      "command": "ops-basecamp-todo-hygiene",
+      "name": "Sweep a Basecamp project for rot",
+      "description": "Find the unassigned, undated and long-dead to-dos, and propose a decision for each",
+      "categories": [
+        "Ops"
+      ],
+      "roles": [
+        "ops",
+        "founders"
+      ],
+      "worksWith": [
+        {
+          "id": "Basecamp",
+          "transport": "api"
+        }
+      ],
+      "writeScope": "draft",
+      "bodyStatus": "authored",
+      "whenToUse": "Before a planning session, or when a project's to-do count has stopped meaning anything because nobody trusts the list.",
+      "body": "## When to use\n\nBefore a planning session, or when a project's to-do count has stopped meaning anything because nobody trusts the list.\n\n## The four kinds of rot\n\nWalk every list in the project's todoset and sort each open to-do into one:\n\n- **Unowned** - no `assignee_ids`. Nobody has agreed to do it, so it is a wish.\n- **Undated** - no `due_on`. Never late, therefore never urgent, therefore never done.\n- **Stale** - `updated_at` older than 60 days with no comments. The world moved.\n- **Overdue and untouched** - past `due_on`, no activity since it lapsed. The date was fiction.\n\nA to-do can be in two categories. Report it in the worst one only; a list where items repeat teaches people to skim it.\n\n## Propose a decision, not a cleanup\n\nFor each item, one of: **assign**, **date**, **close**, or **keep as backlog**. The point of the sweep is that somebody says \"close\" out loud - to-dos do not rot because people are careless, they rot because nothing ever forced the close decision.\n\nBatch the proposals into one list for approval. Do not delete or complete anything on your own judgement: completing a to-do is indistinguishable from doing the work, and it notifies the completion subscribers.\n\n## Applying it\n\nOn approval:\n\n- Assign and date with `PUT /todos/{id}.json`.\n- Close with `POST /todos/{id}/completion.json` - and be honest in the summary that Basecamp has no \"abandoned\" state, so a closed-as-obsolete to-do looks exactly like a finished one to everyone else. If that matters, add a comment first saying why it was closed.\n- Backlog items go to a list named for what they are. Moving them off the active list is most of the value.\n\n## Gotchas\n\n- A to-do list can itself be finished. Check the list's own status before reporting twelve stale to-dos on a list that was completed in March.\n- `completed: true` items are not in the default index. That is what you want here, but it also means \"the list is empty\" can mean \"everything is done\", not \"nothing is planned\" - read `completed_ratio` on the list before saying a project has no work.\n- To-dos can live directly under the todoset, outside any list. Sweeping only the lists misses them."
+    },
+    {
+      "command": "ops-basecamp-weekly-update",
+      "name": "Post the weekly Basecamp update",
+      "description": "A project update built from what actually moved, drafted first and posted on approval",
+      "categories": [
+        "Ops",
+        "Docs"
+      ],
+      "roles": [
+        "ops",
+        "founders"
+      ],
+      "worksWith": [
+        {
+          "id": "Basecamp",
+          "transport": "api"
+        }
+      ],
+      "writeScope": "send",
+      "bodyStatus": "authored",
+      "whenToUse": "Every week, on a project with a client or a stakeholder who is not in Basecamp daily.",
+      "body": "## When to use\n\nEvery week, on a project with a client or a stakeholder who is not in Basecamp daily.\n\n## Build it from movement, not from opinion\n\nThe update is a diff of the week. Four reads:\n\n- To-dos completed since the last update - `/todolists/{id}/todos.json?completed=true`, or `/my/assignments/completed.json` if it is one person's project.\n- To-dos that became overdue - anything whose `due_on` passed with `completed: false`.\n- Messages and documents posted - `/message_boards/{id}/messages.json`, `/vaults/{id}/documents.json`.\n- Schedule entries in the coming week - `/schedules/{id}/entries.json`.\n\nAnything you cannot point at one of those four for does not go in the update.\n\n## Structure\n\nFour short sections: **Shipped**, **In flight**, **Blocked or slipped**, **Next week**. Same order every week, so the reader is comparing like with like and can skim to the section they care about.\n\nSlippage goes in its own section with the new date and who moved it. A slipped date buried in a paragraph is the thing every stakeholder learns to distrust the update over.\n\n## Draft, then publish\n\nCreate the message **without** a `status` field. Basecamp makes it a draft: nothing is posted and nobody is notified. Show the user the draft. On approval, publish it.\n\nThis is not caution for its own sake - a message board post is the most public thing this connector can do, it notifies the whole project by default, and a message cannot be unposted, only edited with the notification already sent.\n\n## Client visibility is a separate decision\n\nIf the project has clients enabled, `visible_to_clients` defaults to `false`. An update written for the client and posted invisible to them is a silent no-op that looks like success. Ask, set it explicitly, and say which way it went in the confirmation.\n\n## Gotchas\n\n- `subscriptions` as an array of person IDs narrows who is notified. Omitting it notifies and subscribes **everyone on the project**. On a project with fifteen people and two stakeholders, name the two.\n- `category_id` is the message type (\"Announcement\", \"FYI\"). Fetch the project's types from `/buckets/{project_id}/categories.json` - one of the few endpoints that is still project-scoped only - and pick one rather than leaving the post untyped.\n- Publishing an existing draft is `PUT /messages/{id}.json` with `{\"status\": \"active\"}` and nothing else. The update merges, so the draft keeps its subject, content and subscribers - resending them is how you accidentally change who gets notified."
+    },
+    {
       "command": "ops-business-pulse-snapshot",
       "name": "Business Pulse Snapshot",
       "description": "One-page cross-functional snapshot of cash, sales, pipeline, and what needs you today",
