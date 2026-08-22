@@ -1,9 +1,9 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {
-  type FluxPageHandlerRemote,
-  Provider,
-  type ProviderKeyStatus,
+import {Provider} from './flux.mojom-webui.js';
+import type {
+  FluxPageHandlerRemote,
+  ProviderKeyStatus,
 } from './flux.mojom-webui.js';
 
 const PROVIDERS = [

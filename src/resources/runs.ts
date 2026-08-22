@@ -1,10 +1,10 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {
-  type ActionRecord,
-  type FluxPageHandlerRemote,
-  type RunProgress,
-  RunState,
+import {RunState} from './flux.mojom-webui.js';
+import type {
+  ActionRecord,
+  FluxPageHandlerRemote,
+  RunProgress,
 } from './flux.mojom-webui.js';
 
 const STATE_NAME: Record<number, string> = {

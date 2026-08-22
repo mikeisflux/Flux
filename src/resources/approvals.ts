@@ -1,8 +1,8 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {
-  type ApprovalRequest,
-  type FluxPageHandlerRemote,
+import type {
+  ApprovalRequest,
+  FluxPageHandlerRemote,
 } from './flux.mojom-webui.js';
 
 /**

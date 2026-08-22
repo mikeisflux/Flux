@@ -49,6 +49,18 @@ carefully does not catch this class of bug. A parser does.
 If the download fails the check exits 0 and says so. That means the scripts are
 **unverified** - say that rather than claiming they work.
 
+### The WebUI console is linted the same way
+
+`build_webui()` runs stylelint and eslint as *build steps*, so a formatting nit
+in `app.css` is a hard build failure - and it surfaces about 44,000 targets in,
+roughly two hours. `tools/check-webui.sh` runs the same checks in seconds:
+stylelint against `tools/stylelint.config.mjs` (a mirror of Chromium's config,
+keep it in sync on uprev), plus the mixed type/value import rule that
+`@webui-eslint` enforces and npm has no copy of. Both are on the same hook.
+
+Node and npm are available in this container, so there is no excuse for
+hand-formatting CSS to satisfy a linter - install it and run the real thing.
+
 ## Layout
 
 - `src/browser/` - agent layer, junctioned into `//chrome/browser/flux`

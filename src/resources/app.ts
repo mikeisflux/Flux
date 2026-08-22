@@ -2,12 +2,14 @@
 
 import {
   FluxPageHandlerFactory,
-  FluxPageHandlerRemote,
   FluxPageHandlerObserverReceiver,
-  type ActionRecord,
-  type ApprovalRequest,
-  type RunProgress,
+  FluxPageHandlerRemote,
   RunState,
+} from './flux.mojom-webui.js';
+import type {
+  ActionRecord,
+  ApprovalRequest,
+  RunProgress,
 } from './flux.mojom-webui.js';
 
 import {RunList} from './runs.js';
