@@ -192,7 +192,7 @@
       "description": "Search meeting recordings, notes, and transcripts",
       "transport": "api",
       "badge": null,
-      "definition": "pending"
+      "definition": "authored"
     },
     {
       "id": "salesforce",

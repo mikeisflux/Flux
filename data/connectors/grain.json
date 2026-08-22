@@ -1,0 +1,173 @@
+{
+  "id": "grain",
+  "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
+  "auth": {
+    "type": "oauth2",
+    "authorize_url": "https://grain.com/_/public-api/oauth2/authorize",
+    "token_url": "https://api.grain.com/_/public-api/oauth2/token",
+    "client_auth": "post",
+    "pkce": true,
+    "scopes": [],
+    "notes": [
+      "Grain publishes no scope parameter - access is whatever the authenticating user has. The empty list is deliberate, not forgotten.",
+      "The authorize URL is on grain.com and the token URL is on api.grain.com. They are different hosts; sending either to the other fails.",
+      "PKCE with S256 is supported and is what Flux uses: code_challenge is a random string, SHA-256 hashed and base64url encoded. A desktop client has nowhere to keep client_secret, and Grain marks the secret required only for server-side applications.",
+      "The token request is JSON, not form-encoded - Grain's own examples POST Content-Type: application/json.",
+      "Access tokens carry expires_in (3600 in Grain's examples) and a rotating refresh_token. Persist the new refresh token on every exchange.",
+      "Some legacy clients get neither refresh_token nor expires_in, in which case the access token does not expire. Do not assume the refresh fields are present."
+    ],
+    "personal_token": {
+      "label": "Personal Access Token",
+      "where": "grain.com/app/settings/integrations?tab=api",
+      "prefix": "",
+      "notes": [
+        "Grain publishes no fixed prefix; the field is empty deliberately.",
+        "Scoped to the generating user - the same access that user has in Grain, nothing more. This is the tier Flux should offer."
+      ]
+    },
+    "workspace_token": {
+      "label": "Workspace Access Token",
+      "where": "grain.com/app/settings/integrations?tab=api, for users with access.",
+      "notes": [
+        "Reaches ALL DATA in the workspace, in Grain's own words - every recording of every member, not only the holder's. Do not offer this by default; a meeting-notes task never needs the whole company's calls.",
+        "It also changes behaviour: the attendance filter and the private_notes include are Personal API only and simply do not apply, while the upload endpoint requires an explicit user_id to own the result."
+      ]
+    }
+  },
+  "api": {
+    "base_url": "https://api.grain.com/_/public-api",
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Public-Api-Version": "2025-10-31",
+      "Content-Type": "application/json"
+    },
+    "notes": [
+      "Public-Api-Version is mandatory on every call, not optional. 2025-10-31 is the current version; it gates which fields exist, so pin it and change it deliberately.",
+      "v1 (the API Beta) is being sunset and some features are not carried over. Nothing here uses it.",
+      "Several reads are POSTs - list recordings, get recording, list users, list teams and list meeting types all take POST with a JSON body. That is Grain's design, not a typo.",
+      "Pagination is a cursor: the response's cursor field is passed back as a param, and is null on the last page."
+    ]
+  },
+  "operations": {
+    "list_recordings": {
+      "method": "POST",
+      "path": "/v2/recordings",
+      "params": {
+        "cursor": "string?",
+        "filter": "object?",
+        "include": "object?"
+      },
+      "write_scope": "readonly"
+    },
+    "get_recording": {
+      "method": "POST",
+      "path": "/v2/recordings/{recording_id}",
+      "params": {
+        "include": "object?"
+      },
+      "write_scope": "readonly"
+    },
+    "get_transcript": {
+      "method": "GET",
+      "path": "/v2/recordings/{recording_id}/transcript",
+      "write_scope": "readonly",
+      "notes": "JSON array of { start, end, speaker, participant_id, text }, timestamps in ms from the start of the recording. Add .txt, .vtt or .srt to the path for the text forms; .txt is 'Speaker: line' and is the cheapest thing to hand a model."
+    },
+    "list_users": {
+      "method": "POST",
+      "path": "/v2/users",
+      "write_scope": "readonly"
+    },
+    "list_teams": {
+      "method": "POST",
+      "path": "/v2/teams",
+      "write_scope": "readonly",
+      "notes": "Needed to resolve the team id for the recording filter."
+    },
+    "list_meeting_types": {
+      "method": "POST",
+      "path": "/v2/meeting_types",
+      "write_scope": "readonly",
+      "notes": "Needed to resolve the meeting_type id for the recording filter. Each carries an internal/external scope."
+    }
+  },
+  "filters": {
+    "_": "The recording filter object, passed to list_recordings.",
+    "before_datetime": "ISO 8601.",
+    "after_datetime": "ISO 8601.",
+    "caution": "Grain's own table describes these two backwards - it says before_datetime returns recordings whose start_datetime is AFTER the date, and after_datetime returns those BEFORE it. The names and the prose disagree. Treat the names as correct, but check the first response's dates before trusting a date-bounded sync; getting this wrong silently returns the wrong half of the history.",
+    "attendance": "hosted | attended. Personal API only.",
+    "participant_scope": "internal | external - team meetings versus customer meetings.",
+    "title_search": "string.",
+    "team": "UUID from list_teams.",
+    "meeting_type": "UUID from list_meeting_types."
+  },
+  "includes": {
+    "_": "The recording include object. Everything is off by default, so a bare list returns metadata only - ask for what the task needs and no more.",
+    "ai_summary": "Markdown text of the AI summary. The usual thing a task actually wants.",
+    "ai_action_items": "Action items with status, observed timestamp, text and an optional assignee.",
+    "ai_template_sections": "Object, not a boolean: { format: json|markdown|text, allowed_sections: [...] }. allowed_sections filters by section title, case insensitively.",
+    "participants": "Includes scope (internal/external/unknown), confirmed_attendee and observed join/leave times. Grain notes those times are what its recorder saw, not ground truth.",
+    "highlights": "Clips.",
+    "calendar_event": "ical_uid and the scheduled start/end, which is what to join on against a calendar connector.",
+    "screenshares": "Screenshare ranges in ms with the sharing participant.",
+    "private_notes": "The user's own notes. Personal API only.",
+    "hubspot": "HubSpot company and deal ids, and hs_contact_id on participants."
+  },
+  "rate_limits": {
+    "requests_per_minute": 300,
+    "on_exceed": "HTTP 429.",
+    "headers": {
+      "x-ratelimit-limit": "Max requests per window.",
+      "x-ratelimit-remaining": "Requests left in the window.",
+      "Retry-After": "Seconds to wait. Only present on a 429."
+    },
+    "note": "Grain returns the budget on every response, so a client can pace itself rather than discovering the limit by hitting it. Read x-ratelimit-remaining and slow down before it reaches zero."
+  },
+  "webhooks": {
+    "note": "Grain calls them hooks. Flux has no public endpoint to register, so it polls; recorded so the alternative is not re-derived.",
+    "create": {
+      "method": "POST",
+      "path": "/v2/hooks/create"
+    },
+    "list": {
+      "method": "POST",
+      "path": "/v2/hooks"
+    },
+    "delete": {
+      "method": "DELETE",
+      "path": "/v2/hooks/{hook_id}"
+    },
+    "types": [
+      "recording_added",
+      "recording_updated",
+      "recording_deleted",
+      "highlight_added",
+      "highlight_updated",
+      "highlight_deleted",
+      "story_added",
+      "story_updated",
+      "story_deleted",
+      "upload_status"
+    ],
+    "reachability_test": "Grain calls the URL on creation and refuses to create the hook unless it answers 2xx.",
+    "signature": "None documented. Grain publishes no signing secret or signature header for hooks, so a receiver cannot verify a delivery came from Grain and must treat the payload as a hint to go and fetch, never as trusted data."
+  },
+  "never_expose": [
+    "PATCH /v2/recordings/{id} - retitles someone's recording.",
+    "PUT and DELETE on /tags, /users and /teams - these change who can see a recording. Sharing is a permissions decision, not a data edit, and nothing in the Flux catalogue needs it.",
+    "The upload endpoints - they put media into someone's workspace."
+  ],
+  "source": {
+    "verified": "vendor-docs",
+    "checked": "2026-08-22",
+    "refs": [
+      "https://grain.com/app/settings/integrations?tab=api"
+    ],
+    "notes": [
+      "Every host, path, header, filter, include, hook type and rate limit above is taken verbatim from Grain's own v2 API document, which the user supplied in full.",
+      "The only ref is the token page the document itself names, because the document was pasted rather than fetched and its canonical URL was not captured. The content is first-hand; the citation is thin. Add the real docs link when it is next to hand rather than inventing one.",
+      "The before_datetime / after_datetime contradiction under `filters.caution` is Grain's, not a transcription error. It is recorded rather than silently resolved."
+    ]
+  }
+}

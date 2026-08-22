@@ -1,18 +1,17 @@
 {
   "id": "granola",
   "_": "Name, description and badge live in src/resources/connectors.json so the console and the browser process cannot disagree about them.",
-  "incomplete": "No endpoint is recorded yet. Granola's overview page documents keys, scopes, plans and limits but not the API surface; that is at docs.granola.ai/introduction, which this container cannot reach. Until those paths are read, the connector can hold a key and do nothing with it.",
   "auth": {
     "type": "api_key",
     "personal_token": {
       "label": "API key",
       "where": "Granola desktop app > Settings > Connectors > API keys > Create new key. Tick the note access scopes on the creation screen.",
-      "prefix": "",
+      "prefix": "grn_",
       "notes": [
-        "Granola does not publish a fixed key prefix; the field is empty deliberately rather than forgotten.",
-        "Requires a Business or Enterprise plan. Any workspace member on those plans can create one; there is no key on the lower tiers at all.",
-        "On Enterprise, an admin can restrict which scopes members may use in Settings > Workspace > General > API access for members - so a scope missing from the creation screen is a workspace policy, not a bug.",
-        "A personal key is tied to its owner's account and expires. Revoking is permanent and cannot be undone.",
+        "Keys are prefixed grn_.",
+        "A personal key needs a Business plan. On Enterprise an admin can restrict which scopes members may use in Settings > Workspace > General > API access for members - so a scope missing from the creation screen is workspace policy, not a bug.",
+        "A personal key is tied to its owner's account and expires. A workspace key does not; prefer that one for anything scheduled.",
+        "Scopes on a personal key can be edited after the fact (Settings > Connectors > API keys > Edit), unlike most vendors. Revoking is still permanent and cannot be undone.",
         "There is no sandbox. Test against a small dedicated folder."
       ]
     },
@@ -30,31 +29,102 @@
       "personal_notes": "Notes the key owner owns, notes shared directly with them, and notes in private folders shared with them.",
       "public_notes": "Notes visible to everyone in the workspace, including the Team space.",
       "note": "Notes are private by default. A note only appears under public_notes if it sits in a folder visible to the whole workspace. Both scopes can be on one key. An empty result is almost always a scope or folder-visibility question rather than an API fault."
-    }
+    },
+    "header": "Authorization: Bearer {api_key}"
   },
   "api": {
-    "base_url": null,
-    "note": "Not recorded. See `incomplete` above."
+    "base_url": "https://public-api.granola.ai/v1",
+    "headers": {
+      "Authorization": "Bearer {api_key}"
+    },
+    "pagination": {
+      "style": "cursor",
+      "request": "cursor query parameter",
+      "response": "hasMore (boolean) and cursor - note the camelCase, which the rest of the payload does not use"
+    },
+    "ids": "Note IDs are prefixed not_ and are not UUIDs. A UUID seen elsewhere in Granola is a different identifier and will not resolve here.",
+    "visibility": "The API only returns notes that have BOTH a generated AI summary and a transcript. A note still processing, or never summarised, is silently absent from the list and 404s on a direct get - so an empty result is usually processing state or scope, not a fault."
   },
-  "operations": {},
-  "pending_operations": {
-    "note": "Granola's overview names what the API returns - meeting notes, transcripts and AI summaries - but not the paths. The reference at docs.granola.ai/introduction has them, along with the base URL and the auth header spelling, and none of it is guessed here.",
-    "wanted": [
-      "base URL and Authorization header format",
-      "list / search notes",
-      "get a note's transcript",
-      "get a note's AI summary"
-    ]
+  "operations": {
+    "list_notes": {
+      "method": "GET",
+      "path": "/notes",
+      "params": {
+        "created_after": "RFC 3339 timestamp",
+        "cursor": "string?"
+      },
+      "write_scope": "readonly",
+      "notes": "Returns { notes, hasMore, cursor }. The natural shape for an incremental sync: keep the last created_after and page until hasMore is false."
+    },
+    "get_note": {
+      "method": "GET",
+      "path": "/notes/{note_id}",
+      "params": {
+        "include": "transcript?"
+      },
+      "write_scope": "readonly",
+      "notes": "Carries title, owner, summary and, with include=transcript, the transcript inline. Returns 413 with error code TRANSCRIPT_TOO_LARGE when the transcript will not fit - fall back to the transcript endpoint rather than retrying."
+    },
+    "get_transcript": {
+      "method": "GET",
+      "path": "/notes/{note_id}/transcript",
+      "write_scope": "readonly",
+      "notes": "The complete transcript, and the required fallback for a 413 from get_note."
+    }
   },
   "rate_limits": {
     "burst": 25,
+    "window_seconds": 5,
     "sustained_per_second": 5,
-    "note": "Granola's own figures. Scoped per user or per workspace depending on the key, so a workspace key shared between workflows shares one bucket."
+    "sustained_per_minute": 300,
+    "on_exceed": "HTTP 429.",
+    "note": "Scoped per user or per workspace depending on the key, so several workflows sharing a workspace key share one bucket."
   },
   "webhooks": {
     "available": true,
     "plans": "Business and Enterprise",
-    "note": "Granola publishes a webhooks guide covering registration, event subscription, signature verification and retries. Flux has no public endpoint to register, so it polls; recorded so the alternative is not re-derived."
+    "note": "Flux has no public endpoint to register, so it polls list_notes. Recorded in full because the signature scheme is the part people get wrong.",
+    "endpoints": {
+      "create": {
+        "method": "POST",
+        "path": "/webhook-endpoints"
+      },
+      "list": {
+        "method": "GET",
+        "path": "/webhook-endpoints"
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/webhook-endpoints/{id}"
+      }
+    },
+    "registration": "Body is { url, scopes, folder_ids? }. The URL must be HTTPS and publicly reachable - private-network addresses are rejected. scopes are personal and/or public, the same two that gate API keys. Omitting events subscribes to all of them. folder_ids narrows to those folders and their subfolders, and the scopes must match the folder's visibility.",
+    "events": {
+      "note.generated": "The first AI summary for a note is generated.",
+      "note.edited": "The summary is edited or regenerated. Carries data.changed_fields, currently always ['summary'].",
+      "note.access_granted": "A note is shared with you, directly or via a folder.",
+      "_": "note.generated only fires if the endpoint could already see the note. A note generated earlier and shared later arrives as note.access_granted instead - subscribe to both or discovery has a hole."
+    },
+    "payload": "{ event_id, event_type, note_id, occurred_at }. No note content: fetch it with the API key, and access is checked at fetch time, so a delivery can never leak more than the API would.",
+    "signature": {
+      "spec": "Standard Webhooks (standardwebhooks.com) - any conforming library verifies it.",
+      "headers": "webhook-id (equals event_id), webhook-timestamp (unix seconds), webhook-signature ('v1,' then base64 HMAC-SHA256).",
+      "algorithm": "HMAC-SHA256 over `{webhook-id}.{webhook-timestamp}.{raw body}`.",
+      "key": "The signing secret with the whsec_ prefix stripped, then base64-decoded. Using the raw string as the key is the usual bug.",
+      "rules": [
+        "Verify over the raw body and parse the JSON only afterwards.",
+        "webhook-signature can hold several space-separated versioned signatures; accept if any v1 entry matches, and compare in constant time.",
+        "Reject a webhook-timestamp more than a few minutes old, or the signature does not stop a replay."
+      ],
+      "secret": "signing_secret is returned only in the create response and never again - not in list. Losing it means recreating the endpoint."
+    },
+    "delivery": {
+      "timeout_seconds": 15,
+      "note": "Acknowledge 2xx before doing any work.",
+      "retried": "408, 429, 5xx, network errors and timeouts - exponential backoff for four days, reusing event_id so deliveries can be deduplicated.",
+      "permanent_failure": "3xx (redirects are not followed) and any other 4xx.",
+      "disabled": "After four days with no success Granola disables the endpoint and emails its creator or the workspace admins. Events missed while disabled are NOT replayed - after re-enabling, backfill through list_notes with created_after."
+    }
   },
   "also_ships": {
     "mcp": "Granola publishes an MCP server that uses browser-based OAuth and is aimed at conversational assistants rather than scripts. Not what this connector uses - an API key is the right shape for a scheduled workflow - but it is the path if a skill ever wants OAuth instead of a pasted key."
@@ -63,13 +133,27 @@
     "verified": "vendor-docs",
     "checked": "2026-08-22",
     "refs": [
-      "https://docs.granola.ai/help-center/sharing/integrations/api",
       "https://docs.granola.ai/introduction",
-      "https://docs.granola.ai/webhooks"
+      "https://docs.granola.ai/webhooks",
+      "https://docs.granola.ai/help-center/sharing/integrations/granola-api",
+      "https://docs.granola.ai/api-reference/get-transcript",
+      "https://www.standardwebhooks.com/"
     ],
     "notes": [
-      "The key tiers, the two access scopes, the plan requirements, the space default and the rate limits are taken verbatim from Granola's API overview page.",
-      "docs.granola.ai is not reachable from the Flux container - the egress proxy refuses the CONNECT - so the reference page has not been read and no endpoint is recorded."
+      "The base URL, the grn_ key prefix, the three endpoints, the cursor shape, the not_ ID form, the 413 TRANSCRIPT_TOO_LARGE fallback, the transcript speaker shapes and the rate limits are taken verbatim from Granola's own API reference.",
+      "docs.granola.ai is not reachable from the Flux container - the egress proxy refuses the CONNECT - so this was written from the pages the user supplied rather than fetched.",
+      "The webhook guide has now been read; its event list, signature construction and retry policy are recorded verbatim."
+    ]
+  },
+  "transcript_shape": {
+    "note": "Transcript items differ by the platform that recorded them, which matters to anything attributing lines to people.",
+    "macos": "speaker.source is 'microphone' (the local mic) or 'speaker' (other meeting audio). Two streams, so who-said-what is separable at the local/remote level but not per remote person.",
+    "ios": "speaker.source is currently always 'microphone' because the app captures a single stream, with an optional diarization_label carrying an anonymous 'Speaker A/B/...' bucket. Do not treat source as a reliable discriminator - Granola says explicitly that clients should not assume this stays single-stream."
+  },
+  "pending_operations": {
+    "note": "The webhook-endpoint CRUD above is documented but not exposed as a Flux operation, since Flux cannot host a receiver. List folders (referenced by the webhook guide as /api-reference/list-folders) has not been read and is the one remaining read worth having - it is how a folder-scoped sync would work.",
+    "wanted": [
+      "list folders"
     ]
   }
 }

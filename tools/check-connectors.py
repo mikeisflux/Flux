@@ -17,11 +17,13 @@ DEFS = ROOT / 'data' / 'connectors'
 CATALOGUE = ROOT / 'src' / 'resources' / 'connectors.json'
 
 WRITE_SCOPES = {'readonly', 'draft', 'send', 'purchase'}
-# How well the endpoints are known. `discovery` means they were read out of the
-# provider's own OAuth metadata document; `search` means they were corroborated
-# from documentation but not fetched from the provider. The browser re-checks a
-# `search` connector against the provider before its first use.
-VERIFICATION = {'discovery', 'search', 'not-applicable'}
+# How well the endpoints are known:
+# `discovery`   - fetched from the provider's own OAuth metadata document.
+# `vendor-docs` - taken verbatim from the vendor's own documentation.
+# `search`      - corroborated across documentation search results.
+# The browser re-checks anything below `discovery` against the provider before
+# its first use.
+VERIFICATION = {'discovery', 'vendor-docs', 'search', 'not-applicable'}
 AUTH_TYPES = {'oauth2', 'api_key', 'local', 'unsupported'}
 
 
