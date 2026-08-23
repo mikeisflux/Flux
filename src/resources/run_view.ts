@@ -237,6 +237,10 @@ export class RunView {
       return;
     }
     this.composer.value = '';
+    // The composer is the "or reply directly" half of an open question panel,
+    // and the browser treats a typed message as the answer. Leaving the panel
+    // on screen would offer a second way to answer something already answered.
+    this.questionHost.replaceChildren();
     this.appendUser(text);
     const {accepted, error} =
         await this.handler.sendFollowUp(this.runId, text);
@@ -704,6 +708,9 @@ export class RunView {
     if (summary) {
       this.appendSummary(summary);
     }
+    // A run that ended is not waiting for an answer, however the panel got
+    // there - cancelled, out of budget, or the tab closed under it.
+    this.questionHost.replaceChildren();
     this.paintComposer();
   }
 }

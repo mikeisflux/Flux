@@ -141,6 +141,22 @@ it. Breaking a new rule on purpose is what caught that, and it is the third
 time a check in this repo has passed while the thing it was written for went
 through.
 
+### Async failure in the console is silent by default
+
+An event handler cannot await, so the console is full of `void this.x()` -
+two dozen of them - and each one discards a promise. A rejection there is not
+an error the user sees; it is a button that shrugs. `settle()` covers a screen
+render, and nothing covered the rest.
+
+Both documents now install an `unhandledrejection` listener. The tab shows a
+toast that stays until dismissed - a message that removes itself after four
+seconds is one they will miss, which is how these failed in the first place -
+and the sidebar logs, because it has nowhere to put a toast and its own
+failure mode is a run list that is silently empty forever.
+
+This is a net, not a substitute for a real error path. Where a screen can say
+what went wrong, it should.
+
 ### What the agent can hand back
 
 Four things, and the agent has to be told about all of them in the system

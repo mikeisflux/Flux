@@ -49,6 +49,15 @@ class FluxSidebar {
     this.approvalsNav = document.getElementById('approvals-nav')!;
     this.approvalsBadge = document.getElementById('approvals-badge')!;
 
+    // The sidebar is its own document, so app.ts's net does not cover it. It
+    // is also the worst place for a silent failure: it is on screen for the
+    // whole session, and if refresh() throws the run list is simply empty
+    // forever with nothing saying why.
+    window.addEventListener('unhandledrejection', event => {
+      console.error('Unhandled rejection in the sidebar', event.reason);
+      event.preventDefault();
+    });
+
     this.markCurrentOnClick();
     void this.bindCollapse();
     void this.refresh();

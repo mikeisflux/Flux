@@ -337,5 +337,51 @@ for cls, entries in decls.items():
 raise SystemExit(1 if bad else 0)
 OVERRIDEPY
 
+# A constructor initializer list in a different order from the declarations.
+# Members are initialised in declaration order whatever the list says, so this
+# is at best misleading and at worst reads a member that has not been
+# constructed yet. Chromium builds -Wreorder as an error, so it is a build
+# failure too.
+python3 - <<'REORDERPY' || status=1
+import collections
+import pathlib
+import re
+
+ROOT = pathlib.Path('src/browser')
+members = collections.defaultdict(list)
+for h in sorted(ROOT.rglob('*.h')):
+    cls = None
+    for raw in h.read_text(encoding='utf-8').splitlines():
+        m = re.match(r'^(?:class|struct)\s+(?:\w+\s+)?(\w+)', raw)
+        if m:
+            cls = m.group(1)
+            continue
+        if not cls or raw.strip().startswith('//') or 'static' in raw:
+            continue
+        mm = re.match(r'^\s{2,}(?:const\s+|mutable\s+)*'
+                      r'[\w:]+(?:<.*>)?[\s&*]+(\w+_)\s*(?:=[^;]*)?;\s*$', raw)
+        if mm:
+            members[cls].append(mm.group(1))
+
+bad = 0
+for c in sorted(ROOT.rglob('*.cc')):
+    text = c.read_text(encoding='utf-8')
+    for m in re.finditer(r'(\w+)::\1\([^)]*\)\s*\n?\s*:\s*(.*?)\{', text, re.S):
+        cls, init = m.group(1), m.group(2)
+        if cls not in members:
+            continue
+        order = [n for n in re.findall(r'(\w+)\(', init) if n in members[cls]]
+        expected = [n for n in members[cls] if n in order]
+        if order != expected:
+            line = text.count('\n', 0, m.start()) + 1
+            print(f'{c}:{line}: {cls} initializes {", ".join(order)}')
+            print(f'    declared in the order {", ".join(expected)}')
+            print('    members are initialised in declaration order, and '
+                  '-Wreorder is an error in Chromium')
+            bad += 1
+
+raise SystemExit(1 if bad else 0)
+REORDERPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

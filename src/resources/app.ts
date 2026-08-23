@@ -88,8 +88,54 @@ class FluxApp {
       }
     });
 
+    // Every `void this.x()` in the console starts async work whose rejection
+    // nobody holds. There are two dozen of them - an event handler cannot
+    // await, so the pattern is unavoidable - and each one currently fails by
+    // doing nothing at all: no error, no empty state, a button that shrugs.
+    //
+    // This is the net under all of them. It does not replace a real error path
+    // where a screen has one; it makes the ones that do not fail loudly rather
+    // than silently, which is the difference between a bug the user can report
+    // and one they work around forever.
+    window.addEventListener('unhandledrejection', event => {
+      console.error('Unhandled rejection in the console', event.reason);
+      event.preventDefault();
+      this.toast(event.reason instanceof Error ?
+                     event.reason.message :
+                     'Something went wrong. The last action did not complete.');
+    });
+
     window.addEventListener('hashchange', () => this.renderFromHash());
     this.renderFromHash();
+  }
+
+  /**
+   * A message that outlives the action that failed.
+   *
+   * Not a dialog: this fires for anything that went wrong anywhere, including
+   * things the user was not waiting on, and a modal for a failed background
+   * refresh is worse than the silence it replaces. It stays until dismissed,
+   * because a message that removes itself after four seconds is one they will
+   * miss - which is how these failed in the first place.
+   */
+  private toast(message: string) {
+    let bar = document.getElementById('flux-toast');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'flux-toast';
+      bar.className = 'toast';
+      bar.setAttribute('role', 'alert');
+      const close = document.createElement('button');
+      close.className = 'ghost-icon';
+      close.setAttribute('aria-label', 'Dismiss');
+      close.textContent = '\u00d7';
+      close.addEventListener('click', () => bar!.remove());
+      const text = document.createElement('span');
+      text.className = 'toast-text';
+      bar.append(text, close);
+      document.body.append(bar);
+    }
+    bar.querySelector('.toast-text')!.textContent = message;
   }
 
   private renderFromHash() {

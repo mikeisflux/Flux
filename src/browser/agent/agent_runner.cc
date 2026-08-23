@@ -454,6 +454,19 @@ void AgentRunner::AddUserMessage(const std::string& text) {
   note.text = text;
   history_.push_back(std::move(note));
 
+  // The console offers "Or reply directly" alongside the question panel, so a
+  // typed message IS the answer when one is open. Without this the text landed
+  // in the history and the run stayed blocked on a panel the user had already
+  // decided not to use.
+  if (state_ == mojom::RunState::kAwaitingInput) {
+    // Delivered as a single skipped-everything reply: the message is already
+    // in the history above, so the tool result only has to unblock the call
+    // and tell the model to read what the user actually wrote.
+    std::vector<mojom::QuestionAnswerPtr> none;
+    ResolveQuestions(std::move(none));
+    return;
+  }
+
   // If the loop has run out of turns to take - paused, or waiting because the
   // last assistant turn made no tool call - the new message is what restarts
   // it. A run that is mid-tool picks it up when that tool returns.
@@ -493,6 +506,14 @@ void AgentRunner::ResolveQuestions(
     std::vector<mojom::QuestionAnswerPtr> answers) {
   if (!pending_answers_)
     return;
+  // An answer can arrive after the run has ended - the panel stays on screen
+  // until the console redraws, and the user can be mid-sentence when the tab
+  // is closed or Stop is pressed. Restoring state_ then would put a cancelled
+  // run back into kRunning and Step() would carry on from there.
+  if (state_ != mojom::RunState::kAwaitingInput) {
+    pending_answers_.Reset();
+    return;
+  }
   state_ = state_before_question_;
   std::move(pending_answers_).Run(std::move(answers));
 }
@@ -505,6 +526,7 @@ void AgentRunner::OnTabClosed() {
   page_.reset();
   if (state_ == mojom::RunState::kRunning ||
       state_ == mojom::RunState::kAwaitingApproval ||
+      state_ == mojom::RunState::kAwaitingInput ||
       state_ == mojom::RunState::kPaused) {
     Finish(mojom::RunState::kCancelled, "You closed the task's tab.");
   }
@@ -512,6 +534,9 @@ void AgentRunner::OnTabClosed() {
 
 void AgentRunner::Finish(mojom::RunState state, const std::string& summary) {
   state_ = state;
+  // Dropped, not run: the tool call it belongs to is on a run that is over,
+  // and resuming it would step a finished run.
+  pending_answers_.Reset();
   weak_factory_.InvalidateWeakPtrs();
   delegate_->OnFinished(run_id_, state, summary);
 }

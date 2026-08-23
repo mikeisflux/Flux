@@ -654,10 +654,17 @@ class AskUserTool : public PlanToolBase {
                   ResultCallback callback,
                   std::vector<mojom::QuestionAnswerPtr> answers) {
     if (answers.empty()) {
+      // Two different situations arrive here. The panel can come back empty
+      // because the run ended, or because the user typed into the composer
+      // instead of the panel - the console offers both - in which case their
+      // words are already the most recent message in the history and this
+      // must not talk the model out of reading them.
       std::move(callback).Run(
-          Err("The user did not answer. Do not ask the same thing again - "
-              "either carry on without it and say what you assumed, or stop "
-              "and explain what you cannot do."));
+          Err("Nothing came back through the panel. The user may have replied "
+              "in the conversation instead, so read their most recent message "
+              "first. If there is nothing there either, carry on and say what "
+              "you assumed, or stop and explain what you cannot do - but do "
+              "not ask the same thing again."));
       return;
     }
 
