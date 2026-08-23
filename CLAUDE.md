@@ -297,6 +297,12 @@ Hard-won, each one from a failed build:
   `chrome_web_ui_controller_factory.cc` handles DevTools only now.
 - Native tools write progress to stderr, which `$ErrorActionPreference='Stop'`
   treats as fatal. Run them through `Invoke-Native`.
+- **A running flux.exe locks the build output.** The link fails minutes in
+  with `failed to write output './components_startup_metric_utils.dll':
+  permission denied` - a component DLL nobody touched, which reads like a
+  toolchain fault and is actually a browser still open. `build.ps1` now closes
+  any flux.exe running from the output directory before it starts, and only
+  from that directory. Two builds were lost to this before it was scripted.
 - **A GN action's `inputs`/`outputs` are a promise to ninja, not a rename.**
   Renaming the executable in `chrome/BUILD.gn` left `reorder-imports.py` -
   which the action passes *directories* to, and which hardcodes `chrome.exe`

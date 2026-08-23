@@ -154,6 +154,33 @@ if ($Jobs -gt 0) {
 # would assign an array into the [int]$Jobs parameter and throw.
 $ninjaFlags = @("-j$j")
 
+# A flux.exe still running out of this output directory holds chrome.dll and
+# the component DLLs open, and Windows refuses the write. The link step is
+# minutes in by the time that happens, and the error - "failed to write output
+# ... permission denied" on some unrelated-looking component DLL - says
+# nothing about a browser being open. Two builds have been lost to it.
+#
+# Only processes running from THIS $Out are stopped. A Flux installed
+# elsewhere, or any other program, is left alone: the build has no business
+# closing something it does not own.
+# $Out is relative to the Chromium tree ("out\Dev"), and a process path is
+# absolute - comparing against $Out directly matches nothing, ever.
+$OutFull = Join-Path $Src $Out
+$stale = @(Get-Process -Name flux -ErrorAction SilentlyContinue |
+           Where-Object { $_.Path -and $_.Path -like "$OutFull\*" })
+if ($stale.Count -gt 0) {
+  Log "Closing $($stale.Count) flux.exe running from $OutFull - it locks the output"
+  $stale | Stop-Process -Force
+  # The handles go with the process, but not synchronously.
+  $deadline = (Get-Date).AddSeconds(10)
+  while ((Get-Date) -lt $deadline) {
+    $still = @(Get-Process -Name flux -ErrorAction SilentlyContinue |
+               Where-Object { $_.Path -and $_.Path -like "$OutFull\*" })
+    if ($still.Count -eq 0) { break }
+    Start-Sleep -Milliseconds 200
+  }
+}
+
 Log "Building $($Targets -join ' ') - first build takes hours; incremental takes minutes"
 $sw = [Diagnostics.Stopwatch]::StartNew()
 Invoke-Native "$DepotTools\autoninja.bat" -C $Out @ninjaFlags @Targets
