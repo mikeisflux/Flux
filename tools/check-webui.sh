@@ -220,6 +220,27 @@ if grep -n 'void this\.[A-Za-z]*\.render(' "$RES/app.ts" >/dev/null 2>&1; then
   status=1
 fi
 
+# A WebUI data source enables Trusted Types - webui::SetupWebUIDataSource
+# calls EnableTrustedTypesCSP, setting require-trusted-types-for 'script' - so
+# assigning a string to .innerHTML throws at runtime:
+#
+#   Failed to set the 'innerHTML' property on 'Element':
+#   This document requires 'TrustedHTML' assignment.
+#
+# Every screen in the console drew an inline SVG icon that way, so every screen
+# threw partway through rendering. It compiles, it type-checks, and it only
+# fails once the browser is running. Build icons with icons.ts, which uses
+# createElementNS and never goes through the HTML parser.
+html_sinks=$(grep -rn '\.\(innerHTML\|outerHTML\)[[:space:]]*=\|insertAdjacentHTML\|document\.write(' \
+  "$RES"/*.ts 2>/dev/null \
+  | grep -v ':[0-9]*:[[:space:]]*\(//\|\*\|/\*\)' || true)
+if [ -n "$html_sinks" ]; then
+  echo "FAIL: an HTML string sink in the console - Trusted Types blocks these." >&2
+  echo "$html_sinks" >&2
+  echo "      Build the nodes instead; see icons.ts for the SVG helpers." >&2
+  status=1
+fi
+
 # Type-check the console under the same strict settings build_webui compiles
 # it with. This is the difference between a typo costing ten seconds and
 # costing a ninety-minute build, so it is worth the one-time npm install.

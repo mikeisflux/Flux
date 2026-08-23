@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {pathIcon} from './icons.js';
+
 import type {FluxPageHandlerRemote, LearnedFact} from './flux.mojom-webui.js';
 
 import {transportLabel} from './catalog.js';
@@ -253,10 +255,9 @@ export class CustomizeView {
     if (!this.selected) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.innerHTML =
-          '<svg class="empty-icon" viewBox="0 0 32 32" aria-hidden="true">' +
-          '<path d="M16 4l12 6-12 6-12-6 12-6zm12 12l-12 6-12-6m24 6l-12 6' +
-          '-12-6"/></svg>';
+      empty.append(pathIcon(
+          'M16 4l12 6-12 6-12-6 12-6zm12 12l-12 6-12-6m24 6l-12 6-12-6',
+          '0 0 32 32', 'empty-icon'));
       const h2 = document.createElement('h2');
       h2.textContent = 'Skills';
       const p = document.createElement('p');

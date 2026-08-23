@@ -1,0 +1,52 @@
+Subject: [flux] Make the console column and the avatar clickable
+
+The account avatar opened nothing when clicked, and the sidebar's search and
+collapse buttons did nothing either. Neither was a bug in their handlers -
+the click never reached them.
+
+Both views are children of BrowserView placed in the band along the top and
+left that BrowserView::NonClientHitTest treats as titlebar. On Windows that
+band answers WM_NCHITTEST with HTCAPTION, at which point the system starts a
+window drag and never delivers a client mouse event at all. The button's
+PressedCallback is wired correctly and simply never runs.
+
+Claimed before the web-app toolbar check, following the same shape upstream
+uses for views that live in the caption area. The whole of each view is client
+area deliberately: the sidebar is a WebView whose every pixel is interactive,
+and the avatar is a button. The tab strip beside them still drags the window.
+
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -4591,6 +4591,32 @@
+   views::View::ConvertPointToTarget(parent(), this,
+                                     &point_in_browser_view_coords);
+ 
++  // Flux's own frame furniture claims its hits before anything below can call
++  // the area caption.
++  //
++  // The console column and the account avatar are children of the browser
++  // view that occupy the band this function otherwise treats as titlebar. On
++  // Windows that band answers WM_NCHITTEST with HTCAPTION, so the system
++  // begins a window drag and NO client mouse event is ever delivered - the
++  // avatar's menu never opened and the sidebar's own buttons did nothing, for
++  // a reason no amount of reading their click handlers could reveal.
++  //
++  // The whole of each view is client area on purpose: the sidebar is a WebView
++  // and every pixel of it is interactive, and the avatar is a button. The tab
++  // strip to their right is still there to drag the window by.
++  if (flux_sidebar_ && flux_sidebar_->GetVisible()) {
++    gfx::Point test_point(point);
++    if (ConvertedHitTest(parent(), flux_sidebar_, &test_point)) {
++      return HTCLIENT;
++    }
++  }
++  if (flux_avatar_ && flux_avatar_->GetVisible()) {
++    gfx::Point test_point(point);
++    if (ConvertedHitTest(parent(), flux_avatar_, &test_point)) {
++      return HTCLIENT;
++    }
++  }
++
+   // Check if the point is in the web_app_frame_toolbar_. Because this toolbar
+   // can entirely be within the window controls overlay area, this check needs
+   // to be done before the window controls overlay area check below.

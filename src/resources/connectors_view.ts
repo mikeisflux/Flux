@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {pathIcon, searchIcon} from './icons.js';
+
 import {loadPackedJson, once} from './resource.js';
 
 import type {ConnectorStatus, FluxPageHandlerRemote} from './flux.mojom-webui.js';
@@ -93,9 +95,7 @@ export class ConnectorsView {
 
     const search = document.createElement('div');
     search.className = 'search';
-    search.innerHTML =
-        '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-        '<circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg>';
+    search.append(searchIcon());
     const input = document.createElement('input');
     input.type = 'search';
     input.placeholder = 'Search connectors...';
@@ -189,7 +189,7 @@ export class ConnectorsView {
       // Listed but never written against the real API.
       add.disabled = true;
       add.setAttribute('aria-label', `${c.name} is not wired up`);
-      add.innerHTML = plusIcon();
+      add.replaceChildren(plusIcon());
       add.title =
           `${c.name} is listed but not wired up: its auth and operations have ` +
           'not been written against the real API yet. Flux can still drive ' +
@@ -200,13 +200,13 @@ export class ConnectorsView {
       // elsewhere. The reason is the definition's, not invented here.
       add.disabled = true;
       add.setAttribute('aria-label', `${c.name} needs no connection`);
-      add.innerHTML = plusIcon();
+      add.replaceChildren(plusIcon());
       add.title = state.detail ?? `${c.name} needs no connection.`;
       card.dataset['pending'] = '';
     } else if (state?.connected) {
       add.classList.add('connected');
       add.setAttribute('aria-label', `Disconnect ${c.name}`);
-      add.innerHTML = tickIcon();
+      add.replaceChildren(tickIcon());
       add.title = state.expired ?
           `${c.name} is connected but its access has expired. Flux will renew ` +
           'it on the next task, or click to disconnect.' :
@@ -219,7 +219,7 @@ export class ConnectorsView {
       });
     } else {
       add.setAttribute('aria-label', `Connect ${c.name}`);
-      add.innerHTML = plusIcon();
+      add.replaceChildren(plusIcon());
       // Flux ships no client secrets, so an OAuth connector needs the user's
       // own app registration before there is anything to connect with.
       add.title = state?.hasClient === false && state?.detail ?
@@ -347,12 +347,10 @@ function field(form: HTMLFormElement, label: string, value: string,
   return input;
 }
 
-function plusIcon(): string {
-  return '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-      '<path d="M10 4v12M4 10h12"/></svg>';
+function plusIcon(): SVGSVGElement {
+  return pathIcon('M10 4v12M4 10h12');
 }
 
-function tickIcon(): string {
-  return '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-      '<path d="M4 10.5l4 4 8-9"/></svg>';
+function tickIcon(): SVGSVGElement {
+  return pathIcon('M4 10.5l4 4 8-9');
 }

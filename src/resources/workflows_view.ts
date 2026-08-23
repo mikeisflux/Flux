@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {shape, svgRoot} from './icons.js';
+
 import {loadTemplates, transportLabel, trustLabel} from './catalog.js';
 import type {Template} from './catalog.js';
 
@@ -45,10 +47,10 @@ export class WorkflowsView {
   private emptyState(): HTMLElement {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.innerHTML =
-        '<svg class="empty-icon" viewBox="0 0 32 32" aria-hidden="true">' +
-        '<rect x="3" y="11" width="13" height="12" rx="3"/>' +
-        '<rect x="16" y="7" width="13" height="12" rx="3"/></svg>';
+    const icon = svgRoot('0 0 32 32', 'empty-icon');
+    shape(icon, 'rect', {x: 3, y: 11, width: 13, height: 12, rx: 3});
+    shape(icon, 'rect', {x: 16, y: 7, width: 13, height: 12, rx: 3});
+    empty.append(icon);
 
     const h2 = document.createElement('h2');
     h2.textContent = 'No workflows yet';

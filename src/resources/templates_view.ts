@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {pathIcon, searchIcon} from './icons.js';
+
 import {CATEGORIES, featured, loadTemplates, matches, transportLabel, trustLabel} from
     './catalog.js';
 import type {Template} from './catalog.js';
@@ -78,9 +80,7 @@ export class TemplatesView {
 
     const search = document.createElement('div');
     search.className = 'search';
-    search.innerHTML =
-        '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-        '<circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg>';
+    search.append(searchIcon());
     const input = document.createElement('input');
     input.type = 'search';
     input.placeholder = 'Search tasks, sites, roles...';
@@ -113,10 +113,8 @@ export class TemplatesView {
     const scheduled = document.createElement('button');
     scheduled.className = 'facet';
     scheduled.id = 'facet-scheduled';
-    scheduled.innerHTML =
-        '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-        '<path d="M4 7h9V4l4 4-4 4V9H6v2H4V7zm12 6H7v3l-4-4 4-4v2h11v3h-2z"/>' +
-        '</svg>';
+    scheduled.append(
+        pathIcon('M4 7h9V4l4 4-4 4V9H6v2H4V7zm12 6H7v3l-4-4 4-4v2h11v3h-2z'));
     scheduled.append('Scheduled');
     scheduled.addEventListener('click', () => {
       this.scheduledOnly = !this.scheduledOnly;

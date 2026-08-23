@@ -22,3 +22,4 @@
 0017-flux-no-google-api-keys-infobar.patch
 0018-flux-hide-chromium-avatar-button.patch
 0019-flux-no-ai-mode-omnibox-button.patch
+0020-flux-frame-hit-test.patch

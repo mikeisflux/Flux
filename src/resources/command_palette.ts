@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {searchIcon} from './icons.js';
+
 import {loadTemplates} from './catalog.js';
 import type {Template} from './catalog.js';
 import {loadConnectors} from './connectors_view.js';
@@ -69,9 +71,7 @@ export class CommandPalette {
 
     const search = document.createElement('div');
     search.className = 'search';
-    search.innerHTML =
-        '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-        '<circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg>';
+    search.append(searchIcon());
     const input = document.createElement('input');
     input.type = 'search';
     input.placeholder =

@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {pathIcon} from './icons.js';
+
 import {Provider, WriteScope} from './flux.mojom-webui.js';
 import type {FluxPageHandlerRemote} from './flux.mojom-webui.js';
 
@@ -226,8 +228,7 @@ export class NewTaskView {
       b.className = 'ghost-icon';
       b.disabled = true;
       b.title = title!;
-      b.innerHTML =
-          `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="${path}"/></svg>`;
+      b.append(pathIcon(path!));
       right.append(b);
     }
 
@@ -235,9 +236,7 @@ export class NewTaskView {
     send.className = 'send';
     send.title = 'Start this task';
     send.setAttribute('aria-label', 'Start this task');
-    send.innerHTML =
-        '<svg viewBox="0 0 20 20" aria-hidden="true">' +
-        '<path d="M10 16V5m0 0l-4 4m4-4l4 4"/></svg>';
+    send.append(pathIcon('M10 16V5m0 0l-4 4m4-4l4 4'));
     send.addEventListener(
         'click', () => void this.start(this.prompt.value, this.templateId));
     right.append(send);
@@ -283,8 +282,7 @@ export class NewTaskView {
       }
       const chip = document.createElement('button');
       chip.className = 'chip';
-      chip.innerHTML =
-          `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="${s.icon}"/></svg>`;
+      chip.append(pathIcon(s.icon));
       chip.append(s.label);
       chip.title = t.outcome;
       chip.addEventListener('click', () => {
