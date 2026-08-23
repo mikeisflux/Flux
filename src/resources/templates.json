@@ -4131,7 +4131,13 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read [contract link or paste] and explain it to me in plain English, on one page.\n\nStart with the shape of the deal in three sentences: who is agreeing to what, for how much, for how long.\n\nThen my obligations — what I have to do, by when, and what happens if I do not. Then their obligations, the same way. Put mine first, since that is the part I am agreeing to.\n\nThen the terms that actually matter, each in a line of ordinary English with a pointer to the clause: term and renewal (and whether it auto-renews and what notice is required), termination on each side, payment terms and late consequences, liability caps and what is excluded from them, indemnities and who bears what, IP ownership, confidentiality, non-compete or exclusivity, assignment and change of control, dispute resolution and governing law.\n\nThen the red flags: anything unusual, one-sided, or worse than standard for this kind of agreement. Say what a normal version of that clause looks like, since \"this is unusual\" without a comparison is not useful.\n\nThen what I would push back on, ranked, with the specific alternative wording to propose.\n\nQuote the clause reference for everything. Flag anything genuinely ambiguous rather than resolving it. This is a plain-English summary, not legal advice — say so and say which parts need a lawyer.",
+      "roles": [
+        "everyone",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "docs-tighten-draft-without-losing",
@@ -4140,7 +4146,12 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Tighten [draft link or paste]. Make it shorter and sharper without making it sound like someone else wrote it.\n\nRead it once for the voice before changing anything: sentence rhythm, how formal it is, whether it uses contractions, whether it makes jokes, how it opens and closes. Those are the things a generic edit destroys, and a draft that has been smoothed into corporate prose is worse than the loose original.\n\nThen cut. Go after: sentences that restate the previous one, throat-clearing before the actual point, hedges that weaken a claim I am entitled to make, adverbs doing work a better verb would do, passive constructions hiding who did what, and any paragraph that could be deleted without losing anything.\n\nDo not cut: a specific detail, an example, a number, a digression that is doing real work, or anything that is just how I write.\n\nGive me the tightened version, then a list of the significant edits — what you cut or changed and why, one line each. I want to be able to disagree with individual calls rather than accept or reject the whole thing.\n\nTell me the word count before and after. And where a passage needs restructuring rather than trimming, say so instead of trimming around the problem.",
+      "roles": [
+        "everyone",
+        "marketing"
+      ]
     },
     {
       "id": "docs-rough-notes-polished-google",
@@ -4154,7 +4165,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Turn my rough notes at [link or paste] into a finished Google Doc.\n\nRead all of it first and work out what it is actually meant to be — a proposal, a plan, a summary, a memo — and who reads it. Then structure it for that, rather than tidying the notes in the order I happened to write them. The order thoughts arrive in is almost never the order they should be read in.\n\nWrite it properly: a title that says what it is, a short opening that gives the reader the point before the detail, clear headings, and a close that says what happens next or what is being asked for.\n\nKeep every substantive thing in the notes. Where two notes contradict each other, keep both and flag it rather than picking one — that contradiction is usually the thing I still have not decided.\n\nWhere a note is a fragment I clearly meant to expand, expand it if the meaning is unambiguous, and mark it with a comment if it is not. Do not invent content to fill a gap; leave a clearly marked placeholder.\n\nFormat it so it is readable: real headings rather than bold text, lists where a list is right and prose where it is not, and tables where the notes hold comparable things.\n\nTell me afterwards what you reordered, what you flagged, and what is still missing.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-all-feedback-across-doc",
@@ -4168,7 +4183,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Apply all the feedback on [doc link] in one pass.\n\nThe feedback is [in comments on the doc / in this list / in this email thread]. Read all of it before changing anything, because comments frequently conflict and applying them one at a time in order produces a document that follows the last reviewer.\n\nFirst, give me the inventory: every distinct point, who raised it, and whether it is a fix, a rewrite, a question, or a matter of taste. Then say which points conflict with each other.\n\nThen apply. Work on a copy so the original with its comments survives.\n\nFor conflicts, apply [whose feedback wins, or: the more senior reviewer's] and note the one you did not take. For a comment that is a question rather than an instruction, do not guess — leave it and list it.\n\nFor anything that would change the meaning rather than the wording, flag it rather than applying it silently. A reviewer's suggested rephrasing that shifts a commitment or a claim is exactly the kind of edit that should not happen quietly.\n\nGive me a summary at the end: every point, what you did about it, and the ones needing my decision. That summary is what I use to reply to the reviewers, so make it specific enough to quote.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-rewrite-resume-specific-job",
@@ -4177,7 +4196,11 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Rewrite my resume at [link] for the job posting at [link].\n\nRead the posting properly first and tell me what it actually wants: the requirements that are real versus wish-list, the language it uses for the work, and what the role appears to be measured on. Then say where my background maps and where the honest gaps are, before rewriting anything.\n\nThen the rewrite:\n\nReorder so the most relevant experience is most prominent. Give the roles that match this job more space and compress the ones that do not.\n\nRewrite the bullets to lead with the outcome and carry a number, using the posting's vocabulary where my experience genuinely matches it — that is what gets through a keyword screen and what a human recognises. But only where it matches.\n\nWrite a summary line aimed at this role specifically.\n\nCut what is not relevant. A resume that includes everything says nothing.\n\nThe hard rule: invent nothing. No title I did not hold, no scope I did not have, no number I did not give you. Where a bullet would be much stronger with a metric, mark it clearly and ask me for the number rather than estimating one.\n\nAt the end, tell me the gaps that remain and what I would say about each in an interview.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-visual-html-timeline-research",
@@ -4186,7 +4209,12 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build a visual timeline of [subject] from [my research / these sources] as a single self-contained HTML file I can open and share.\n\nFirst establish the events, with dates, and cite each one. Where a date is disputed or approximate, say which and mark it in the output — a timeline's authority comes from its dates, and a confidently wrong one is worse than a range.\n\nThen build the page. One file, everything inline — no external scripts, stylesheets, fonts or images — so it works offline and can be emailed. Embed any image as a data URI.\n\nThe timeline itself: chronological, with each entry showing the date, a short title, two or three sentences of what happened, and a link to the source. Group by era or phase where the subject has natural ones.\n\nMake it readable rather than decorative: legible type, enough contrast, and a layout that works at a phone width as well as a desktop one. It should print sensibly too, since these get printed.\n\nInclude a short introduction saying what the timeline covers and what it deliberately does not, and a sources list at the bottom.\n\nWhere sources disagree about what happened, show the disagreement rather than picking a version.",
+      "roles": [
+        "everyone",
+        "analysts"
+      ]
     },
     {
       "id": "docs-doc-slide-outline-can",
@@ -4200,7 +4228,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Turn [doc link] into a slide outline for [audience] in [length] minutes.\n\nDo not convert the document. A document is read in the reader's order at the reader's pace; a talk is heard once in mine. So work out the argument first: what the audience should believe or do at the end, what they have to accept along the way, and in what order.\n\nThen give me the outline, one entry per slide:\n\nThe slide title — a full sentence stating the point, not a topic label. \"Revenue grew 40% on flat headcount\" rather than \"Revenue\".\nWhat is on the slide: the three or four bullets, or the chart, or the single number. Not the paragraph from the doc.\nSpeaker notes — what I actually say, in enough detail to rehearse from.\nRoughly how long it should take.\n\nBudget the time honestly against the length. If the argument needs thirty slides and I have fifteen minutes, say so and tell me what to cut rather than producing an outline nobody can deliver.\n\nMark which slides are essential and which are backup for questions.\n\nFlag anything in the doc that will not survive being said out loud — a table with twenty rows, a nuance that needs a paragraph, a caveat that will get quoted without its context.",
+      "roles": [
+        "everyone",
+        "founders"
+      ]
     },
     {
       "id": "docs-translate-google-doc-keep",
@@ -4214,7 +4247,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Translate [doc link] into [language] and keep the document intact.\n\nWork on a copy named [original] — [language], so the original is untouched.\n\nPreserve the structure exactly: heading levels, lists and their nesting, tables with the same rows and columns, bold and italic where they carry meaning, links with their targets unchanged, footnotes, and image placement and captions.\n\nTranslate for the reader rather than word by word. Match the register of the original — a formal document should read formally in the target language, and an informal one should not become stiff. Use the conventions of [locale] for dates, numbers, currency and address formats where those appear as prose. Where the original uses an idiom, find the equivalent rather than translating it literally.\n\nLeave untranslated: proper nouns, product and company names, code, and anything inside a URL. Keep technical terms in the original with the translation in brackets on first use where the target-language convention is to use the English term.\n\nWhere a term has no good equivalent, or where the original is ambiguous enough that the translation has to pick a reading, add a comment on that passage saying so rather than choosing silently.\n\nTell me afterwards which passages you flagged and anything you could not translate faithfully.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-decisions-action-items-out",
@@ -4223,7 +4260,12 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read [transcript link or paste] and pull out what actually came of it.\n\nThree lists, in this order.\n\nDecisions — what was decided, by whom, and the reasoning if it was stated. Only things actually decided. A discussion that circled and ended with \"let's think about it\" is not a decision, and recording it as one is how a team ends up believing something was settled that was not.\n\nAction items — the task, the owner by name, and the due date. If nobody was named, say Owner not assigned rather than guessing from who was talking. If no date was given, say so. An action item with an invented owner is worse than one flagged as unowned, because it looks handled.\n\nOpen questions — what was raised and left unresolved, including anything someone said they would find out.\n\nThen, separately, the things people said they would do that sounded like a commitment but were not confirmed. Those are where things fall through and they never appear in minutes.\n\nQuote the transcript for anything ambiguous so I can check the reading.\n\nKeep it short. The point is that someone can act on this without listening to the recording.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "docs-organize-these-scattered-answers",
@@ -4232,7 +4274,13 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Turn [these scattered answers — link or paste] into a clean FAQ.\n\nFirst, de-duplicate and merge. The same question asked four ways with four partial answers is one FAQ entry, and merging them is most of the work. Say what you merged.\n\nThen write each entry:\n\nThe question phrased the way someone would actually search for it, not the way an insider would phrase it. This is the single biggest determinant of whether an FAQ gets used.\n\nThe answer: the direct answer in the first sentence, then the detail. Someone scanning should be able to stop after one line.\n\nWrite for someone who does not already know how this works. Expand the internal shorthand, the acronyms and the product jargon.\n\nGroup into sections by what the reader is trying to do rather than by which team owns the answer, and order questions within each section by how often they come up.\n\nWhere the source answers conflict, do not pick one — flag it as needing a decision, and say what each source said. Where an answer is out of date or refers to something that has changed, flag it rather than carrying it forward.\n\nList at the end the questions the sources raise but never answer. Those are the gaps and they are the reason the FAQ is being written.",
+      "roles": [
+        "everyone",
+        "marketing",
+        "ops"
+      ]
     },
     {
       "id": "docs-proofread-show-change-you",
@@ -4241,7 +4289,11 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Proofread [text link or paste] and show me every change.\n\nFix: spelling, grammar, punctuation, subject-verb agreement, tense consistency, misused words, doubled words, missing words, spacing, and inconsistent formatting of numbers, dates, capitalisation and hyphenation.\n\nAlso flag, without changing: a sentence whose meaning is genuinely unclear, a claim that contradicts something earlier in the text, a term used two different ways, a broken or wrong cross-reference, and any factual detail that looks wrong.\n\nGive me two things. First the corrected version. Then a table of every change: the original text, the correction, and the reason in a few words.\n\nThat table is the deliverable as much as the corrected text — a clean version with silent changes is one I have to diff before I can trust it.\n\nThis is a proofread, not an edit. Do not rewrite for style, do not shorten, do not reorganise, and do not change a word choice that is unusual but correct. Where I have made a deliberate stylistic choice consistently — a comma convention, a spelling variant, a sentence fragment for effect — leave it and note it once rather than correcting it forty times.\n\nUse [British/American] spelling throughout and say which convention the original was already using.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-bio-simple-personal-site",
@@ -4259,7 +4311,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read my LinkedIn profile and my GitHub, and write my bio plus a simple personal site.\n\nFirst, from the real material: what I have actually done, what I am known for, and the two or three things worth leading with. Tell me what you concluded before writing, because the framing is the decision and the prose is just execution.\n\nThen three bios, each usable as it stands:\n\nOne line — for a conference programme or a Twitter bio. Under 20 words.\nOne paragraph — for a speaker page or an About section. Third person, 60-80 words.\nLong — for a personal site or a book jacket. First person, 150-250 words, with some texture in it rather than a list of employers.\n\nThen a single self-contained HTML file for a personal site: name, the one-line bio, the long bio, selected work with links, and how to contact me. Everything inline — no external stylesheets, scripts or fonts — so it works anywhere. Readable typography, sensible at phone and desktop widths, and no decoration for its own sake.\n\nUse only what is actually on my profiles. Do not upgrade a title, do not describe a side project as a company, and do not add an adjective I have not earned. Where something is impressive but unclear from the profile, ask me rather than guessing at the scope.",
+      "roles": [
+        "everyone",
+        "founders"
+      ]
     },
     {
       "id": "docs-newsletter-week-s-links",
@@ -4268,7 +4325,12 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Draft this week's newsletter from [my saved links / this list].\n\nRead every link before writing about it. A newsletter of link titles with a sentence of invented commentary is obvious to a reader within two issues, and it is the reason most of them get unsubscribed from.\n\nStructure: a short opening in my voice with an actual thought in it, then the items grouped into [my sections], then a close.\n\nFor each item: what it is, why it is worth the reader's time, and the one thing they would take from it. Two or three sentences. Where several items connect, say so — the connection is usually more interesting than any of them alone.\n\nCut anything that does not earn its place. A shorter issue that is all good is better than a complete one.\n\nMatch my voice from [previous issues link]: length, formality, whether I use humour, how I open and close.\n\nGive me three subject-line options: one descriptive, one on the single most interesting item, one curiosity-driven. Say which you would send and why.\n\nFlag anything where the source seems weak, where the claim is bigger than the evidence, or where the link is paywalled — recommending something a reader cannot open is a small betrayal of their time.\n\nDraft only.",
+      "roles": [
+        "everyone",
+        "marketing"
+      ]
     },
     {
       "id": "docs-customer-facing-release-notes",
@@ -4282,7 +4344,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write customer-facing release notes for [version / period] from the changelog and merged PRs on [repo].\n\nRead the actual changes rather than the commit subjects. Commit messages are written for the person reviewing the diff, and \"refactor handler\" can be either nothing or the reason a whole feature now works.\n\nGroup by what the customer cares about — new, improved, fixed — and within each, order by how many people it affects. Not by commit order, not by component.\n\nWrite each entry from the user's side: what is now possible, or what no longer goes wrong. No internal service names, no class names, no ticket numbers in the visible text. If an entry cannot be written without naming an internal thing, it is probably an internal change and belongs in a collapsed section or nowhere.\n\nPut first and prominently: anything breaking, anything needing action from the user, anything changing an API, a limit or a price. Those are the only entries some readers need, and burying one in a list of thirty is how someone's integration breaks.\n\nAdd a one-paragraph summary at the top for people who read nothing else.\n\nFlag for me anything you could not confidently describe, and anything in the changelog that looks like it should not be announced yet.",
+      "roles": [
+        "engineering",
+        "marketing",
+        "ops"
+      ]
     },
     {
       "id": "docs-message-sound-more-confident",
@@ -4291,7 +4359,11 @@
       "category": "Docs",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Rewrite [message — paste it] to sound more [confident / kind / firm]. Give me three versions.\n\nFirst tell me what the current draft actually does — where it hedges, where it apologises unnecessarily, where it buries the ask, where it over-explains. Naming the pattern is usually more useful than the rewrite, because it is the thing I will keep doing.\n\nThen three rewrites at different strengths: a light touch, a clear step, and a version that goes as far as I could reasonably go. Say which you would send and why.\n\nEvery version must keep every fact, every commitment and every caveat that matters. Confidence is not achieved by dropping a qualification that belongs there, and firmness is not achieved by removing a genuine apology when I am actually in the wrong.\n\nKeep it sounding like a person. The failure mode for \"more confident\" is corporate bluntness, and for \"kinder\" it is padding — a message that takes three paragraphs to reach the point is not kind, it is evasive.\n\nSay for each version what it risks. A firmer message can read as aggressive to someone who does not know me, and I would rather know that before sending than after.\n\nKeep the length at or below the original.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "docs-distill-long-slack-thread",
@@ -4309,7 +4381,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read [Slack thread link] and turn it into a decision record in a Google Doc.\n\nRead the whole thread, including the tangents and the reactions — a decision often gets made in a side exchange and confirmed with an emoji, and a summary of the main line misses it.\n\nThe document:\n\nThe question — what was actually being decided, stated as a question. Threads rarely open with this and it usually has to be reconstructed from what people argued about.\n\nContext — why it came up and what constrained it.\n\nThe options considered, each with who argued for it and the case they made. Represent the losing options fairly. A record that makes the chosen option look obvious is useless in six months when someone asks why we did not do the other thing.\n\nThe decision, who made it, and when. If nobody actually made it, say the thread did not reach one — that is the most useful possible finding and it is common.\n\nWhat we are trading away by choosing this.\n\nActions with named owners, and open questions.\n\nLink back to the thread and quote the specific messages for the decision and each option, so the record can be checked against the source rather than believed.",
+      "roles": [
+        "everyone",
+        "ops",
+        "engineering"
+      ]
     },
     {
       "id": "docs-meeting-formatted-minutes",
@@ -4323,7 +4401,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Turn [my meeting notes / this transcript] into formatted minutes in a Google Doc.\n\nThe header: meeting name, date and time, attendees by name, anyone invited who did not attend, and who took the notes.\n\nThen, by agenda item or topic: what was discussed in a few lines, what was decided, and what remains open. Keep the discussion summary genuinely short — minutes are read for the decisions and the actions, and a transcript of the conversation buries both.\n\nDecisions get their own clearly marked line each, with who made them.\n\nActions get a table: what, who by name, and by when. Where no owner was named, write Unassigned; where no date was given, write No date. Do not fill either in from inference. An action item with a plausible owner who never agreed to it is the most reliable way to have it not happen.\n\nThen open questions and anything deferred to a future meeting, with what has to happen before it can be picked up.\n\nWrite in the third person and in the past tense, neutrally. Minutes are a record rather than a narrative, and they get read by people who were not there.\n\nFlag anything in the source you could not resolve — a name you could not attribute, a decision that may not have been final — rather than smoothing it over.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "docs-customer-case-study",
@@ -4337,7 +4420,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write a case study about [customer] from [the interview, the notes, the data — links].\n\nStructure: who they are, what the problem was, what they tried before, what they did with us, and what happened. Then a short summary box at the top with the headline numbers, because most readers will read only that.\n\nThe problem section is what makes a case study work and it is the section everyone rushes. Spend real space on what was actually going wrong, in their words, before us. A reader recognises themselves in the problem or they do not read the rest.\n\nResults must be specific and attributable. A number with a baseline, a period and a source. \"Improved efficiency\" is worth nothing; \"cut the monthly close from nine days to three, measured over the two quarters after rollout\" is the whole document. Where a result has caveats — other things changed at the same time, the number is directional — say so. A case study a prospect can poke a hole in costs more than it earns.\n\nUse their quotes verbatim, attributed by name and title. Do not write a quote and attribute it.\n\nMark clearly anything needing the customer's approval, and list at the end every claim that needs their sign-off or a fact-check.",
+      "roles": [
+        "marketing",
+        "founders",
+        "sales"
+      ]
     },
     {
       "id": "docs-proposal-or-sow-notes",
@@ -4351,7 +4440,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Draft a [proposal / statement of work] for [client] from my notes at [link].\n\nStructure: what they are trying to achieve in their words, the approach, the scope, the deliverables, the timeline, the commercials, what we need from them, and the terms.\n\nThe two sections that decide whether this job goes well:\n\nScope — say what is included and, explicitly, what is not. An out-of-scope list is not a defensive gesture, it is the thing that prevents the argument in month three. Include the obvious adjacent things a client would assume are covered.\n\nDeliverables — each one named, described specifically enough that we can both tell when it is done, with a date and an acceptance criterion. \"Strategy document\" is not a deliverable; a document covering these four things, delivered by this date, accepted unless comments come back within five working days, is.\n\nThen: assumptions the pricing depends on, dependencies on the client with what happens if they slip, change-request handling, payment schedule and terms, and the validity period of the proposal.\n\nLeave every number I have not given you as a marked blank rather than a plausible default.\n\nList at the end what is still missing and anything in my notes that is too vague to commit to. This is a draft for me and a lawyer to review, not legal advice.",
+      "roles": [
+        "founders",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "docs-prioritize-product-backlog",
@@ -4369,7 +4464,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Score my backlog at [sheet link] with RICE and give me a sequenced roadmap.\n\nFor each item: Reach (how many users per [period], with the basis), Impact (on the [0.25 to 3] scale, with what it is impacting), Confidence (as a percentage, with why), and Effort (person-months, with the assumption). Then the score.\n\nWrite the reasoning for every input, not just the number. RICE is only as good as its inputs and the value of the exercise is the argument, not the arithmetic — a score I cannot interrogate is one I will overrule on instinct.\n\nBe honest with Confidence. Most backlog items are guesses about reach and impact, and marking everything 80% makes the whole ranking meaningless. Where an item's reach is genuinely unknown, say so and score it accordingly.\n\nThen the sequence, which is not the same as the ranking. Account for dependencies, for work that unlocks other work, for anything time-bound, and for the fact that a team cannot do six things at once. Explain where the sequence departs from the score.\n\nCall out separately: items whose score is unreliable because a key input is a guess, items that should be a spike to reduce uncertainty rather than a build, and items that should be cut entirely. A backlog nobody removes anything from is a list, not a plan.",
+      "roles": [
+        "founders",
+        "engineering",
+        "analysts"
+      ]
     },
     {
       "id": "docs-video-or-lecture-structured",
@@ -4387,7 +4488,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Watch [video URL] and turn it into notes I can actually use.\n\nStart with a summary in three or four sentences — what it covers and what the central claim is — and the length, so I can tell whether to watch it myself.\n\nThen the structured notes, following the video's own arc, with a timestamp on every section. The timestamps are what makes these notes worth having; without them I cannot go back to the bit that matters.\n\nUnder each section: the substantive points, not a transcript. What was argued, what evidence was given, what examples were used. Keep the examples — they are usually what makes the idea stick and they are the first thing a summary drops.\n\nQuote directly, with the timestamp, anything worth quoting: a definition, a memorable formulation, a specific number.\n\nThen: the key takeaways in a short list, anything actionable stated as an action, and anything the speaker asserted without support that I should check before repeating.\n\nThat last one matters for a talk. Confident delivery is not evidence, and notes that flatten every claim to the same level of certainty carry the unsupported ones forward as fact.\n\nIf a section is thin — an introduction, a sponsor read, a long tangent — say so in a line rather than padding it out.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-booked-out-restaurant-table",
