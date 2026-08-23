@@ -1979,7 +1979,13 @@
       ],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 2
+      "featured": 2,
+      "prompt": "Scrape [directory URL] into a spreadsheet.\n\nWork out how the listing paginates before you start — numbered pages, infinite scroll, a load-more button, or a URL parameter — and handle it properly. Getting the first page and stopping is the most common way this fails, and it fails silently because the output looks fine.\n\nFor each entry capture [fields — e.g. name, category, location, website, phone, description]. If the useful fields only exist on the detail page rather than the listing, open each detail page.\n\nDe-duplicate on [the field that is actually unique — website domain or phone, not name] and say how many duplicates you collapsed.\n\nClean as you go: consistent casing, phone numbers in one format, URLs with the scheme, empty rather than \"N/A\" or \"-\" for missing values.\n\nWrite it to a Google Sheet, one row per entry, with the source URL of each detail page as the last column so any row can be checked.\n\nTell me the count you expected from the directory's own total and the count you got. If those disagree, say so and say why rather than handing me a sheet that is quietly missing a third of the listings. If the site blocks automated access or the terms forbid it, stop and tell me instead of working around it.",
+      "roles": [
+        "analysts",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "data-research-missing-fields-row",
@@ -1997,7 +2003,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Open [sheet link]. Some columns are filled and [these columns] are empty. Research and fill them in.\n\nFor each row, use what is already there to identify the subject unambiguously first. Filling in a field for the wrong company is worse than leaving it blank, and it is the failure mode that never gets caught.\n\nFor each value you find, write the value and put the source URL in the adjacent [Source] column. A number without a source is a number I have to verify myself, which means the row saved me nothing.\n\nWhere sources disagree, use the most authoritative one — the company's own site or filings over a directory aggregator — and note the disagreement in a comments column.\n\nWhere you cannot find a value, write Not found rather than an estimate, a rounded guess, or the value for a similar company. Where you found something but are not confident it is the right entity, write it and mark the row Low confidence.\n\nDo not overwrite anything already in the sheet, even if you think it is wrong. Put the corrected value in a comments column and flag it for me.\n\nTell me at the end how many fields you filled, how many you could not, and which columns had the worst hit rate — that last one usually means the field is not publicly available and the column should be dropped.",
+      "roles": [
+        "analysts",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "data-table-page-blocks-copy",
@@ -2011,7 +2023,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "There is a table at [URL] that I cannot select or copy out of. Get me the data.\n\nRead the rendered page and extract the table's actual content — headers and every row. Work with what the page displays, and if the table is paginated or lazily rendered, page through it until you have everything rather than taking the visible rows.\n\nPreserve the structure exactly: same columns in the same order, same number of rows, values as they appear. Do not reformat numbers, dates or currencies into what you think they should be — I will do that once I can see what the source actually said.\n\nWhere a cell is empty in the source, leave it empty. Where a cell holds a footnote marker, a link, or an icon rather than a value, capture what it means in a way I can act on rather than dropping it.\n\nWrite it to a Google Sheet.\n\nThen tell me the row count and the column count so I can check them against what the page claims. If the table has a total or a subtotal row, keep it and label it rather than merging it into the data.\n\nIf the page turns out to be an image of a table rather than a table, say so — the accuracy of reading it is different and I need to know that before I use the numbers.",
+      "roles": [
+        "analysts",
+        "everyone"
+      ]
     },
     {
       "id": "data-up-spreadsheet-exactly-how",
@@ -2029,7 +2046,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Clean up [sheet link] according to these rules and no others: [rules — e.g. dedupe on email, title-case names, phone numbers to E.164, trim whitespace, dates to YYYY-MM-DD, drop rows with no email].\n\nWork on a copy, not the original. Name it [original name] — cleaned.\n\nApply exactly what I asked for. Do not also fix the things you notice that I did not mention, do not reorder columns, do not delete a column that looks empty, and do not \"helpfully\" normalise a field I did not name. A cleanup that quietly did more than it was told is one I have to diff against the original before I can use it, which costs more than doing it by hand.\n\nWhere a rule cannot be applied to a value — a phone number that is not a phone number, a date in a format the rule does not cover — leave the original value in place and add the row to an Exceptions tab with the field, the value, and which rule could not be applied. Those exceptions are usually the most interesting thing in the sheet.\n\nWhen you dedupe, say which record you kept and why (most complete, most recent) and put the discarded duplicates on their own tab rather than deleting them.\n\nFinish with a summary: rows in, rows out, per-rule counts of what changed, and how many exceptions.",
+      "roles": [
+        "analysts",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "data-sheets-one-reconcile-conflicts",
@@ -2047,7 +2070,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Merge [sheet links] into one master sheet. The key that identifies the same record across them is [field].\n\nFirst tell me what you are working with before merging anything: how many rows in each, which columns each has, and where the same concept is named differently across sheets. That mapping is the part that goes wrong, and I want to see it.\n\nMatch records on the key. Then for every field where two sources disagree about the same record, do not silently pick one. Write the master row using [precedence rule — e.g. the most recently updated sheet wins], and log the conflict to a Conflicts tab: the key, the field, each source's value, and which one was used.\n\nThe conflicts tab is the deliverable as much as the master sheet. A merged sheet with the disagreements hidden inside it is a sheet that looks authoritative and is not.\n\nRecords that appear in only one source go into the master with a column saying which source they came from.\n\nWhere the key is missing or duplicated within a single source, put those rows on an Unmatched tab rather than guessing.\n\nFinish with the numbers: rows per source in, matched, merged, master total, conflicts logged, unmatched. If the totals do not reconcile, say so rather than presenting a number that does not add up.",
+      "roles": [
+        "analysts",
+        "ops"
+      ]
     },
     {
       "id": "data-messy-list-clean-structured",
@@ -2061,7 +2089,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Here is a messy list: [paste it, or a link]. Turn it into clean structured rows with these columns: [columns].\n\nRead the whole thing first and work out its actual structure before parsing anything. Free-text lists usually have two or three inconsistent formats mixed together, and a parser tuned to the first ten lines mangles the rest.\n\nTell me what patterns you found and how you are splitting them, then do it.\n\nFor each entry, pull the fields into the columns. Normalise consistently: one date format, one phone format, consistent casing on names, URLs with a scheme. Keep the original raw text as the last column, so any row I doubt can be checked against what it came from without going back to the source.\n\nWrite it to a Google Sheet.\n\nWhere an entry does not fit the pattern, do not force it. Put it on an Unparsed tab with the raw text and a line on why. Ten unparsed rows I can fix by hand are much better than ten rows silently parsed into the wrong columns.\n\nWhere a field is genuinely absent from an entry, leave it empty rather than inferring it from the entries around it.\n\nFinish with the counts: entries in, rows out, rows unparsed.",
+      "roles": [
+        "analysts",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "data-pricing-comparison-across-competitor",
@@ -2070,7 +2104,13 @@
       "category": "Data",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build a side-by-side pricing comparison for [competitors].\n\nGo to each one's actual pricing page. For every plan capture: plan name, monthly price, annual price and the effective monthly rate, what the plan includes, the limits that matter ([seats, usage, storage, API calls — whatever applies here]), and what is explicitly not included.\n\nThe limits are the point. Two products at $49 with a 10x difference in included usage are not competitors at the same price, and a table that shows only the headline number hides exactly the thing I need.\n\nAlso capture: whether there is a free tier and what it actually allows, whether pricing is public at all for the top tier, the currency, whether tax is included, minimum contract terms, and any per-seat minimum.\n\nWrite it as a table with plans as rows grouped by competitor, and the same fields as columns for all of them. Where a competitor does not have a comparable concept, write Not offered rather than leaving a blank that reads like missing data.\n\nEvery row gets the source URL and the date you checked. Pricing pages change and an undated comparison is worthless within a quarter.\n\nWhere pricing is \"contact us\", say that rather than estimating, and note anything you found about real prices in reviews separately and labelled as such.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "data-listings-page-log-new",
@@ -2091,7 +2131,13 @@
         "cron": "0 7 * * *",
         "display": "Daily at 7am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check [listings page URL] and append anything new to [sheet link].\n\nNew means not already in the sheet. Match on [a stable identifier — the listing URL or ID, never the title, which gets edited]. A job that reappears with a rewritten title is not a new job, and a sheet that thinks it is becomes useless within a fortnight.\n\nFor each new listing capture [fields], plus the URL and the date it was first seen. Keep the sheet append-only so the history stays intact and I can see how the listing volume changes over time.\n\nHandle pagination properly — if listings are sorted newest first, you can stop once you hit ones already logged, but check a page beyond that in case the sort is not strictly chronological.\n\nAlso watch for listings that have disappeared since the last run and mark those rows Removed with the date, rather than deleting them. When something vanishes is often the most interesting thing in this kind of log.\n\nTell me each morning how many new, how many removed, and the total tracked. If the page structure has changed and you cannot parse it, say so loudly rather than appending zero rows — a scraper that silently returns nothing looks exactly like a quiet day.",
+      "roles": [
+        "analysts",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "data-new-job-postings-match",
@@ -2112,7 +2158,12 @@
         "cron": "0 8 * * *",
         "display": "Daily at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check [job boards / company career pages] for new postings matching [titles], in [locations / remote], and add them to [sheet link].\n\nDe-duplicate hard. The same job appears on a company's own site, on LinkedIn, and on three aggregators, and a tracker full of the same role five times is one I stop opening. Match on company plus normalised title plus location, and keep the posting from the company's own site as the canonical one, with the other URLs in a column.\n\nFor each new posting: company, title, location and whether remote, posted date, comp range if stated, the canonical link, and a fit score out of 5 against my criteria at [link].\n\nThe fit score needs a one-line reason next to it, otherwise it is a number I cannot argue with. Score honestly — if most postings come out at 2, that tells me the search is too broad and that is worth knowing.\n\nFlag anything scoring 4 or 5 at the top of the daily note so I see it the same day. For those roles, speed matters more than anything else this job does.\n\nSkip staffing-agency reposts of a job already in the sheet from the employer directly. And where a posting has no comp and my state requires it, note that — it usually means the posting is old or out of state.",
+      "roles": [
+        "everyone",
+        "recruiting"
+      ]
     },
     {
       "id": "data-log-prices-products-m",
@@ -2133,7 +2184,12 @@
         "cron": "30 7 * * *",
         "display": "Daily at 7:30am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check the price of each product in [sheet link] and log it.\n\nFor each row, open the product URL and read the current price. Capture: the date, the price, the currency, whether it is in stock, and any strike-through or was-price shown. Append as a new row in a history tab rather than overwriting — the history is the whole point, and a sheet that only holds today's price cannot tell me anything.\n\nBe careful about which price you read. Product pages show a list price, a member price, a subscribe-and-save price, a price with a coupon applied and a price for a different variant, sometimes all at once. Read the price for the variant in my sheet, and record which one you took.\n\nCall out changes in a summary each morning: anything that dropped, by how much and by what percent, anything that rose, anything that went out of stock or came back, and anything now at its lowest price since tracking started.\n\nThat last one is the reason this exists, so make it prominent.\n\nIf a page will not load or the product is gone, log that as the day's entry rather than skipping the row — a gap in a price history is indistinguishable from a day the job did not run.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "data-fields-batch-invoice-pdfs",
@@ -2151,7 +2207,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read every invoice PDF in [Drive folder] and extract [fields — vendor, invoice number, date, due date, subtotal, tax, total, currency, PO number, line items] into [sheet link or a new sheet matching this template].\n\nInvoices vary wildly in layout, so read each one properly rather than assuming a position. For each field, take the value the document actually states.\n\nThen check your own work before writing the row: does the subtotal plus tax equal the total, does the sum of line items equal the subtotal, is the date plausible, is the currency what the symbol actually indicates. Where an internal check fails, still write the row but mark it Needs review with which check failed. Those are the ones worth my time and they are invisible in a sheet that presents every row with equal confidence.\n\nAlso flag: scanned or handwritten invoices where the read is uncertain, invoices in a currency other than [expected], duplicates of an invoice number already in the sheet, and anything with no total you could find.\n\nPut the source filename and page in every row.\n\nDo not round, do not convert currencies, and do not infer a missing tax amount by subtraction. Finish with counts: files read, rows written, rows flagged, files that could not be read at all.",
+      "roles": [
+        "ops",
+        "analysts"
+      ]
     },
     {
       "id": "data-last-month-s-email",
@@ -2172,7 +2233,13 @@
         "cron": "0 7 1 * *",
         "display": "Monthly on the 1st at 7am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the 1st of each month, go through my Gmail for last month and build an expense report from the receipts.\n\nSearch for receipts, invoices, order confirmations and payment notifications — including the ones that live in Promotions rather than the inbox, which is where half of them end up.\n\nFor each: date, merchant, amount, currency, what it was for, the payment method's last four if the email states it, and a link to the message. Categorise using [my categories, or: software, travel, meals, hardware, services, other].\n\nThen the summary: total for the month, totals per category, the largest few line items, and a comparison against the previous month with anything that moved significantly called out.\n\nSeparate out two things that otherwise corrupt the total. Recurring subscriptions get their own section, so I can see the fixed base and spot the ones I forgot I was paying for. And anything that looks like a duplicate — same merchant, same amount, same day — gets flagged rather than counted twice, since an order confirmation and a receipt for the same purchase both look like charges.\n\nWhere an email is a quote, a renewal notice or a failed payment rather than an actual charge, leave it out and list those separately. This is a summary for me, not a filing; say plainly that the totals need checking against the card statement.",
+      "roles": [
+        "everyone",
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "data-current-rates-affiliate-dashboards",
@@ -2193,7 +2260,13 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, log into each affiliate dashboard listed in [sheet link] and pull the current terms into my tracker.\n\nFor each program capture: current commission rate and structure, cookie window, payout threshold, payment schedule, any tiered rates and what triggers the next tier, category exclusions, and the date of the most recent terms change if the dashboard shows one.\n\nCompare against what the tracker already says and call out every difference. Rate changes are the reason this exists — programs cut rates quietly, the email goes to a shared inbox nobody reads, and the first sign is a month of lower revenue.\n\nFlag separately anything with a deadline: promotional rates about to end, terms updates requiring acceptance, an account that will go inactive without a sale, or a payout threshold I am close to.\n\nAlso capture pending and paid balances if the dashboard shows them, so the tracker doubles as the answer to what I am owed.\n\nWhere a dashboard needs two-factor authentication you cannot complete, or the login fails, say which program and stop for that one — do not retry a login repeatedly, and do not skip it silently. A program missing from the update looks identical to a program with no changes.",
+      "roles": [
+        "marketing",
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "data-shortlist-events-worth-attending",
@@ -2202,7 +2275,13 @@
       "category": "Data",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a shortlist of events worth attending in [timeframe] for [purpose — selling, hiring, learning, visibility] in [industry / region].\n\nFor each: name, dates, city and venue, format, expected attendance, ticket cost including the early-bird deadline, and roughly what travel and hotel would add. The all-in number matters more than the ticket price and is the one every event page hides.\n\nThen the part that decides it: who actually attends. Look at last year's speaker list, sponsor list and any published attendee breakdown, and say honestly whether the room contains the people I care about or whether it is mostly vendors selling to each other. A conference where the attendees are all sellers is a cost with no return, and it is common.\n\nAlso capture: whether the CFP is open and when it closes, whether sponsorship is worth it at the smallest tier, and what side events run alongside — the dinners and satellite meetups are frequently where the value is.\n\nRank by expected value for my stated purpose, and give each a one-line verdict: go, go only if speaking, sponsor rather than attend, or skip and why.\n\nInclude the skips with reasons. Knowing why not to go to the obvious big one is as useful as the shortlist.",
+      "roles": [
+        "founders",
+        "marketing",
+        "everyone"
+      ]
     },
     {
       "id": "data-product-reviews-themes-quotes",
@@ -2224,7 +2303,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read the reviews of [product — ours or a competitor's] on G2 and Trustpilot and tell me what customers actually say.\n\nRead across the rating distribution rather than just the extremes. The 3 and 4-star reviews are the most informative: they are written by people who use the thing and have specific grievances rather than an agenda.\n\nGroup what you find into themes, not a list of reviews. For each theme: what it is in one line, how many reviews raised it and out of how many read, whether it skews to a particular customer size or use case, and two or three verbatim quotes with the rating, the date and the link.\n\nThe quotes have to be exact. A paraphrased customer quote cannot be used in anything, and that is usually what this is for.\n\nSplit into praise and complaints, ordered by frequency within each. Then add a third section for the themes that changed over time — something complained about constantly in [older period] and rarely since is a fixed problem, and treating it as current makes us look uninformed.\n\nWrite it to a sheet with one row per quote so it stays searchable, plus the thematic summary above it.\n\nSay how many reviews you read and over what period. A theme drawn from four reviews is not a theme, and I need to be able to tell.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "data-two-versions-sheet-show",
@@ -2238,7 +2323,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare [sheet A] against [sheet B] and tell me exactly what changed. The column that identifies a row across both is [key].\n\nFirst check the shapes: row counts, column names, and any column present in one and not the other. A renamed column makes every row in it look changed, so establish the mapping before diffing anything.\n\nThen produce a change report in a Google Doc with four sections:\n\nAdded — rows in B with a key not in A. Show the full row.\nRemoved — rows in A with a key not in B. Show the full row.\nChanged — rows in both where any field differs. Show the key, the field, the old value and the new value, one line per changed field rather than per row.\nUnchanged — the count only.\n\nCall out separately anything structural: duplicated keys within either sheet, rows with a blank key, and columns added or dropped. Those are usually the real story and they get lost among a hundred value changes.\n\nEnd with the counts, and check they reconcile: A total, B total, added, removed, changed, unchanged. If they do not add up, say so rather than presenting a report whose arithmetic does not work.\n\nDo not modify either sheet.",
+      "roles": [
+        "analysts",
+        "ops"
+      ]
     },
     {
       "id": "data-engineer-candidates-github-activity",
@@ -2260,7 +2350,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find engineers on GitHub who work with [languages / frameworks / domain] and are based in [location, or remote-friendly].\n\nSearch by contribution to relevant projects rather than by profile keywords — a bio saying \"Rust\" is worth nothing next to fifty merged PRs in a Rust project with real maintainers.\n\nFor each candidate capture: username and profile URL, name if public, location if public, current employer if stated, the specific evidence (which repos, what kind of contribution, merged or not, how recent), primary languages by actual code rather than by repo count, and activity over the last [12] months.\n\nSeparate signal from volume in what you report. Someone with four substantial merged PRs to a project that matters is a stronger candidate than someone with 2,000 commits to their own dotfiles, and the sheet should make that visible rather than sorting on a contribution count.\n\nAdd a LinkedIn URL where you can confidently match the person, and mark it uncertain where you cannot.\n\nWrite it to a Google Sheet ranked by strength of evidence.\n\nExclude anyone who works at [our company] or at [companies we do not approach]. Exclude accounts that are clearly bots or organisations. And do not include a personal email scraped from a commit — that is technically public and using it for recruiting is the fastest way to get a bad reputation among exactly the people we want.",
+      "roles": [
+        "recruiting",
+        "engineering"
+      ]
     },
     {
       "id": "data-summarize-competitor-product-updates",
@@ -2272,7 +2367,13 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, check what [competitors] shipped in the last week and brief me on it.\n\nSources per competitor: their changelog or release notes, their blog, their docs (a new page in the docs often lands before any announcement), their status or roadmap page if public, and their product-related social posts.\n\nFor each shipped item: which competitor, what it is in plain terms, the date, the link, and what problem it solves for their users.\n\nThen the part that makes this worth reading: what it means. Is it catching up to something we already do, is it a genuine gap opening between us, is it maintenance dressed up as news, or is it a signal about where they are heading? Say which, and say when you are not sure.\n\nA lot of changelog content is noise, and a brief that reports every bug fix with equal weight buries the one thing that mattered. Rank by significance and put the trivia in a single line at the bottom.\n\nIf a competitor shipped nothing this week, say so in one line. A quiet quarter from a competitor is itself information.\n\nAnd where something they shipped directly overlaps our roadmap, flag it clearly at the top — that is the item someone here needs to see the same day.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "data-vendors-against-evaluation-criteria",
@@ -2281,7 +2382,13 @@
       "category": "Data",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Score [vendors] against my criteria: [criteria with weights, or the list and I will weight them].\n\nFor each vendor, research each criterion from their site, docs, pricing, status page, reviews and anything public about their security and compliance posture. Score each criterion, and put the evidence and its source next to the score. A scorecard whose numbers cannot be traced is one nobody can defend in the meeting where it gets used.\n\nBuild the table with vendors as columns and criteria as rows, weighted totals at the bottom.\n\nThen the parts a score cannot hold:\n\nDeal-breakers — anything that disqualifies a vendor regardless of total. A vendor missing a compliance requirement we must have does not get to win on features.\n\nUnknowns — every criterion where you could not find out. List these explicitly per vendor rather than scoring them zero or average. \"We could not determine this\" and \"they scored badly\" are completely different and the total hides the difference.\n\nQuestions for each vendor's sales call, drawn from the unknowns.\n\nFinish with a recommendation and, more usefully, what would have to be true for the runner-up to win instead. And say plainly if the scores are close enough that the ranking is not meaningful.",
+      "roles": [
+        "ops",
+        "analysts",
+        "founders"
+      ]
     },
     {
       "id": "data-amazon-order-history-sheet",
@@ -2303,7 +2410,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Export my Amazon order history for [period] into a Google Sheet.\n\nGo through the order history pages, paging back through the whole period. For each order capture: order date, order number, item name, quantity, item price, shipping, tax, order total, category if shown, and the order detail URL.\n\nOne row per item rather than per order, since an order with six items is six things I bought and the categorisation only works at the item level. Put the order number on each row so items can be grouped back.\n\nHandle the awkward cases explicitly: cancelled and returned orders marked as such rather than counted as spend, digital orders and subscriptions separated out, and gift cards excluded from spend totals since they are a transfer rather than a purchase.\n\nThen add a summary tab: total spend by month, by category, the largest orders, and the count of orders. Include the returns as a negative line rather than silently netting them off, so the gross and net are both visible.\n\nIf pagination breaks or a page will not load, say which date range is missing rather than handing me a total that is quietly short. A spend figure I believe and that is wrong is worse than no figure.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "data-bank-statement-books",
@@ -2321,7 +2433,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Reconcile the bank statement at [file or Drive link] against my books at [sheet link] for [period].\n\nMatch on amount and date within a [3] day window, then on description where the amounts are ambiguous. Bank descriptions rarely match the payee name in the books, so expect to match on amount first and confirm on context.\n\nProduce four sections:\n\nMatched — transaction, date, amount, and both references. The count, not every line, unless I ask.\n\nIn the bank, not in the books — these are the ones that matter most. Full detail on each, with a guess at what it is where the description gives one.\n\nIn the books, not in the bank — outstanding cheques, timing differences, or entries that should not exist.\n\nAmount mismatches — matched by date and payee but different amounts. Show both.\n\nThen the reconciliation itself: opening balance per the bank, plus and minus the reconciling items, closing balance per the books, and the difference. State the difference plainly even when it is not zero — especially when it is not zero.\n\nDo not force a match to make it balance, and do not adjust anything in either source. This is a reconciliation for a human to act on, not a set of corrections.",
+      "roles": [
+        "ops",
+        "analysts",
+        "founders"
+      ]
     },
     {
       "id": "data-transactions-p-l",
@@ -2339,7 +2457,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Turn the transactions at [sheet or file link] into a monthly P&L.\n\nCategorise every transaction using [my chart of accounts, or: revenue, cost of revenue, payroll, software, marketing, professional services, travel, office, other]. Put the category in a column next to each transaction rather than only in the summary, so the categorisation can be audited and corrected.\n\nWhere a transaction is ambiguous, put it in an Uncategorised bucket and list those separately. Do not spread them across plausible categories — an uncategorised total I can see is honest, and a P&L where 4% of spend was guessed into place is not.\n\nBuild the P&L by month: revenue, cost of revenue, gross profit and gross margin, then operating expenses by category, then operating profit. Add a total column for the period.\n\nCall out anything that will distort a month: one-off charges, annual payments booked in the month they were paid, refunds, and transfers between my own accounts that are not income or expense at all. That last one inflates revenue in almost every DIY P&L I have seen.\n\nThis is a management view built from transaction data, not accounting output. Say so, and say which judgements you made that an accountant might make differently.",
+      "roles": [
+        "founders",
+        "ops",
+        "analysts"
+      ]
     },
     {
       "id": "data-survey-results",
@@ -2357,7 +2481,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Analyse the survey export at [sheet link].\n\nStart with the shape of it: how many responses, how many complete, the response period, and the drop-off by question. Then say plainly what that means for the rest — an analysis of 40 responses is a set of anecdotes with percentages on them, and the reader needs to know that before the first chart.\n\nFor each closed question: the distribution with counts and percentages, based on the number who answered that question rather than the total, and note where those differ.\n\nCross-tabs for the segments that matter: [segments — e.g. by plan, by tenure, by role]. Only report a cross-tab where the cell counts support it, and say the cell size. \"70% of enterprise customers said X\" over seven respondents is a sentence that will get repeated without the seven.\n\nFor open-text questions: read all of them and group into themes with counts and representative verbatim quotes. Quote exactly. Keep a residual Other with the count rather than forcing every response into a theme.\n\nFinish with the three findings that are actually supported, and separately anything suggestive that would need more data. And note any question whose wording biases the answer — that belongs in the analysis, not in a footnote nobody reads.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "data-cohort-retention-analysis",
@@ -2375,7 +2505,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build a cohort retention analysis from the data at [sheet link]. Each row is [what a row is — a user, a subscription, an order] with [the signup/first-activity date field] and [the activity or renewal field].\n\nDefine the cohort by month of first activity, and define retained explicitly before you compute anything: [definition — e.g. had any activity in that month, or an active subscription on the last day of the month]. State the definition at the top of the output, because every retention number is meaningless without it and every argument about retention turns out to be an argument about the definition.\n\nBuild the triangle: cohorts as rows, months since signup as columns, both counts and percentages. Include the cohort size in the first column.\n\nThen the reading of it:\n\nWhere the curve flattens, which is the number that actually matters — the floor is the business.\nWhether recent cohorts are better or worse than older ones, and by how much.\nAny cohort that behaves unlike its neighbours, with a guess at why (a pricing change, a campaign, a seasonal intake).\n\nGrey out or omit the incomplete cells for recent cohorts rather than showing a partial month as a retention drop. That single artefact is the most common way a retention chart tells a story that is not true.\n\nWrite the tables to a sheet and the reading to a doc.",
+      "roles": [
+        "analysts",
+        "founders"
+      ]
     },
     {
       "id": "data-store-s-catalog-sold",
@@ -2389,7 +2524,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Sweep every product in [store URL or product sheet] and flag what is broken.\n\nFor each product page check:\n\nAvailability — in stock, sold out, or unavailable, and for variant products, which specific variants are gone. A product that shows as available but where every size is sold out is the worst case, since it takes the customer to the last click before failing.\n\nImages — missing, broken, placeholder, or fewer than [n]. Check the image actually loads rather than that the tag exists.\n\nPrice — missing, zero, obviously wrong (an order of magnitude off the category norm), sale price above the original, or a strike-through with no discount.\n\nContent — empty or placeholder description, missing key attributes, a title that still says Copy or Draft.\n\nLinks — anything on the page that 404s.\n\nWrite it to a sheet, one row per issue rather than per product, with the product, the variant if relevant, the issue, the URL, and a severity. Sort by severity: a page that cannot be bought from first, a missing third image last.\n\nGive me the totals by issue type at the top. And where the whole catalogue shows the same problem, say that as one line rather than as four hundred rows.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "research-dive-company-category-market",
