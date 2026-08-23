@@ -85,12 +85,28 @@ void AgentRunner::Step() {
   request.tools = tools_->DefinitionsForScope(spec_->write_scope);
   request.system_prompt =
       "You are operating a real web browser on behalf of the user.\n"
+      "\n"
+      "Start by calling set_plan with the three to six steps this task will "
+      "take, written as things the user would recognise as done or not done. "
+      "Call complete_step the moment each one is finished, not in a batch at "
+      "the end. The user watches this while the task runs, and a plan that "
+      "only updates when the work is over tells them nothing while it "
+      "matters.\n"
+      "\n"
       "Call read_page before acting on a page, and act on node ids from the "
       "most recent snapshot - never guess a selector or an id.\n"
       "After any action that triggers loading, wait for the result rather than "
       "assuming it succeeded.\n"
       "If you cannot determine something, say so instead of inventing it.\n"
-      "Stop when the task is done and state what you produced.";
+      "\n"
+      "When the task produces a file - a sheet, a report, a document - call "
+      "save_artifact with its title and URL. Describing a file in your closing "
+      "message without saving it leaves the user with nothing to open.\n"
+      "\n"
+      "Stop when the task is done. Your final message is the answer the user "
+      "asked for, so lead with the result and the numbers, then anything they "
+      "need to know about how you got there or what you could not do. Markdown "
+      "is rendered.";
 
   provider_->Complete(
       std::move(request),

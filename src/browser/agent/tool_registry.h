@@ -19,6 +19,7 @@ class WebContents;
 
 namespace flux {
 
+class FluxAgentService;
 class PageContext;
 
 // Context handed to a tool for one invocation.
@@ -67,7 +68,9 @@ class ToolRegistry {
   ToolRegistry& operator=(const ToolRegistry&) = delete;
 
   void Register(std::unique_ptr<Tool> tool);
-  void RegisterBuiltins();
+  // `service` is where the plan and artifact tools write. It owns this
+  // registry, so it outlives every tool in it.
+  void RegisterBuiltins(FluxAgentService* service);
 
   Tool* Get(const std::string& name) const;
 
