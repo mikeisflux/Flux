@@ -3048,7 +3048,12 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Every weekday morning, take orders marked Confirmed on my Monday.com board [board name] and create the matching records in QuickBooks.\n\nFor each confirmed order, read the board item properly: customer, line items with quantities and prices, currency, terms, PO reference, ship-to, and any note affecting billing. Then create the invoice in QuickBooks, matching the customer to an existing one rather than creating a duplicate — match on name and email, and if there are two plausible matches, stop on that order and flag it rather than guessing. Duplicate customer records take longer to unpick than the invoice took to raise.\n\nWhere the order requires a purchase order to a supplier, create that too.\n\nWrite the QuickBooks invoice number and PO number back onto the board item and move it to [next status]. The write-back is what stops the same order being invoiced twice tomorrow, so if it fails, say so loudly.\n\nThis creates real financial records. So: never invoice an item that already has an invoice number on the board, never create a customer that does not exist without flagging it, never round or adjust a price, and stop entirely if the board item is missing a price, a quantity or a customer. Report at the end what was created, what was skipped and why.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "ops-overdue-invoice-collections-sweep",
@@ -3073,7 +3078,12 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every Monday, pull every overdue invoice from QuickBooks and run the collections sweep.\n\nFor each: customer, invoice number, amount, due date, days overdue, and what has already been sent. Check my Gmail for the invoice thread and read it — an invoice that is overdue because the customer raised a dispute needs a completely different message from one nobody has looked at, and a chaser sent into a dispute thread makes things worse.\n\nUpdate the tracker at [sheet link] with the current state of each one.\n\nThen draft the next nudge, as a reply in the existing thread rather than a new email, so the history is in front of them. Escalate by age: at [7] days a light reminder, at [30] a direct one naming the amount and asking for a payment date, at [60] a firmer note referencing the terms. Attach or link the invoice each time.\n\nFlag separately for me rather than drafting: anything past [90] days, anything where the customer has disputed, anything where the thread suggests they cannot pay, and any customer with several overdue invoices at once. Those need a decision, not another email.\n\nEverything stays a draft. Nothing sends.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "ops-label-gmail-inbox-morning",
@@ -3090,7 +3100,12 @@
         "cron": "0 7 * * *",
         "display": "Daily at 7am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, go through everything that arrived in my Gmail overnight and label it.\n\nLabels: [my labels, or: Needs me, Waiting on someone, FYI, Newsletter, Receipt, Automated]. Apply exactly one primary label per thread.\n\nNeeds me means there is a decision or an answer only I can give. Be strict about it — a Needs me label on twenty threads is the same as no labels at all. Something I have been cc'd on, something answered by someone else in the thread, and something that is merely interesting all go elsewhere.\n\nThen give me a brief, and put it in the order I should act rather than the order it arrived:\n\nToday — the handful that genuinely need me, each with who, what they want, and how long it has been waiting.\nWaiting — what I am owed by someone else, and how long it has been outstanding. This is the section people never keep and always need.\nFYI — one line each, or a count if there are many.\nEverything else — counts by label, no detail.\n\nLabel only. Do not archive, delete, mark read, or reply to anything. And where a thread is genuinely ambiguous, leave it unlabelled and list it — a wrong label buries a thread more effectively than no label.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-event-rsvps-keep-invite",
@@ -3115,7 +3130,13 @@
         "cron": "0 17 * * *",
         "display": "Daily at 5pm"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Every afternoon, check my Gmail for RSVPs to [event] and keep the tracker at [sheet link] current.\n\nFind replies to the invitation, including ones that arrive as a forward, a reply from a colleague of the person invited, or an out-of-office that says they will be away on the date. Label each thread [label].\n\nUpdate each person's row: response (yes, no, maybe, no reply), the date they replied, plus and any guest count, dietary or access requirements, and anything else they said that someone will need to know on the day.\n\nSend the confirmation to anyone who said yes and has not had one — that is the only thing that sends, and it uses the template at [link] with their details filled in. Do not send anything to a maybe, a no, or anyone whose reply you are not certain about.\n\nThen a daily summary: current headcount with guests, changes since yesterday, the no-reply list with how long each has been outstanding, and anyone whose reply needs a human — a question about the venue, a request to bring someone extra, an accessibility need.\n\nIf a reply is ambiguous, mark the row Unclear and quote what they said rather than resolving it into a yes. Headcount for catering is the kind of number that has to be right.",
+      "roles": [
+        "ops",
+        "marketing",
+        "everyone"
+      ]
     },
     {
       "id": "ops-contractor-agreement-ready-signature",
@@ -3129,7 +3150,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Draft a contractor agreement from my template at [link] for [contractor name].\n\nThe details: scope of work [scope], rate and basis [amount, hourly/daily/fixed], payment terms [terms], start and end dates [dates], deliverables and dates [list], IP ownership [terms], confidentiality [terms], termination notice [period], jurisdiction [where].\n\nWork from the template rather than writing an agreement from scratch — it is the version that has already been reviewed, and a fresh draft loses that. Fill every placeholder with the details above, and produce the document as a copy so the template stays clean.\n\nWhere the template has a placeholder I have not given you a value for, leave it as an obvious blank in square brackets rather than filling in a plausible default. A silently defaulted notice period or IP clause is exactly the kind of thing that gets signed and discovered later.\n\nList at the top of your reply every blank remaining, and separately anything in the scope I gave you that the template does not cover — a deliverable schedule with no acceptance criteria, a rate with no expense policy, a term with no renewal treatment.\n\nThis is a draft for me and, where it matters, a lawyer to review. It is not legal advice, and nothing sends or goes for signature.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "ops-bill-inbox-prep-payment",
@@ -3143,7 +3169,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Find the bill from [vendor, or: for around this amount, due around this date] in my Gmail and get the payment ready for me to complete.\n\nSearch properly — bills arrive as attachments, as links to a portal, and as plain-text emails, and they land in Promotions as often as the inbox. Confirm you have the right one: check the vendor, the amount, the invoice number, the period covered and the due date, and tell me all five before doing anything else.\n\nThen open the payment route: the vendor's portal, the link in the email, or the account page. Navigate to the point where the only thing left is the final confirmation, using my saved details where the browser has them.\n\nStop there. Do not enter payment card details, do not click the final pay button, do not authorise anything.\n\nTell me exactly where you have left it, what the total will be, and anything you noticed on the way: a late fee already applied, an amount different from the invoice, an auto-pay setting already enabled that would make this a double payment, or a duplicate of an invoice already paid.\n\nIf you cannot confirm this is the right bill, or if the portal requires a login you cannot complete, stop and say so rather than staging a payment I would have to unpick.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "ops-collect-access-review-evidence",
@@ -3165,7 +3196,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Collect the access-review evidence for [system list] for [period] and reconcile it against my tracker at [link].\n\nFor each system, get the current list of users with access and their permission level: Google Workspace admin, GitHub organisation members and their team and repository permissions, and [other systems]. Capture it as a record with the date and the source, since the evidence is the point of the exercise rather than the conclusion.\n\nThen reconcile against the tracker and produce the gap list:\n\nPeople with access who are not in the tracker.\nPeople in the tracker whose actual permission level is higher than approved.\nPeople in the tracker with no access, which is usually stale tracker rather than a finding, but has to be resolved either way.\nAccounts that belong to nobody — service accounts, shared logins, and anything whose owner cannot be identified.\nAnyone in the list who has left, cross-checked against [the leavers source].\n\nThat last one is what auditors look for first and what everyone finds something in.\n\nOne row per gap with the system, the account, what the difference is, and who owns resolving it.\n\nRead only. Do not remove or change anyone's access, and do not correct the tracker — both are decisions for a person with the authority to make them.",
+      "roles": [
+        "ops",
+        "engineering"
+      ]
     },
     {
       "id": "ops-last-month-s-receipts",
@@ -3190,7 +3226,12 @@
         "cron": "0 9 * * *",
         "display": "First of the month at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the first of each month, find last month's receipts in my Gmail, save them to Drive and log them.\n\nSearch for receipts, invoices, order confirmations and payment notifications across the whole mailbox including Promotions, where a large share of them land.\n\nFor each, save the document to [Drive folder]/[YYYY-MM]. Take the PDF attachment where there is one; where the receipt is only in the body of the email, save the email itself as a PDF. Do not lose a receipt because it had no attachment — those are usually the subscriptions.\n\nName every file the same way: [YYYY-MM-DD]_[Merchant]_[Amount][Currency].pdf. Consistent naming is the entire value of the folder at tax time.\n\nLog each one to [sheet link]: date, merchant, amount, currency, category, the filename, and a link to both the file and the original email.\n\nThen the checks: flag anything that looks like a duplicate (an order confirmation and a receipt for the same purchase), anything that is a quote or a renewal notice rather than a charge, and anything in a foreign currency.\n\nTell me the count and total, and say which of last month's known recurring charges you did not find a receipt for — a missing receipt is invisible in a folder of receipts.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-visit-site-sheet-fill",
@@ -3208,7 +3249,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Open [sheet link]. Each row has a website and some empty columns: [columns — e.g. status, owner, contact email, tech used, last updated].\n\nVisit each site and fill them in from what is actually there. For each row also record the date you checked and the specific page the value came from, because a value with no page reference cannot be re-verified and this sheet will need re-verifying.\n\nHandle the awkward states rather than treating them as failures: a site that redirects somewhere else (record where), a parked domain, an expired certificate, a holding page, a site that loads but has clearly not been updated in years, and one that is behind a login. Each of these is a real status and each is more useful than a blank cell.\n\nWhere a value is not stated anywhere on the site, write Not stated rather than inferring it from the industry or from a similar company. Where you find it somewhere other than the site itself, note the source.\n\nDo not overwrite anything already filled in. If what you find contradicts an existing value, put the new value in a comments column and flag the row.\n\nFinish with the counts: rows checked, cells filled, sites unreachable, and which column had the worst hit rate.",
+      "roles": [
+        "ops",
+        "analysts"
+      ]
     },
     {
       "id": "ops-fill-out-portal-forms",
@@ -3230,7 +3276,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Fill out the forms listed in [sheet link] using my saved details at [link] and the supporting documents in [Drive folder].\n\nFor each form: open it, work through every field, and fill it from my details. Attach the right supporting document where one is required — check that it is the right document for that form rather than the first plausible file in the folder.\n\nUpdate the tracker per form: the date, the status, and what happened.\n\nStatus has to be specific — completed and submitted, completed but awaiting my review, blocked and why, or form unavailable. \"Done\" for everything tells me nothing about where the work is.\n\nStop and flag rather than proceeding when: a field asks for something not in my details file, a form requires a signature, a payment or a legal attestation, a question is ambiguous enough that a wrong answer would matter, or the form asks for information I have not authorised you to give. Never estimate a number, never guess an identifier, and never tick a box confirming something you cannot verify.\n\nThose blocked rows are the useful output. A tracker showing thirty submitted and four blocked with specific reasons is a good result; thirty submitted with four guesses buried in them is not.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "ops-scattered-knowledge-clean-sop",
@@ -3252,7 +3303,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write an SOP for [process] from how it actually gets done, and put it in a Google Doc.\n\nThe knowledge is scattered: search [Slack channels] and my Gmail for the times this process has been explained, argued about, or gone wrong. Real instances beat any description of the process, and the threads where it went wrong contain the steps that matter.\n\nRead enough instances to see the pattern, then write:\n\nWhat this process is for and when it applies, plus when it does not — the boundary is what people actually get wrong.\nWho does it and who has to approve what.\nThe steps in order, each specific enough to follow: the actual system, the actual button, the actual field. \"Update the record\" is not a step.\nThe decision points, with what to do in each case.\nThe things that go wrong, drawn from the times they did, and what to do about each.\nWhat done looks like.\n\nQuote or link the source thread beside anything non-obvious, so the next person can see where the rule came from.\n\nWhere the instances contradict each other, say so explicitly rather than picking one. Two people doing this differently is the most valuable thing this exercise finds, and an SOP that silently standardises on one of them will be ignored by the other.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "ops-client-records-airtable-webflow",
@@ -3270,7 +3326,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Sync client records from Airtable [base and table] into the Webflow CMS collection [collection].\n\nMatch records on [the key field — a slug or an external ID, never the name]. Then work out the three sets before changing anything: records in Airtable that Webflow does not have, records in both where a field differs, and records in Webflow with no Airtable counterpart.\n\nShow me those three sets and the counts before making any changes. If the numbers look wrong — half the collection about to be created, or a large number about to be orphaned — the key mapping is broken and the correct move is to stop rather than to proceed.\n\nThen apply: create the missing ones, update the changed fields, and for the orphans, list them for me rather than deleting anything. Deleting a live CMS item takes a page down.\n\nMap fields per [mapping], and handle the type differences deliberately: rich text, image references, multi-references and dates all need converting rather than copying.\n\nWrite a change log — every record touched, the field, the old value, the new value, and the timestamp. That log is what makes this reversible.\n\nDo not publish. Leave changes as drafts if the collection supports it, and tell me what needs publishing.",
+      "roles": [
+        "ops",
+        "marketing"
+      ]
     },
     {
       "id": "ops-vendors-security-pages-risk",
@@ -3279,7 +3340,13 @@
       "category": "Ops",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Audit the security posture of [vendors] into a risk table.\n\nFor each vendor check: their trust or security page, their published certifications (SOC 2 Type II, ISO 27001, and which — a Type I is not a Type II and the difference matters), their sub-processor list, their data-residency options, their DPA and whether it is available without asking, their status page and incident history, their vulnerability disclosure policy, their published RPO/RTO if any, and their breach-notification commitment.\n\nBuild the table with vendors as rows and those as columns. For each cell: what you found, the source link, and the date of the evidence — a SOC 2 report from 2023 is not current coverage and the report date is the fact, not the badge on the page.\n\nThen, per vendor: what data of ours they hold and how sensitive it is, the gaps against [our requirements], and an owner for each gap.\n\nDistinguish clearly between a vendor that lacks a control and one that does not publish whether they have it. Those need different follow-ups — a question versus a decision — and merging them produces a table that overstates risk and gets ignored.\n\nFinish with the questions to send each vendor, drawn from the unknowns.",
+      "roles": [
+        "ops",
+        "engineering",
+        "founders"
+      ]
     },
     {
       "id": "ops-meeting-times-draft-scheduling",
@@ -3297,7 +3364,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Find times for a [length] meeting with [people] in [timeframe] and draft the scheduling email.\n\nCheck every attendee's Google Calendar. Respect each person's own working hours in their own timezone, and treat tentative and out-of-office blocks as unavailable unless I said otherwise. Do not propose the first slot of someone's morning or the last of their evening when a better one exists.\n\nAlso apply the things a calendar does not say: leave [15] minutes either side rather than butting against an existing meeting, avoid slots that would give someone their fourth consecutive call, and prefer times that are not lunch in anyone's timezone.\n\nGive me [3] options, each stated in every attendee's local time. That last part is what makes a scheduling email work across timezones and it is what everyone forgets.\n\nThen draft the email: the options, the purpose of the meeting in a sentence, the length, and anything to read beforehand. Short and easy to answer — a scheduling email that asks people to state their availability instead of choosing from options adds a round trip.\n\nIf no slot works for everyone, say who the constraint is and offer the best options for a subset rather than proposing a time that half the invitees will decline.\n\nDraft only. Do not send the invite.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-screen-new-applicants-hiring",
@@ -3322,7 +3394,12 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every weekday morning, check my Gmail for new applications to [role] and log them in [tracker link].\n\nFor each applicant: name, the role applied for, when they applied, contact details, the resume attachment saved to [Drive folder], and a link to the email thread.\n\nThen screen against my must-haves at [link]. Read the resume properly and check the LinkedIn profile where you can find it — a resume and a profile that disagree about dates or titles is worth noting rather than resolving.\n\nGive each a verdict with the evidence: meets the must-haves, missing one and which, or clearly not a fit and why. Keep the reason specific; \"not a fit\" without one means the next person redoes the screen.\n\nThen draft the reply. For meets-the-bar, the screening-call invitation from [template] with times from my calendar. For clear no, the decline from [template] — short, prompt and human, since the worst thing a hiring process does to people is leave them waiting. For the borderline ones, no draft, just a note on what I need to decide.\n\nEverything is a draft and nothing sends. Flag anyone unusual for a human read — a non-traditional background, an internal referral, or a candidate whose experience is strong but does not map to the must-haves as written.",
+      "roles": [
+        "recruiting",
+        "ops"
+      ]
     },
     {
       "id": "ops-compile-creator-payouts-one",
@@ -3347,7 +3424,12 @@
         "cron": "0 10 * * *",
         "display": "First of the month at 10am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the first of each month, compile last month's payouts from every platform I earn on — [Patreon, YouTube, Substack, ad networks, affiliate programs, whatever applies] — into one sheet.\n\nFor each platform: gross earnings, platform fees, payment processing fees, taxes withheld, net payout, the currency, the period covered, and whether it has actually been paid or is still pending. Fees and pending status are the two things a single dashboard number hides and the two that matter most.\n\nWatch the period definitions. Platforms use different month boundaries and some pay a month in arrears, so a naive sum double-counts or misses a month. State the period each figure covers rather than assuming they align.\n\nThen the summary tab: total gross, total fees as an amount and a percentage, total net, and the split by platform. Compare against the previous month and call out anything that moved significantly.\n\nConvert foreign-currency payouts at the rate on the payout date, and show both the original and the converted amount with the rate used.\n\nReconcile against what actually landed in [account] where I have given you that. Where the numbers do not agree, say so and say by how much rather than presenting the platform figure as the answer.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-release-notes-week-s",
@@ -3364,7 +3446,12 @@
         "cron": "0 15 * * 5",
         "display": "Fridays at 3pm"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every Friday afternoon, draft release notes from the PRs merged into [repo, branch] this week.\n\nRead each merged PR: the title, the description, the linked issue, and the diff where the title is uninformative — which it often is. \"fix bug\" as a PR title is not a release note and cannot be turned into one without reading the change.\n\nGroup into: new features, improvements, bug fixes, and internal changes. Internal goes last or gets cut entirely depending on the audience.\n\nWrite each entry for the person who uses the product, not for the person who wrote the code. Lead with what is now possible or what no longer breaks. No package names, no internal service names, no PR numbers in the user-facing text.\n\nCall out separately and prominently: anything that is a breaking change, anything requiring action from a user, and anything affecting an API or a data format. Those are the entries someone actually needs to read, and burying one in a list of forty is how an upgrade goes wrong.\n\nInclude the contributor for each change if that is our convention.\n\nFlag anything you could not summarise confidently rather than writing a vague line — a release note nobody can act on is worse than an omission I can be told about.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "ops-saas-renewals-before-they",
@@ -3389,7 +3476,12 @@
         "cron": "0 9 * * *",
         "display": "First of the month at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the first of each month, build my SaaS renewal picture from my Gmail and keep [sheet link] current.\n\nSearch for subscription receipts, renewal notices, invoices, price-change emails and trial-expiry warnings. For each service: name, what it is for, plan, seats, cost, billing period, renewal date, whether it auto-renews, the cancellation notice period, and the account owner.\n\nThat notice period is the field everyone omits and the one that costs money — an annual contract requiring 60 days' notice has to be decided two months before the date on the invoice, and by the time the renewal notice arrives it is too late.\n\nFlag, in this order: anything renewing in the next [60] days, anything whose notice window closes this month, any price increase versus the last cycle, anything with more seats than we plausibly use, and any service with no activity I can see.\n\nGive me the totals: monthly and annual run rate, the split by category, and the change since last month.\n\nRead only — do not cancel anything, do not change a plan.\n\nWhere you find a charge for something not in the sheet, add it and mark it Newly discovered. Those are usually the ones somebody signed up for and forgot.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "ops-shortlist-flights-stage-booking",
@@ -3403,7 +3495,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Find flights for [route], [dates], [passengers], and stage the best option for me to complete.\n\nSearch across the routes I would actually consider, including nearby airports if that is reasonable for this trip. For each option: airline, flight numbers, departure and arrival times in local time, total duration, layovers with the connection time and airport, aircraft, cabin, baggage allowance, and the full price including taxes and the fees that only appear at checkout.\n\nGive me [4-5] options covering different trade-offs — the cheapest, the fastest, the best-timed for the reason I am travelling, and the best value — rather than five variations of the cheapest.\n\nFor each, note the things that decide it: whether a connection is legally tight, whether the return is an overnight, whether a fare is basic economy with no seat selection or changes, and what change and cancellation actually cost.\n\nThen open my preferred option and take the booking as far as the payment page, filling in passenger details from [link].\n\nStop before payment. Do not enter card details, do not confirm, do not accept fare terms on my behalf. Tell me the exact total that will be charged and anything you noticed — a fare that jumped during the search, a seat fee, a baggage charge not in the headline price.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "ops-today-s-meetings-before",
@@ -3420,7 +3516,13 @@
         "cron": "0 7 * * 1-5",
         "display": "Weekdays at 7am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday at 7am, read today's Google Calendar and brief me on each meeting.\n\nFor each, in the order they occur: time, length, title, and who is attending — with a line on anyone I do not meet regularly, covering their role and why they are in this meeting.\n\nThen what it is actually about. Use the invite description, the attached documents, and the thread it came from. Where a meeting is a recurring one, say what was agreed last time and what was left open, because the most common failure in a recurring meeting is nobody remembering the action from the previous one.\n\nThen: what I owe for this meeting. Anything I said I would do, anything I need to have read, any decision expected of me.\n\nThen two or three suggested talking points, specific to this meeting rather than generic.\n\nAt the top, put the day's shape: total hours in meetings, where the gaps are, and any back-to-back run with no break. And flag anything that looks wrong — a meeting with no agenda and eight attendees, a conflict, a call scheduled at an unreasonable hour for someone on it, or an external meeting with no dial-in.\n\nUnder a page. A briefing that takes longer to read than the first meeting is not a briefing.",
+      "roles": [
+        "everyone",
+        "founders",
+        "sales"
+      ]
     },
     {
       "id": "ops-unsubscribe-newsletters-never-read",
@@ -3434,7 +3536,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Work out which newsletters and marketing emails I never read, and get me off those lists.\n\nFirst the analysis. For each recurring sender over the last [6] months: how many they sent, how many I opened, how many I actually replied to or clicked, and when I last engaged. Present it as a table sorted by volume, since a daily sender I never open costs far more attention than a monthly one.\n\nThen recommend: unsubscribe, keep, or ask me. Anything with zero engagement over [3] months and more than [5] sends is an unsubscribe. Anything I read regularly is a keep. The rest come to me.\n\nFor the unsubscribes, use the List-Unsubscribe header where the sender provides one, and the unsubscribe link in the email otherwise. Log every one: sender, method used, the date, and whether it appeared to work.\n\nBe careful about what is actually a newsletter. Transactional email from a service I use — receipts, security alerts, account notices — must never be unsubscribed even when I never open it, and some senders mix marketing and transactional on one list. When a list looks mixed, put it in the ask-me pile.\n\nDo not click an unsubscribe link in an email that looks like phishing; list those separately.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "ops-replies-emails-waiting",
@@ -3452,7 +3558,12 @@
         "display": "Weekdays at 5pm"
       },
       "writeScope": "draft",
-      "featured": 8
+      "featured": 8,
+      "prompt": "Every weekday at 5pm, find the emails genuinely waiting on me and draft the replies.\n\nWaiting on me means the last message in the thread is from someone else and it contains a question, a request or a decision that is mine. Not a thread where I was cc'd, not one someone else has already answered, not a newsletter.\n\nOrder them by what it costs to be slow rather than by when they arrived — a customer waiting three days outranks an internal thread from this morning.\n\nFor each, draft the reply. Read the whole thread first, not just the last message, and answer the actual question. Match how I write, which you can see in my sent mail: my greeting, my sign-off, my length. Most of my replies are three sentences and a draft that is three paragraphs is one I will rewrite.\n\nWhere the reply needs information I have not got, draft what you can and mark clearly what is missing rather than inventing a date, a number or a commitment.\n\nWhere the honest answer is that I need to decide something first, do not draft — list it as a decision with the options.\n\nEverything stays a draft. Tell me how many threads are waiting and which is the oldest, because that number is usually the useful part.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-follow-up-sent-emails",
@@ -3469,7 +3580,13 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every weekday morning, find emails I sent that have had no reply after [5] business days and draft a bump.\n\nOnly threads where the last message is mine and it asked for something — a question, a decision, a meeting, an action. A thread that ended with me saying thanks does not need following up, and a bump on one is noise that trains people to ignore my email.\n\nFor each: who, the subject, what I asked for, when I sent it, and how many business days it has been. Exclude days they were plausibly out if an out-of-office told me so.\n\nDraft the follow-up as a reply in the same thread so the original is right there. Short — two or three sentences. Restate the ask in one line, make it easy to answer, and do not apologise for following up or open with \"just circling back\". Where the thing has become urgent or the deadline has moved, say so plainly.\n\nEscalate by attempt: a second bump should be shorter and should offer an out — whether this is still relevant, or whether someone else should pick it up.\n\nFlag rather than drafting anything past [3] follow-ups. At that point the answer is no and another email will not change it.\n\nDrafts only.",
+      "roles": [
+        "everyone",
+        "sales",
+        "ops"
+      ]
     },
     {
       "id": "ops-estimate-quarterly-taxes",
@@ -3487,7 +3604,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Estimate my quarterly tax payment for [quarter] from the income and expense data at [sheet link].\n\nMy situation: [filing status, state, business structure, other income, withholding from any employment, prior-year total tax].\n\nWork it through and show every step rather than producing a number:\n\nQuarter-to-date and year-to-date net income from the sheet, with what you included and excluded.\nProjected full-year income on a stated basis, and say which basis you used — annualising a strong quarter overstates a seasonal business badly.\nSelf-employment tax where it applies, with the base and the rate.\nEstimated federal income tax, with the brackets applied and the deduction assumed.\nState tax for [state], with its own rules.\nLess any withholding and payments already made.\nThe safe-harbour figure — [100/110]% of last year's tax divided across the quarters — alongside the calculated figure, and say which is lower. Paying the safe harbour is usually the right answer and the calculation is only worth doing to know whether it is.\n\nThen the payment checklist: the amount, the due date, where to pay federal and state, and what to record.\n\nCheck the current year's rates, thresholds and due dates against the IRS site rather than from memory, and cite what you used. This is an estimate to inform a conversation with my accountant, not tax advice, and it should say so.",
+      "roles": [
+        "founders",
+        "everyone"
+      ]
     },
     {
       "id": "ops-1099-contractor-list",
@@ -3505,7 +3627,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Prep my 1099 list for [tax year] from QuickBooks and reconcile it into [sheet link].\n\nPull every vendor paid during the calendar year and total what each was paid. Then work out who actually needs a 1099-NEC: over the threshold, an individual or a pass-through entity rather than a corporation, and paid for services rather than goods.\n\nThe exclusions matter as much as the inclusions. Payments made by credit card or a third-party network are reported by the processor on a 1099-K and must not also go on a 1099-NEC — double-reporting a contractor's income is a real problem for them. Separate those out by payment method and show both totals.\n\nFor each contractor who needs one: legal name, business name if different, address, TIN or SSN, entity type, total paid, and payment method breakdown.\n\nThen flag every gap: no W-9 on file, missing or malformed TIN, an address that looks stale, an entity type nobody recorded, and anyone just under the threshold who might cross it with a payment you have not seen. Those flags are the deliverable — the list is easy and the missing W-9s are what stops the filing in January.\n\nThis is preparation for me and my accountant to review, not a filing, and it is not tax advice.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "ops-bulk-update-crm-records",
@@ -3523,7 +3650,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Update records in [HubSpot / Salesforce] matching [criteria] by setting [field] to [value].\n\nBefore changing anything, run the selection and show me: how many records match, a sample of [20] with the fields involved, and the current distribution of the field you are about to overwrite. If the count is wildly different from what I expected, the criteria are wrong and the right move is to stop.\n\nThen work in batches, and after the first batch stop and verify a few records actually changed as intended before continuing.\n\nLog every record touched: the ID, the field, the old value and the new one. Without that log this is not reversible, and a bulk update that cannot be undone is one nobody should run.\n\nSkip rather than overwrite where: the field already holds the target value, the record holds a value that looks deliberately set rather than default, or the record is locked, merged, or owned by someone whose data I should not touch. Log every skip with the reason — the skips are where the interesting edge cases are.\n\nDo not touch any field other than the one named, do not trigger workflows or notifications if that can be avoided, and stop immediately and report if the API starts erroring rather than retrying through a partial update.",
+      "roles": [
+        "ops",
+        "sales"
+      ]
     },
     {
       "id": "ops-submit-record-list-through",
@@ -3541,7 +3673,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Submit every record in [sheet link] through the form at [URL], one at a time.\n\nBefore starting, do one record and stop. Show me exactly what was entered in each field and what the confirmation said, so I can check the mapping before it runs a hundred times. A mapping error found on record one costs a minute; found on record one hundred it costs the whole batch.\n\nThen work down the list. For each: fill every field from the row, submit, wait for the confirmation, and write the outcome back to the sheet — the status, any reference number the form returns, and the timestamp.\n\nThe reference number is what makes this auditable, so capture it whenever the form gives one.\n\nStop and flag rather than guessing where a row is missing a required field, a value does not fit a dropdown's options, a form field appeared that is not in my mapping, or the form rejects a value. Never invent a value to get past validation.\n\nStop the whole run and tell me if the form starts erroring, a rate limit or CAPTCHA appears, or several consecutive submissions fail. Do not work around any of those.\n\nThis submits real data. Never submit a row already marked submitted in the sheet, and at the end report submitted, skipped and failed with the reasons.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "ops-set-up-gmail-filters",
@@ -3555,7 +3692,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Design Gmail filters for me based on how I actually handle email, not on what I say I want.\n\nFirst, analyse [6] months of my mail: which senders and threads I read, which I archive unread, which I reply to and how fast, which I search for later, and which I have never once opened. Present that before proposing anything — the analysis usually surprises people and it is what makes the rules defensible.\n\nThen propose the filter set. For each rule: the exact criteria, the action, roughly how many messages from the last six months it would have caught, and — this is the important one — the messages it would have caught that I did read. A rule that would have archived four things I replied to is a bad rule however clean it makes the inbox.\n\nCover the obvious wins: automated notifications I never act on, newsletters I read at the weekend rather than on arrival, receipts that should be labelled and archived, and calendar noise.\n\nBe conservative with anything that skips the inbox. Losing an email is much worse than seeing one too many, so anything with a false-positive risk should label rather than archive.\n\nGive me the rules to review, then apply the ones I approve and document each one with what it does and why.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-down-documents-scattered-across",
@@ -3573,7 +3715,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find every document relating to [subject — a project, a client, a matter, a period] across my Gmail and Google Drive, and gather them in one place.\n\nSearch broadly and then narrow. Try the obvious terms, then the variants: the client's legal name and the name everyone uses, the project codename, the names of the people involved, and the date range. Documents get named badly and the search that finds them is rarely the first one.\n\nCheck Drive including shared drives and anything shared with me, and Gmail including attachments in threads whose subject mentions none of the search terms.\n\nCopy — do not move — everything found into [Drive folder], organised into subfolders by [type or date]. Moving a file breaks whatever links to it, and someone else may own it.\n\nBuild an index sheet: filename, type, date, where it came from with a link to the original, who created it, and a line on what it is.\n\nFlag duplicates and near-duplicates rather than deleting them — v2, v2-final and v2-final-actual are the normal state of a project folder, and which is authoritative is my call. Where you can tell from dates, say which appears to be latest.\n\nAt the end, say what you searched for and where, so I can see the shape of what might still be missing.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-cold-pitches-out-inbox",
@@ -3590,7 +3737,12 @@
         "cron": "0 12 * * 1-5",
         "display": "Weekdays at noon"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every weekday at noon, sweep the cold pitches out of my inbox.\n\nA cold pitch is an unsolicited sales or partnership email from someone I have no relationship with. It is not: a reply in a thread I started, a message from anyone I have emailed before, an inbound customer enquiry, a recruiter approach if I have said those are welcome, or a genuine introduction from someone I know. Getting that boundary wrong is the only way this job does damage, so when in doubt leave it alone.\n\nFor the clear ones: label [label] and archive. Log each to a list with the sender, the company, what they were selling, and the date, so I can see who is persistent and what the volume actually is.\n\nFor the borderline ones — a relevant product, a personal note that shows they did the work, a company I might actually want to talk to — do not archive. Draft a polite decline and leave both the mail and the draft for me. A short, prompt no is a courtesy, and occasionally one of these turns out to be worth a conversation.\n\nFlag anything that looks like phishing rather than sales, and never click a link in one to work out what it is.\n\nNothing sends. Give me the counts each day: archived, borderline, flagged.",
+      "roles": [
+        "everyone",
+        "ops"
+      ]
     },
     {
       "id": "ops-optimize-next-week-s",
@@ -3607,7 +3759,13 @@
         "cron": "0 16 * * 5",
         "display": "Fridays at 4pm"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every Friday afternoon, look at next week's Google Calendar and tell me what to fix before it hardens.\n\nDiagnose it first: total hours in meetings per day, the longest unbroken run of back-to-backs, how much genuinely uninterrupted time is left, and how it is distributed. Two hours of focus time split into four half-hour gaps is zero focus time, and a weekly total hides that completely.\n\nThen the problems, most costly first:\n\nBack-to-back runs longer than [2] hours, and which meeting in the run is the one to move.\nMeetings that overlap or leave no travel time between locations.\nRecurring meetings I have declined or not spoken in for weeks. Those are the cheapest hours to recover and nobody ever cancels them.\nMeetings with no agenda, no clear owner, or more than [8] attendees.\nDays with no protected focus block at all.\nAnything scheduled outside my working hours or on a day I am meant to be off.\n\nThen the plan: which meetings to move and to when, which to decline, which to shorten, and where to place focus blocks. Draft the reschedule notes for the ones needing someone else's agreement.\n\nDo not move, decline or create anything. Give me the list and the drafts.",
+      "roles": [
+        "everyone",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "engineering-test-app-file-what",
