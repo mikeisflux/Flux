@@ -247,7 +247,7 @@ void AgentRunner::RecordAction(const std::string& tool_name,
   approved_last_call_ = false;
 
   actions_.push_back(action->Clone());
-  delegate_->OnAction(*action);
+  delegate_->OnAction(run_id_, *action);
 }
 
 void AgentRunner::OnToolFinished(ToolResult result) {
@@ -391,7 +391,7 @@ void AgentRunner::AddUserMessage(const std::string& text) {
 void AgentRunner::Finish(mojom::RunState state, const std::string& summary) {
   state_ = state;
   weak_factory_.InvalidateWeakPtrs();
-  delegate_->OnFinished(state, summary);
+  delegate_->OnFinished(run_id_, state, summary);
 }
 
 }  // namespace flux

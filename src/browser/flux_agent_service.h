@@ -6,7 +6,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "base/functional/callback.h"
 
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
@@ -61,8 +64,14 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
 
   // Returns the new run id, or nullopt with `error` set. Runs beyond the
   // concurrency cap are queued, not rejected.
+  // `parent_run_id` is set only for a subagent, and is set here rather than
+  // patched onto the progress entry afterwards: StartRun pumps the queue, so
+  // the run can emit its first progress before this call returns, and an
+  // update that arrives without a parent puts a child row in the sidebar's
+  // run list that nothing ever takes back out.
   std::optional<std::string> StartRun(mojom::TaskSpecPtr spec,
-                                      std::string* error);
+                                      std::string* error,
+                                      const std::string& parent_run_id = {});
 
   void CancelRun(const std::string& run_id);
   void PauseRun(const std::string& run_id);
@@ -87,6 +96,23 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
                    uint32_t index,
                    mojom::TaskStepState state);
   void AddArtifact(const std::string& run_id, mojom::RunArtifactPtr artifact);
+
+  // Splits work across parallel child runs.
+  //
+  // `callback` fires once every child has finished, with each one's closing
+  // summary in the order they were requested. The parent's tool call stays
+  // open until then, which is what makes this a fan-out the model can reason
+  // about rather than fire-and-forget.
+  // `error` non-empty means nothing was started and `summaries` is empty.
+  // Kept separate from the summaries rather than smuggled in as one of them:
+  // with a single child, a refusal and a result are both a one-element vector,
+  // and the caller would report the refusal to the model as that child's
+  // answer.
+  using SubagentsCallback = base::OnceCallback<void(
+      std::vector<std::string> summaries, const std::string& error)>;
+  void StartSubagents(const std::string& parent_run_id,
+                      std::vector<std::pair<std::string, std::string>> work,
+                      SubagentsCallback callback);
 
   // A follow-up typed into a run's composer.
   bool SendFollowUp(const std::string& run_id,
@@ -120,9 +146,12 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
  private:
   // AgentRunner::Delegate:
   void OnProgress(const mojom::RunProgress& progress) override;
-  void OnAction(const mojom::ActionRecord& action) override;
+  void OnAction(const std::string& run_id,
+                const mojom::ActionRecord& action) override;
   void OnApprovalRequired(const mojom::ApprovalRequest& request) override;
-  void OnFinished(mojom::RunState state, const std::string& summary) override;
+  void OnFinished(const std::string& run_id,
+                  mojom::RunState state,
+                  const std::string& summary) override;
 
   // Starts queued runs until the cap is reached. Called on every completion.
   void PumpQueue();
@@ -142,7 +171,17 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   std::unique_ptr<WorkflowScheduler> scheduler_;
 
   std::map<std::string, std::unique_ptr<AgentRunner>> runs_;
-  base::circular_deque<mojom::TaskSpecPtr> queue_;
+  // The run id travels WITH its spec. It used to be recovered in PumpQueue by
+  // scanning progress_ for the first kQueued entry, on the stated assumption
+  // that queue order and progress insertion order agree - and progress_ is a
+  // std::map keyed by UUID, so its order is lexicographic, not insertion. With
+  // one queued run that is invisible; with two it pairs a spec with the wrong
+  // run's id, and every action and every token lands under the wrong run.
+  struct QueuedRun {
+    std::string run_id;
+    mojom::TaskSpecPtr spec;
+  };
+  base::circular_deque<QueuedRun> queue_;
   std::map<std::string, mojom::RunProgressPtr> progress_;
   std::map<std::string, std::vector<mojom::ActionRecordPtr>> actions_;
   // The closing summary, kept per run. It arrives once, on OnFinished, and
@@ -151,6 +190,17 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   // which is the part the user actually wanted.
   std::map<std::string, std::string> summaries_;
   std::map<std::string, std::vector<mojom::RunArtifactPtr>> artifacts_;
+
+  // Parent run -> the children it is waiting on, and what to do when they are
+  // all done.
+  struct SubagentBatch {
+    std::vector<std::string> child_ids;
+    std::vector<std::string> summaries;
+    size_t remaining = 0;
+    SubagentsCallback callback;
+  };
+  std::map<std::string, SubagentBatch> batches_;
+  std::map<std::string, std::string> child_to_parent_;
 
   const uint32_t concurrency_limit_;
   base::ObserverList<Observer> observers_;

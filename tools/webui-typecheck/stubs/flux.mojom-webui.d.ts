@@ -73,6 +73,15 @@ export interface RunProgress {
   creditsSpent: bigint;
   plan: TaskStep[];
   thinkingMs: number;
+  subagents: SubagentSummary[];
+  parentRunId: string|null;
+}
+
+export interface SubagentSummary {
+  runId: string;
+  label: string;
+  state: RunState;
+  currentStep: string|null;
 }
 
 export declare enum TaskStepState {

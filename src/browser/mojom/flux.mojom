@@ -78,6 +78,17 @@ struct ApprovalRequest {
   string? payload_preview;
 };
 
+// A child run the parent spawned to work on part of the task in parallel.
+struct SubagentSummary {
+  string run_id;
+  // What it was asked to do, in a few words. Shown in the parent's list.
+  string label;
+  RunState state;
+  // Mirrored from the child's own progress so the parent's list of children
+  // says what each one is doing, not just that four of them are running.
+  string? current_step;
+};
+
 // One line of the agent's plan. The model writes the plan before it starts and
 // ticks items off as it goes, which is the difference between a progress bar
 // that counts tool calls and one that says what is left to do.
@@ -125,6 +136,11 @@ struct RunProgress {
   // Time spent in model inference since the last action, so the transcript can
   // say "Thought for 15s" rather than showing a gap.
   uint32 thinking_ms;
+  // Children this run spawned. Empty for the overwhelming majority of runs.
+  array<SubagentSummary> subagents;
+  // Set on a child, naming its parent. The sidebar lists top-level runs only:
+  // four children of one task are one thing happening, not five.
+  string? parent_run_id;
 };
 
 struct TaskSpec {

@@ -27,10 +27,16 @@ class AgentRunner {
    public:
     virtual ~Delegate() = default;
     virtual void OnProgress(const mojom::RunProgress& progress) = 0;
-    virtual void OnAction(const mojom::ActionRecord& action) = 0;
+    // The run id is passed explicitly. ActionRecord does not carry one, and
+    // the service used to recover it by scanning for the first runner in a
+    // running state - which is the wrong runner the moment two runs overlap,
+    // and subagents make that the normal case rather than the rare one.
+    virtual void OnAction(const std::string& run_id,
+                          const mojom::ActionRecord& action) = 0;
     // The runner blocks here until ResolveApproval() is called.
     virtual void OnApprovalRequired(const mojom::ApprovalRequest& request) = 0;
-    virtual void OnFinished(mojom::RunState state,
+    virtual void OnFinished(const std::string& run_id,
+                            mojom::RunState state,
                             const std::string& summary) = 0;
   };
 
@@ -59,6 +65,11 @@ class AgentRunner {
 
   const std::string& run_id() const { return run_id_; }
   mojom::RunState state() const { return state_; }
+
+  // The spec a run was started with. Subagents inherit their parent's scope,
+  // model and profile from it, so a child can never be given more authority
+  // than the run that spawned it.
+  const mojom::TaskSpec* spec() const { return spec_.get(); }
 
  private:
   void Step();                                   // one turn of the loop

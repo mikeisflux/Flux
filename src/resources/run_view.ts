@@ -6,6 +6,7 @@ import type {
   FluxPageHandlerRemote,
   RunArtifact,
   RunProgress,
+  SubagentSummary,
   TaskStep,
 } from './flux.mojom-webui.js';
 
@@ -32,6 +33,9 @@ export class RunView {
 
   private stream!: HTMLElement;
   private planPanel!: HTMLElement;
+  private subagentPanel!: HTMLElement;
+  private headLabel!: HTMLElement;
+  private headLink!: HTMLAnchorElement;
   private artifactHost!: HTMLElement;
   private composer!: HTMLTextAreaElement;
   private sendButton!: HTMLButtonElement;
@@ -85,25 +89,27 @@ export class RunView {
     for (const artifact of artifacts) {
       this.appendArtifact(artifact);
     }
+    this.paintHead();
     this.paintPlan();
+    this.paintSubagents();
     this.paintComposer();
   }
 
-  /** The frame: header, transcript, plan panel, composer. */
+  /** The frame: header, transcript, subagents, plan panel, composer. */
   private chrome(): HTMLElement {
     const screen = document.createElement('div');
     screen.className = 'screen run-screen';
 
     const head = document.createElement('div');
     head.className = 'run-head';
-    const runs = document.createElement('span');
-    runs.className = 'muted';
-    runs.textContent = 'Run 1 of 1';
-    const workflow = document.createElement('a');
-    workflow.className = 'run-head-link';
-    workflow.href = '#workflows';
-    workflow.textContent = 'View workflow →';
-    head.append(runs, workflow);
+    this.headLabel = document.createElement('span');
+    this.headLabel.className = 'muted';
+    this.headLabel.textContent = 'Run 1 of 1';
+    this.headLink = document.createElement('a');
+    this.headLink.className = 'run-head-link';
+    this.headLink.href = '#workflows';
+    this.headLink.textContent = 'View workflow →';
+    head.append(this.headLabel, this.headLink);
 
     this.stepCount = document.createElement('button');
     this.stepCount.className = 'step-count';
@@ -125,8 +131,14 @@ export class RunView {
     this.planPanel.className = 'plan-panel';
     this.planPanel.hidden = true;
 
+    // Sits above the plan, because when a run has children they are what is
+    // happening and the plan is the frame around them.
+    this.subagentPanel = document.createElement('div');
+    this.subagentPanel.className = 'plan-panel subagent-panel';
+    this.subagentPanel.hidden = true;
+
     screen.append(head, this.stepCount, this.stream, this.artifactHost,
-                  this.planPanel, this.composerBox());
+                  this.subagentPanel, this.planPanel, this.composerBox());
     return screen;
   }
 
@@ -325,6 +337,53 @@ export class RunView {
     }
   }
 
+  // --- Subagents ------------------------------------------------------------
+
+  /**
+   * A child run opened on its own is otherwise a dead end: it belongs to a
+   * task the sidebar does not list, so there is nothing on screen that leads
+   * back to the run that started it.
+   */
+  private paintHead() {
+    const parent = this.progress?.parentRunId;
+    if (!parent) {
+      return;
+    }
+    this.headLabel.textContent = 'Subagent';
+    this.headLink.href = `#run/${encodeURIComponent(parent)}`;
+    this.headLink.textContent = 'Back to the main run →';
+  }
+
+  private paintSubagents() {
+    const children = this.progress?.subagents ?? [];
+    this.subagentPanel.hidden = children.length === 0;
+    if (children.length === 0) {
+      return;
+    }
+
+    const done = children.filter(c => FINISHED.has(c.state)).length;
+    const running = children.length - done;
+    this.subagentPanel.replaceChildren();
+
+    const head = document.createElement('div');
+    head.className = 'plan-head';
+    const title = document.createElement('span');
+    title.textContent = 'Subagents';
+    const count = document.createElement('span');
+    count.className = 'muted';
+    // "4/4 completed" on its own reads as finished even when three failed, so
+    // the running tail stays until there is nothing left running.
+    count.textContent = running > 0 ?
+        `${done}/${children.length} completed · ${running} running` :
+        `${done}/${children.length} completed`;
+    head.append(title, count);
+    this.subagentPanel.append(head);
+
+    children.forEach((child, index) => {
+      this.subagentPanel.append(subagentRow(child, index));
+    });
+  }
+
   // --- Live events ----------------------------------------------------------
 
   onProgress(progress: RunProgress) {
@@ -332,7 +391,9 @@ export class RunView {
       return;
     }
     this.progress = progress;
+    this.paintHead();
     this.paintPlan();
+    this.paintSubagents();
     this.paintComposer();
   }
 
@@ -384,6 +445,70 @@ function planRow(step: TaskStep): HTMLElement {
   row.append(mark, text);
   return row;
 }
+
+/**
+ * One child run. Numbered rather than bulleted because the parent's summary
+ * refers to them by position, and the state word is spelled out - a coloured
+ * dot alone cannot distinguish "failed" from "cancelled".
+ */
+function subagentRow(child: SubagentSummary, index: number): HTMLAnchorElement {
+  // An anchor, not a div with a click handler: #run/<id> is the same link the
+  // sidebar hands out, and a child is a real run with its own transcript.
+  const row = document.createElement('a');
+  row.className = 'subagent-row';
+  row.href = `#run/${encodeURIComponent(child.runId)}`;
+  row.dataset['state'] = RUN_STATE_CLASS[child.state] ?? 'queued';
+
+  const ordinal = document.createElement('span');
+  ordinal.className = 'subagent-ordinal';
+  ordinal.textContent = String(index + 1);
+
+  const body = document.createElement('div');
+  body.className = 'subagent-body';
+  const label = document.createElement('span');
+  label.className = 'subagent-label';
+  label.textContent = child.label;
+  body.append(label);
+  if (child.currentStep) {
+    const step = document.createElement('span');
+    step.className = 'muted';
+    step.textContent = child.currentStep;
+    body.append(step);
+  }
+
+  const badge = document.createElement('span');
+  badge.className = 'subagent-state';
+  badge.textContent = RUN_STATE_LABEL[child.state] ?? 'Queued';
+
+  row.append(ordinal, body, badge);
+  return row;
+}
+
+const FINISHED: ReadonlySet<RunState> = new Set([
+  RunState.kSucceeded,
+  RunState.kFailed,
+  RunState.kCancelled,
+]);
+
+const RUN_STATE_CLASS: Record<number, string> = {
+  [RunState.kQueued]: 'queued',
+  [RunState.kRunning]: 'running',
+  [RunState.kAwaitingApproval]: 'waiting',
+  [RunState.kPaused]: 'paused',
+  [RunState.kSucceeded]: 'done',
+  [RunState.kFailed]: 'failed',
+  [RunState.kCancelled]: 'cancelled',
+};
+
+const RUN_STATE_LABEL: Record<number, string> = {
+  [RunState.kQueued]: 'Queued',
+  [RunState.kRunning]: 'Running',
+  [RunState.kAwaitingApproval]: 'Needs you',
+  [RunState.kPaused]: 'Paused',
+  [RunState.kSucceeded]: 'Done',
+  [RunState.kFailed]: 'Failed',
+  [RunState.kCancelled]: 'Cancelled',
+};
 
 const STATE_CLASS: Record<number, string> = {
   [TaskStepState.kPending]: 'pending',

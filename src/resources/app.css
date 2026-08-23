@@ -2008,6 +2008,74 @@ body.shell.collapsed .badge { display: none; }
   color: var(--fg-muted);
 }
 
+/* --- Subagents ------------------------------------------------------------ */
+/* Shares the plan panel's box, but not its stickiness: two sticky panels with
+   the same offset land on top of each other. This one scrolls with the
+   transcript, and the plan stays pinned above the composer. */
+.subagent-panel {
+  position: static;
+  margin-top: 20px;
+}
+
+.subagent-row {
+  display: flex;
+  align-items: baseline;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 0 -8px;
+  padding-inline: 8px;
+  color: inherit;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.subagent-row:hover {
+  background: var(--hover);
+}
+
+.subagent-ordinal {
+  width: 20px;
+  flex: none;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.subagent-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.subagent-label,
+.subagent-body .muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subagent-state {
+  flex: none;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.subagent-row[data-state='running'] .subagent-state {
+  color: var(--accent-text);
+}
+
+.subagent-row[data-state='failed'] .subagent-state,
+.subagent-row[data-state='cancelled'] .subagent-state {
+  color: var(--danger);
+}
+
+.subagent-row[data-state='done'] .subagent-label {
+  color: var(--fg-muted);
+}
+
 /* --- Artifacts ------------------------------------------------------------ */
 .artifact-card {
   padding: 18px 20px;

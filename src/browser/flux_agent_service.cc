@@ -3,10 +3,15 @@
 #include "chrome/browser/flux/flux_agent_service.h"
 
 #include <algorithm>
+#include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
-#include "base/functional/bind.h"
 #include "base/byte_size.h"
+#include "base/functional/bind.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/uuid.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
@@ -57,8 +62,10 @@ uint32_t FluxAgentService::ComputeConcurrencyLimit() {
   return std::clamp(by_memory, kMinConcurrency, kMaxConcurrency);
 }
 
-std::optional<std::string> FluxAgentService::StartRun(mojom::TaskSpecPtr spec,
-                                                      std::string* error) {
+std::optional<std::string> FluxAgentService::StartRun(
+    mojom::TaskSpecPtr spec,
+    std::string* error,
+    const std::string& parent_run_id) {
   if (spec->prompt.empty()) {
     *error = "Task prompt is empty.";
     return std::nullopt;
@@ -76,29 +83,20 @@ std::optional<std::string> FluxAgentService::StartRun(mojom::TaskSpecPtr spec,
   progress->run_id = run_id;
   progress->state = mojom::RunState::kQueued;
   progress->actions_taken = 0;
+  if (!parent_run_id.empty())
+    progress->parent_run_id = parent_run_id;
   progress_[run_id] = std::move(progress);
 
-  queue_.push_back(std::move(spec));
+  queue_.push_back(QueuedRun{run_id, std::move(spec)});
   PumpQueue();
   return run_id;
 }
 
 void FluxAgentService::PumpQueue() {
   while (!queue_.empty() && runs_.size() < concurrency_limit_) {
-    mojom::TaskSpecPtr spec = std::move(queue_.front());
+    const std::string run_id = std::move(queue_.front().run_id);
+    mojom::TaskSpecPtr spec = std::move(queue_.front().spec);
     queue_.pop_front();
-
-    // The run id was allocated in StartRun; find the queued entry it belongs
-    // to. Queue order and progress insertion order agree.
-    std::string run_id;
-    for (auto& [id, p] : progress_) {
-      if (p->state == mojom::RunState::kQueued) {
-        run_id = id;
-        break;
-      }
-    }
-    if (run_id.empty())
-      return;
 
     auto primary = MakeProvider(*spec->model);
     std::unique_ptr<LLMProvider> failover;
@@ -157,10 +155,15 @@ void FluxAgentService::ResolveApproval(const std::string& run_id,
 }
 
 std::vector<mojom::RunProgressPtr> FluxAgentService::ListRuns() const {
+  // Top-level runs only. Four children of one task are one thing happening,
+  // not five, and the console draws them inside their parent's run.
   std::vector<mojom::RunProgressPtr> out;
   out.reserve(progress_.size());
-  for (const auto& [id, p] : progress_)
+  for (const auto& [id, p] : progress_) {
+    if (p->parent_run_id && !p->parent_run_id->empty())
+      continue;
     out.push_back(p.Clone());
+  }
   return out;
 }
 
@@ -195,6 +198,120 @@ void FluxAgentService::AdvancePlan(const std::string& run_id,
   it->second->plan[index]->state = state;
   for (Observer& o : observers_)
     o.OnRunProgress(*it->second);
+}
+
+void FluxAgentService::StartSubagents(
+    const std::string& parent_run_id,
+    std::vector<std::pair<std::string, std::string>> work,
+    SubagentsCallback callback) {
+  auto parent = progress_.find(parent_run_id);
+  if (work.empty() || parent == progress_.end()) {
+    std::move(callback).Run({}, "No work was given, or the run has ended.");
+    return;
+  }
+
+  // One level only. A child inherits the parent's tool set, so without this a
+  // subagent can spawn subagents that spawn subagents - each split of the
+  // budget still rounds up to at least one credit, so the recursion is not
+  // even bounded by cost.
+  if (parent->second->parent_run_id &&
+      !parent->second->parent_run_id->empty()) {
+    std::move(callback).Run({}, "A subagent cannot spawn subagents of its own.");
+    return;
+  }
+
+  // One batch at a time. Overwriting batches_[parent] would drop the first
+  // batch's callback on the floor, and the tool call still holding it would
+  // never return - the parent run would sit at "thinking" until its budget
+  // ran out.
+  if (batches_.count(parent_run_id)) {
+    std::move(callback).Run(
+        {}, "Subagents from a previous call are still running.");
+    return;
+  }
+
+  // The console draws a fixed set of rows and a parent farming out fifty
+  // children is a runaway, not a plan. Refused rather than truncated: silently
+  // dropping the tail returns nine labels' worth of intent and eight answers,
+  // and the model has no way to tell which one it never got.
+  constexpr size_t kMaxSubagents = 8;
+  if (work.size() > kMaxSubagents) {
+    std::move(callback).Run(
+        {}, base::StrCat({"At most ", base::NumberToString(kMaxSubagents),
+                          " subagents at a time. Split the work into fewer "
+                          "pieces, or do some of it yourself."}));
+    return;
+  }
+
+  // Children inherit the parent's model and scope. A child that could reach
+  // further than the task it was spawned from would be a hole straight
+  // through WriteScope - the approval the user gave was for this task, not
+  // for whatever it decides to delegate.
+  const AgentRunner* parent_runner = nullptr;
+  if (auto it = runs_.find(parent_run_id); it != runs_.end())
+    parent_runner = it->second.get();
+
+  // child_ids is parallel to `work`, one slot per requested child, empty for
+  // any that could not start. Pushing only the successes would slide the
+  // indices and file a child's result under a sibling's heading.
+  SubagentBatch batch;
+  batch.child_ids.assign(work.size(), std::string());
+  batch.summaries.resize(work.size());
+  batch.remaining = work.size();
+  batch.callback = std::move(callback);
+
+  for (size_t i = 0; i < work.size(); ++i) {
+    auto spec = mojom::TaskSpec::New();
+    spec->prompt = work[i].second;
+    spec->write_scope = mojom::WriteScope::kReadOnly;
+    if (parent_runner && parent_runner->spec()) {
+      spec->write_scope = parent_runner->spec()->write_scope;
+      spec->model = parent_runner->spec()->model->Clone();
+      // The budget is split, not copied. Four children each inheriting the
+      // parent's ceiling is a task that can cost five times what the user
+      // agreed to. Never down to zero, though: a child
+      // given nothing fails on its first turn and reports a budget error
+      // rather than the work it was asked to do.
+      spec->credit_budget = std::max<uint64_t>(
+          1u, parent_runner->spec()->credit_budget / (work.size() + 1));
+      spec->profile_id = parent_runner->spec()->profile_id;
+    } else {
+      spec->model = mojom::ModelConfig::New();
+      spec->model->provider = mojom::Provider::kAnthropic;
+      spec->model->model = "claude-sonnet-5";
+      spec->model->max_output_tokens = 8192;
+      spec->credit_budget = 1;
+    }
+
+    std::string error;
+    std::optional<std::string> child =
+        StartRun(std::move(spec), &error, parent_run_id);
+    if (!child) {
+      batch.summaries[i] = base::StrCat({"Could not start: ", error});
+      batch.remaining--;
+      continue;
+    }
+
+    batch.child_ids[i] = *child;
+    child_to_parent_[*child] = parent_run_id;
+
+    auto summary = mojom::SubagentSummary::New();
+    summary->run_id = *child;
+    summary->label = work[i].first;
+    summary->state = mojom::RunState::kQueued;
+    parent->second->subagents.push_back(std::move(summary));
+  }
+
+  batches_[parent_run_id] = std::move(batch);
+  for (Observer& o : observers_)
+    o.OnRunProgress(*parent->second);
+
+  // Every child failed to start. Nothing will call back, so do it here.
+  if (batches_[parent_run_id].remaining == 0) {
+    SubagentBatch done = std::move(batches_[parent_run_id]);
+    batches_.erase(parent_run_id);
+    std::move(done.callback).Run(std::move(done.summaries), std::string());
+  }
 }
 
 void FluxAgentService::AddArtifact(const std::string& run_id,
@@ -274,23 +391,50 @@ FluxAgentService::Concurrency FluxAgentService::GetConcurrency() const {
 }
 
 void FluxAgentService::OnProgress(const mojom::RunProgress& progress) {
-  progress_[progress.run_id] = progress.Clone();
+  // The runner builds its progress from scratch each turn and knows nothing
+  // about the tree, so the two fields the service owns are carried over rather
+  // than reset to empty on every update.
+  auto existing = progress_.find(progress.run_id);
+  mojom::RunProgressPtr next = progress.Clone();
+  if (existing != progress_.end()) {
+    next->subagents = std::move(existing->second->subagents);
+    next->parent_run_id = existing->second->parent_run_id;
+  }
+  const std::optional<std::string> parent_id = next->parent_run_id;
+  const std::string run_id = next->run_id;
+  const std::optional<std::string> current_step = next->current_step;
+  const mojom::RunState state = next->state;
+  progress_[run_id] = std::move(next);
+
   for (Observer& o : observers_)
-    o.OnRunProgress(progress);
+    o.OnRunProgress(*progress_[run_id]);
+
+  // A child's row in the parent shows what the child is doing. Without this
+  // the parent's panel says "4 running" and nothing else for the whole batch.
+  if (!parent_id || parent_id->empty())
+    return;
+  auto parent = progress_.find(*parent_id);
+  if (parent == progress_.end())
+    return;
+  bool changed = false;
+  for (mojom::SubagentSummaryPtr& child : parent->second->subagents) {
+    if (child->run_id != run_id)
+      continue;
+    child->state = state;
+    child->current_step = current_step;
+    changed = true;
+  }
+  if (!changed)
+    return;
+  for (Observer& o : observers_)
+    o.OnRunProgress(*parent->second);
 }
 
-void FluxAgentService::OnAction(const mojom::ActionRecord& action) {
-  // The delegate interface does not carry the run id on every callback, so the
-  // runner stamps it into the record before emitting.
-  for (auto& [run_id, runner] : runs_) {
-    if (runner->state() == mojom::RunState::kRunning ||
-        runner->state() == mojom::RunState::kAwaitingApproval) {
-      actions_[run_id].push_back(action.Clone());
-      for (Observer& o : observers_)
-        o.OnRunAction(run_id, action);
-      return;
-    }
-  }
+void FluxAgentService::OnAction(const std::string& run_id,
+                                const mojom::ActionRecord& action) {
+  actions_[run_id].push_back(action.Clone());
+  for (Observer& o : observers_)
+    o.OnRunAction(run_id, action);
 }
 
 void FluxAgentService::OnApprovalRequired(const mojom::ApprovalRequest& request) {
@@ -298,18 +442,9 @@ void FluxAgentService::OnApprovalRequired(const mojom::ApprovalRequest& request)
     o.OnApprovalRequested(request);
 }
 
-void FluxAgentService::OnFinished(mojom::RunState state,
+void FluxAgentService::OnFinished(const std::string& finished_id,
+                                  mojom::RunState state,
                                   const std::string& summary) {
-  std::string finished_id;
-  for (auto& [run_id, runner] : runs_) {
-    if (runner->state() == state) {
-      finished_id = run_id;
-      break;
-    }
-  }
-  if (finished_id.empty())
-    return;
-
   if (auto it = progress_.find(finished_id); it != progress_.end())
     it->second->state = state;
 
@@ -317,6 +452,54 @@ void FluxAgentService::OnFinished(mojom::RunState state,
   // and it arrives exactly once - a console opened after the run ended, or
   // reloaded, had its steps and no result.
   summaries_[finished_id] = summary;
+
+  // If this was a subagent, update the parent's row and, once the last child
+  // is in, hand the whole batch back to the tool call that is still waiting.
+  if (auto link = child_to_parent_.find(finished_id);
+      link != child_to_parent_.end()) {
+    const std::string parent_id = link->second;
+    child_to_parent_.erase(link);
+
+    if (auto parent = progress_.find(parent_id); parent != progress_.end()) {
+      for (mojom::SubagentSummaryPtr& child : parent->second->subagents) {
+        if (child->run_id != finished_id)
+          continue;
+        child->state = state;
+        child->current_step = std::nullopt;
+      }
+      for (Observer& o : observers_)
+        o.OnRunProgress(*parent->second);
+    }
+
+    if (auto batch = batches_.find(parent_id); batch != batches_.end()) {
+      for (size_t i = 0; i < batch->second.child_ids.size(); ++i) {
+        if (batch->second.child_ids[i] == finished_id)
+          batch->second.summaries[i] = summary;
+      }
+      if (--batch->second.remaining == 0) {
+        SubagentBatch done = std::move(batch->second);
+        batches_.erase(batch);
+        std::move(done.callback).Run(std::move(done.summaries), std::string());
+      }
+    }
+  }
+
+  // The parent ended with children still out - cancelled, out of budget, or
+  // failed. Nothing will ever read their results, so stop them rather than
+  // leaving runs going that no screen shows and no callback is waiting on.
+  if (auto batch = batches_.find(finished_id); batch != batches_.end()) {
+    SubagentBatch orphaned = std::move(batch->second);
+    batches_.erase(batch);
+    for (const std::string& child_id : orphaned.child_ids) {
+      if (child_id.empty())
+        continue;
+      child_to_parent_.erase(child_id);
+      if (auto it = runs_.find(child_id); it != runs_.end())
+        it->second->Cancel();
+    }
+    std::move(orphaned.callback).Run(std::move(orphaned.summaries),
+                                     std::string());
+  }
 
   for (Observer& o : observers_)
     o.OnRunFinished(finished_id, state, summary);

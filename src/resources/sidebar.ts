@@ -140,6 +140,13 @@ class FluxSidebar {
   // --- FluxPageHandlerObserver ---------------------------------------------
 
   onRunProgress(progress: RunProgress) {
+    // Children are drawn inside their parent's run view, not as siblings here.
+    // ListRuns already filters them out; without the same filter on the live
+    // stream a task that spawns four subagents grows five rows the moment it
+    // starts and shrinks back to one on reload.
+    if (progress.parentRunId) {
+      return;
+    }
     this.runs.update(progress);
   }
 
