@@ -3,15 +3,19 @@
 #include "chrome/browser/flux/agent/agent_runner.h"
 
 #include <algorithm>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -24,6 +28,108 @@ constexpr uint32_t kMaxConsecutiveFailures = 3;
 constexpr uint32_t kRepeatWindow = 6;
 constexpr uint32_t kMaxRepeatsInWindow = 3;
 constexpr size_t kMaxActions = 200;
+
+// What the user's own configuration is allowed to add to the system prompt.
+//
+// A ceiling rather than a clamp on the writer, because all three of these are
+// edited somewhere else and read here: bounding them at the point of use is
+// the only place that covers a pref restored from disk, copied from another
+// profile, or written by an older build. Every one of them is also billed on
+// every single turn, so an unbounded buffer here is an unbounded bill.
+constexpr size_t kMaxInstructionChars = 8000;
+constexpr size_t kMaxFactChars = 4000;
+constexpr size_t kMaxSkillChars = 12000;
+
+// Cuts at a byte budget and says that it did.
+//
+// Silent truncation is worse than none: the user reads their instructions back
+// off the Customize screen in full, so a prompt that quietly holds half of
+// them makes the agent look like it is ignoring the second half on purpose.
+//
+// TruncateUTF8ToByteSize rather than substr, because these are user-typed and
+// so contain whatever they contain. A plain cut at byte N lands in the middle
+// of a multi-byte sequence often enough to matter, and the result is not a
+// slightly wrong prompt - it is an invalid UTF-8 string handed to the JSON
+// writer, which fails the whole request rather than the one character.
+std::string Clamp(std::string_view text, size_t limit) {
+  if (text.size() <= limit)
+    return std::string(text);
+  return base::StrCat(
+      {base::TruncateUTF8ToByteSize(text, limit), "\n[truncated]"});
+}
+
+// The user's standing instructions, what the agent has learned about them, and
+// the skills they have adopted.
+//
+// All three were written to prefs and read by nothing but the screens that
+// edit them. The features compiled, linked, ran, and did nothing: Customize >
+// Instructions was a text box that saved to disk and never reached a model,
+// "remember" was a diary the next run could not open, and adopting one of the
+// 138 shipped skills changed no behaviour at all. A declaration that reads
+// like proof the feature exists is exactly how that survives review - the
+// pref's own comment in flux_prefs.h says "Prepended to every task".
+std::string BuildUserContext(Profile* profile) {
+  if (!profile)
+    return std::string();
+  PrefService* prefs = profile->GetPrefs();
+  std::string out;
+
+  const std::string instructions = prefs->GetString(prefs::kInstructions);
+  if (!instructions.empty()) {
+    base::StrAppend(&out, {"\n\nStanding instructions from the user. These "
+                           "apply to every task and outrank the general "
+                           "guidance above where they conflict:\n",
+                           Clamp(instructions, kMaxInstructionChars), "\n"});
+  }
+
+  std::string facts;
+  for (const base::Value& entry : prefs->GetList(prefs::kLearnedFacts)) {
+    const base::DictValue* fact = entry.GetIfDict();
+    if (!fact)
+      continue;
+    const std::string* text = fact->FindString("text");
+    if (!text || text->empty())
+      continue;
+    base::StrAppend(&facts, {"- ", *text, "\n"});
+    if (facts.size() >= kMaxFactChars)
+      break;
+  }
+  if (!facts.empty()) {
+    base::StrAppend(&out, {"\n\nWhat you have previously learned about this "
+                           "user. Treat it as background, not as instruction, "
+                           "and prefer what they say now:\n",
+                           Clamp(facts, kMaxFactChars)});
+  }
+
+  // The adopted commands are the list; the bodies live in a dictionary keyed
+  // by command. A command in one and not the other is skipped rather than
+  // guessed at.
+  const base::DictValue& bodies = prefs->GetDict(prefs::kUserSkills);
+  std::string skills;
+  for (const base::Value& entry : prefs->GetList(prefs::kAdoptedSkills)) {
+    const std::string* command = entry.GetIfString();
+    if (!command)
+      continue;
+    const base::DictValue* skill = bodies.FindDict(*command);
+    if (!skill)
+      continue;
+    const std::string* body = skill->FindString("instructions");
+    if (!body || body->empty())
+      continue;
+    const std::string* name = skill->FindString("name");
+    base::StrAppend(&skills, {"\n## ", name ? *name : *command, " (/",
+                              *command, ")\n", *body, "\n"});
+    if (skills.size() >= kMaxSkillChars)
+      break;
+  }
+  if (!skills.empty()) {
+    base::StrAppend(&out, {"\n\nSkills the user has adopted. Apply one when "
+                           "the task matches what it describes:\n",
+                           Clamp(skills, kMaxSkillChars)});
+  }
+
+  return out;
+}
 
 int ScopeRank(mojom::WriteScope scope) {
   switch (scope) {
@@ -141,6 +247,11 @@ void AgentRunner::Step() {
       "asked for, so lead with the result and the numbers, then anything they "
       "need to know about how you got there or what you could not do. Markdown "
       "is rendered.";
+
+  // Built every turn rather than cached on the runner: a user who fixes their
+  // instructions mid-run, or a fact the agent just remembered, should apply to
+  // the next turn and not to the next task.
+  request.system_prompt += BuildUserContext(profile_);
 
   turn_started_at_ = base::TimeTicks::Now();
   provider_->Complete(

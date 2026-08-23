@@ -312,6 +312,38 @@ Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
 
+### A feature can be wired to nothing and still look finished
+
+`tools/check-pref-flow.py` catches a pref that nothing outside the console ever
+reads. Four were in that state at once, and every one of them presented as a
+working screen:
+
+- `kInstructions` - Customize > Instructions saved to disk and reached no
+  model. The pref's own comment in `flux_prefs.h` says "Prepended to every
+  task"; the system prompt was a string literal that never mentioned it.
+- `kLearnedFacts` - `remember` wrote a diary the next run could not open,
+  which is the entire point of the tool.
+- `kAdoptedSkills` / `kUserSkills` - adopting one of the 138 shipped skills
+  changed no behaviour. `kUserSkills` holds the skill's actual instructions
+  and was read by nothing at all.
+
+This is the pref-shaped version of what `check-never-assigned.py` finds in C++
+fields, and it needed its own check for the same reason: the declaration reads
+like proof the feature is wired up, the screen saves, the value survives a
+restart, and nothing happens. Registration is not a read, and a write is not a
+read - what counts is a `Get*` outside `src/browser/webui`, the layer that
+draws the screens.
+
+The rule that makes it usable is the exemption. A pref name handed to
+something else - `SecretStore(profile, prefs::kApiKeys)` - is read through a
+member rather than a literal, and no scan of this kind can follow it. The
+first version called all three `SecretStore` prefs unread; saying nothing
+about an escaping symbol is the only honest answer, and it is the difference
+between four true findings and seven mixed ones.
+
+It is validated against the real pre-fix tree rather than a synthetic break:
+`git stash` the fix, and all four fire.
+
 ### A check that cries wolf is worse than no check
 
 `tools/check-null-deref.py` catches a `base::Value::Find*` or `GetIf*` result

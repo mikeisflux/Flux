@@ -71,6 +71,10 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/tools/check-null-deref.py"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-pref-flow.py"
           }
         ]
       }
