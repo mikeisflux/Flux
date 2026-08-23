@@ -7,6 +7,11 @@ import {CATEGORIES, featured, loadTemplates, matches, transportLabel, trustLabel
 import type {Template} from './catalog.js';
 
 import {loadSkills} from './skills.js';
+
+import {TemplateDialog} from './template_dialog.js';
+import {WorkflowDialog} from './workflow_dialog.js';
+import {WriteScope} from './flux.mojom-webui.js';
+import type {FluxPageHandlerRemote} from './flux.mojom-webui.js';
 import type {Skill} from './skills.js';
 
 /**
@@ -18,6 +23,8 @@ import type {Skill} from './skills.js';
  * other.
  */
 export class TemplatesView {
+  private detail: TemplateDialog;
+  private workflowDialog: WorkflowDialog;
   private all: Template[] = [];
   private query = '';
   private category = 'All';
@@ -33,6 +40,47 @@ export class TemplatesView {
   private skillCategory = 'All';
   private skillSeeAll: string|null = null;
   private skillGrid!: HTMLElement;
+
+  constructor(handler: FluxPageHandlerRemote) {
+    this.workflowDialog = new WorkflowDialog(handler, () => {
+      window.location.hash = '#workflows';
+    });
+    this.detail = new TemplateDialog(
+        (template, prompt) => this.useTemplate(template, prompt),
+        (template, prompt) => this.saveAsWorkflow(template, prompt));
+  }
+
+  /**
+   * Hands the prompt to New task rather than starting it here. The user has
+   * just edited it, and a template that runs the instant it is chosen gives
+   * them nowhere to check the blanks they filled in.
+   */
+  private useTemplate(template: Template, prompt: string) {
+    sessionStorage.setItem(
+        'flux.pendingTask',
+        JSON.stringify({prompt, templateId: template.id}));
+    window.location.hash = '#new-task';
+  }
+
+  private saveAsWorkflow(template: Template, prompt: string) {
+    this.workflowDialog.open({
+      command: template.id,
+      name: template.title,
+      description: template.outcome,
+      instructions: prompt,
+      cron: template.schedule?.cron ?? '',
+      scheduleDisplay: template.schedule?.display ?? '',
+      templateId: template.id,
+      writeScope: SCOPE_BY_NAME[template.writeScope],
+    });
+  }
+
+  /** Same category, minus itself. Enough to be useful, cheap to compute. */
+  private relatedTo(template: Template): Template[] {
+    return this.all
+        .filter(t => t.category === template.category && t.id !== template.id)
+        .slice(0, 3);
+  }
 
   async render(root: HTMLElement, section: 'tasks'|'skills') {
     this.all = await loadTemplates();
@@ -417,6 +465,16 @@ export class TemplatesView {
   private card(t: Template): HTMLElement {
     const card = document.createElement('article');
     card.className = 'template-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    const open = () => this.detail.open(t, this.relatedTo(t));
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        open();
+      }
+    });
 
     const title = document.createElement('h3');
     title.textContent = t.title;
@@ -466,3 +524,11 @@ export class TemplatesView {
     return card;
   }
 }
+
+/** The console names scopes as strings; the mojom names them as an enum. */
+const SCOPE_BY_NAME: Record<Template['writeScope'], WriteScope> = {
+  readonly: WriteScope.kReadOnly,
+  draft: WriteScope.kDraft,
+  send: WriteScope.kSend,
+  purchase: WriteScope.kPurchase,
+};

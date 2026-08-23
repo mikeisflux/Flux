@@ -38,6 +38,7 @@ build_webui("resources") {
     "welcome_view.ts",
     "new_task_view.ts",
     "templates_view.ts",
+    "template_dialog.ts",
     "workflows_view.ts",
     "workflow_dialog.ts",
     "runs.ts",

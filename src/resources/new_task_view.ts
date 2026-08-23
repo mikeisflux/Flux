@@ -72,11 +72,18 @@ export class NewTaskView {
   private all: Template[] = [];
   private prompt!: HTMLTextAreaElement;
   private templateId: string|null = null;
+  private pending: string|null = null;
   private status!: HTMLElement;
 
   constructor(private handler: FluxPageHandlerRemote) {}
 
   async render(root: HTMLElement) {
+    // A template handed over from the Templates screen. Read here and applied
+    // once the composer exists, which is a different method. Via
+    // sessionStorage rather than the URL, because a prompt the user has just
+    // edited does not belong in a link.
+    this.pending = sessionStorage.getItem('flux.pendingTask');
+    sessionStorage.removeItem('flux.pendingTask');
     this.all = await loadTemplates();
 
     root.replaceChildren();
@@ -243,6 +250,18 @@ export class NewTaskView {
 
     bar.append(right);
     box.append(this.prompt, bar);
+
+    if (this.pending) {
+      try {
+        const {prompt, templateId} =
+            JSON.parse(this.pending) as {prompt: string, templateId: string};
+        this.prompt.value = prompt;
+        this.templateId = templateId;
+      } catch {
+        // A malformed hand-off is not worth failing the screen over: the user
+        // still has an empty composer they can type into.
+      }
+    }
 
     this.status = document.createElement('p');
     this.status.className = 'composer-status';

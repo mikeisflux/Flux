@@ -147,8 +147,25 @@ def check_brand_marks(errors):
                  're-run node tools/connector-icons/build.mjs', errors)
 
 
+def report_template_prompts():
+    """Says how many of the 250 templates have an authored prompt.
+
+    Not a failure - an unauthored template still opens and still runs, on a
+    starting point derived from its title, and says so. But the number should
+    be visible on every check rather than discovered by clicking through the
+    catalogue, because "mostly done" is the state this is easiest to forget in.
+    """
+    catalog = ROOT / 'src' / 'resources' / 'templates.json'
+    if not catalog.is_file():
+        return
+    templates = json.loads(catalog.read_text(encoding='utf-8'))['templates']
+    authored = sum(1 for t in templates if t.get('prompt'))
+    print(f'  template prompts: {authored}/{len(templates)} authored')
+
+
 def main():
     errors = []
+    report_template_prompts()
     check_brand_marks(errors)
     catalogue = json.loads(CATALOGUE.read_text(encoding='utf-8'))['connectors']
     by_id = {c['id']: c for c in catalogue}

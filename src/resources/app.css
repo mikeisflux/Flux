@@ -2066,3 +2066,94 @@ body.shell.collapsed .badge { display: none; }
 .send[data-mode='stop'] {
   background: var(--danger, #c0392b);
 }
+
+/* --- Template detail ------------------------------------------------------ */
+.template-dialog {
+  width: min(760px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.template-dialog .dialog-body {
+  position: relative;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+}
+
+.template-head {
+  display: flex;
+  align-items: flex-start;
+  padding-right: 40px;
+  gap: 14px;
+}
+
+.template-head h2 {
+  margin: 0 0 4px;
+  font-size: 21px;
+}
+
+.template-head .subtitle {
+  margin: 0;
+}
+
+.template-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pill.static {
+  cursor: default;
+}
+
+/* The prompt is editable and it is the exact text the buttons below act on.
+ * A preview that differs from what runs is a preview nobody trusts twice. */
+.template-prompt {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.template-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.related-item {
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.related-item:hover {
+  background: var(--bg-hover, rgb(0 0 0 / 5%));
+}
+
+.template-card[role='button'] {
+  cursor: pointer;
+}
+
+.template-card[role='button']:hover {
+  border-color: var(--fg-muted);
+}

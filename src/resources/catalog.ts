@@ -31,6 +31,44 @@ export interface Template {
   schedule: TemplateSchedule|null;
   writeScope: 'readonly'|'draft'|'send'|'purchase';
   featured?: number;
+  // What actually gets sent to the agent. Anything in [square brackets] is a
+  // blank for the user to fill in - the detail view lists them, because a
+  // template run with "[sheet link]" still in it is a task that fails on its
+  // first step.
+  //
+  // Optional while the 250 are being written. An unauthored template still
+  // opens and still runs, on a starting point derived from its title - see
+  // promptFor(). That is worse than an authored prompt and much better than an
+  // empty box, and it is labelled so nobody mistakes one for the other.
+  prompt?: string;
+  roles?: string[];
+}
+
+/** True when a human wrote this template's prompt. */
+export function hasAuthoredPrompt(template: Template): boolean {
+  return Boolean(template.prompt);
+}
+
+/**
+ * The prompt to run, authored or derived.
+ *
+ * The derived one states the outcome and names the services, which is enough
+ * for the agent to attempt the task and enough for the user to see what is
+ * missing. It deliberately reads as a first draft rather than as instructions.
+ */
+export function promptFor(template: Template): string {
+  if (template.prompt) {
+    return template.prompt;
+  }
+  const services = template.connectors.map(c => c.id).join(', ');
+  return `${template.title}.\n\nWhat I want at the end: ${
+      template.outcome}.${
+      services ? `\n\nUse: ${services}.` : ''}\n\nAsk me for anything you need that I have not given you here - a sheet link, a date range, who to include - rather than guessing.`;
+}
+
+/** The [placeholders] in a prompt, in order, without their brackets. */
+export function placeholders(prompt: string): string[] {
+  return [...prompt.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]!);
 }
 
 /**

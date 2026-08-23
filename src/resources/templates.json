@@ -38,7 +38,12 @@
       ],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 0
+      "featured": 0,
+      "prompt": "Go to my open LinkedIn search results tab.\n\nPage through all results (keep clicking \"show more\" until exhausted). For every person matching [criteria, e.g. \"VP or above, 200+ employee SaaS companies\"], extract: full name, title, company, location, profile URL.\n\nDe-duplicate against anyone already in [existing sheet link, or leave blank for none], then write everything into a new Google Sheet titled \"[search name] — Prospects\" with one row per person and a Status column I can use for outreach tracking.\n\nIf a profile is out of network and shows no title, still capture the name and URL and mark the row Needs enrichment rather than dropping it.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-company-list-decision-maker",
@@ -61,7 +66,12 @@
       ],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 3
+      "featured": 3,
+      "prompt": "Read my sheet at [sheet link]. It has one company per row.\n\nFor each company, find up to 3 people in [target roles, e.g. \"Head of Ops, VP Finance, COO\"]. Use LinkedIn as the source of truth for title and current employment — do not carry over a title from a stale directory listing.\n\nWrite each contact into new columns on that row: name, title, LinkedIn URL, and how confident you are that they still hold the role. Leave the row untouched and mark it Not found rather than guessing a plausible-sounding name.\n\nStop and tell me if more than a third of the list comes back empty — that usually means the role filter is wrong for this segment.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-outreach-replies-update-tracker",
@@ -86,7 +96,11 @@
         "cron": "0 8,17 * * *",
         "display": "Twice a day, 8am and 5pm"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Check my Gmail for replies to outbound threads from the last [7] days.\n\nFor each reply, find the matching row in [tracker sheet link] and update its Status to one of: Interested, Not now, Referred on, or Declined. Add the reply date and a one-line summary of what they actually said — not your interpretation of it.\n\nFor every Interested reply, draft a follow-up in Gmail that answers whatever they asked and proposes a concrete next step. Leave it as a draft; do not send.\n\nIf a reply does not match any tracker row, list it at the end so I can see who is contacting me outside the campaign.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-15-personalized-connection-requests",
@@ -111,7 +125,12 @@
         "cron": "0 9 * * 1-5",
         "display": "Weekdays at 9am"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Open [prospect sheet link] and take the next 15 rows with an empty Invite Sent column.\n\nFor each person, open their LinkedIn profile and read their recent activity. Send a connection request with a note that references something specific and real from their profile or a recent post — not their job title, and not a compliment that would fit anyone.\n\nLog the date and the exact note text back to the row.\n\nStop at 15 for the day even if there are more rows. If someone is already a connection, or has a pending invite, skip them and mark the row rather than sending again.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-replies-sales-thread-waiting",
@@ -128,7 +147,11 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Find every Gmail thread where a prospect wrote last and I have not replied, going back [14] days.\n\nFor each one, read the whole thread before drafting — including anything I said earlier that I now need to honour. Write a reply that answers their actual question, moves to a specific next step with a date, and matches the tone of how I have been writing in that thread.\n\nSave each as a Gmail draft on the existing thread. Send nothing.\n\nWhere a thread needs information I do not have — pricing I have not quoted, a date I have not confirmed — leave a clearly marked blank in the draft rather than inventing it, and list those threads for me at the end.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-prospects-who-went-silent",
@@ -145,7 +168,11 @@
         "cron": "0 8 * * 1,4",
         "display": "Mondays and Thursdays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Find outbound Gmail threads where I sent the last message [4] or more days ago and got no reply.\n\nSkip anyone who has replied at any point in the thread, anyone who asked me to follow up later than today, and anyone I have already bumped twice — a third nudge is not persistence.\n\nFor the rest, draft a short bump on the existing thread. Add one new thing: a relevant piece of news about their company, a resource, or a narrower ask. Never send \"just bumping this to the top of your inbox\" with nothing else in it.\n\nLeave everything as drafts and give me the list.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-conference-notes-follow-up",
@@ -167,7 +194,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Read my notes at [notes doc link] from [event name].\n\nPull out every person I met: name, company, and what we actually talked about. Where I only wrote a first name and a company, find the full name and email — check the event site, the company site, then LinkedIn, in that order.\n\nDraft a Gmail follow-up to each one that references the specific thing we discussed, not the event in general. Keep it under 120 words.\n\nLog everyone to a sheet with name, company, email, the talking point, and whether a draft was created. Anyone I could not find contact details for goes on the sheet too, marked Needs email — those are the ones worth chasing by hand.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-scrub-target-list-against",
@@ -189,7 +221,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Take the company list at [sheet link].\n\nFor each row, check HubSpot for an existing company record and flag: already a customer, open deal in progress, closed-lost in the last [6] months, or no record. Then check my Gmail for any thread with that domain in the last [90] days and note the date and who it was with.\n\nWrite the findings into new columns and add a Contact column with a clear yes or no, plus the reason.\n\nDo not delete rows — I want to see what was excluded and why. A list that silently shrinks is one I cannot audit.",
+      "roles": [
+        "sales",
+        "ops"
+      ]
     },
     {
       "id": "sales-outreach-tracker-while-sleep",
@@ -214,7 +251,11 @@
         "cron": "0 5 * * *",
         "display": "Every day at 5am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Go through every row in [tracker sheet link] that is not marked Closed.\n\nFor each: re-check the prospect's LinkedIn for a job change, look for a reply in Gmail I have not logged, and work out the right next action from where the conversation actually stands. Write that next action into the row in plain language, with a date.\n\nFlag any row with no activity in [21] days as Stale. If someone has changed company, mark the row Left — and find the person now holding that role, as a new row.\n\nDo not change the Status column; that is mine to set. Everything you write goes in the columns you own.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-target-accounts-buying-signals",
@@ -235,7 +276,11 @@
         "cron": "30 8 * * 1-5",
         "display": "Weekdays at 8:30am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read the account list at [sheet link].\n\nFor each company, check LinkedIn for posts in the last [7] days from the company page and from anyone on the list holding [target roles]. Look for signals that mean something: hiring for a role that implies a new initiative, a funding or launch announcement, a leadership change, or someone publicly describing a problem we solve.\n\nIgnore reposts, anniversaries and generic thought leadership. A brief padded with noise stops being read.\n\nGive me a morning summary grouped by company: the signal, the link, and one specific angle to open with. If nothing real happened, say so — an empty brief is a useful answer.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-partner-programs-list-log",
@@ -253,7 +298,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Work through the partner programs listed at [sheet link], oldest row first.\n\nFor each one, open the application page and complete it using the details in [company info doc link]. Where a field asks something not covered by that doc — an integration timeline, a customer count — stop on that row, mark it Needs input, and note exactly what is missing. Do not invent business facts.\n\nSubmit only when every field is filled from real information, then log the submission date, a confirmation number if there is one, and any next steps they state.\n\nWork through at most [5] applications in one run.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-inbound-lead-alerts-crm",
@@ -274,7 +324,12 @@
         "cron": "0 9,14 * * 1-5",
         "display": "Weekdays at 9am and 2pm"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search my Gmail for demo requests, form fills and contact-us notifications from the last [7] days.\n\nFor each one, pull out the person's name, email, company and whatever they said they wanted. Check HubSpot for an existing contact or company — if one exists, note it rather than creating a duplicate.\n\nTell me which stage each should sit in and why, based on what they asked for: a pricing question is not the same as a trial signup.\n\nGive me the list to confirm before anything is written to HubSpot. Filing a lead in the wrong stage quietly skews every forecast that reads off it.",
+      "roles": [
+        "sales",
+        "ops"
+      ]
     },
     {
       "id": "sales-niche-company-list-right",
@@ -292,7 +347,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a list of companies matching [description, e.g. \"US independent pharmacies with 3-20 locations\"].\n\nFind at least [40]. Work from real sources — industry directories, association member lists, trade bodies — and record where each one came from. Do not pad the list to hit the number.\n\nFor each company: name, website, location, rough size, and the person most likely to own [the relevant decision], with their title and LinkedIn URL.\n\nPut it in a sheet with a Source column. Where you could not identify a decision-maker, leave it blank and say so — a blank is honest and a wrong name costs me the first email.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-lead-sheet-tier-angle",
@@ -314,7 +374,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read the leads at [sheet link].\n\nGrade each A, B or C against [criteria, e.g. \"50+ employees, uses Shopify, has a marketing team\"]. Say in one line why it got that grade, referencing what you actually found rather than restating the criteria.\n\nFor every A and B, add one specific researched fact about the company from the last [6] months — a launch, a hire, an expansion, a public complaint — and one outreach angle that follows from it.\n\nWrite the grade, the reason, the fact and the angle into new columns. Leave C rows without an angle; spending research on them is the thing that stops the As getting done.",
+      "roles": [
+        "sales"
+      ]
     },
     {
       "id": "sales-warm-paths-target-accounts",
@@ -336,7 +400,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Take the target companies at [sheet link].\n\nFor each, check my LinkedIn connections for anyone who works there now, worked there in the last [2] years, or is a first-degree connection of someone who does. Note the relationship and how strong it looks — a former colleague is not the same as someone I connected with at a conference.\n\nWhere there is a credible path, draft a short Gmail intro request to the connection: who I want to reach, why, and an easy way for them to say no.\n\nList the companies with no warm path separately. Those are the cold ones and it is better to know that up front.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-work-local-business-outreach",
@@ -361,7 +430,12 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Open [queue sheet link] and take the next [15] rows with an empty Contacted date.\n\nFor each business: find the owner or manager's name and a direct email — check the company website first, then any professional listing. A generic info@ is a last resort, and mark it as such.\n\nDraft a Gmail email that names something specific about that business — what they sell, a recent review, how long they have been running. A template with the name swapped in reads exactly like what it is.\n\nWrite the contact details and the draft status back to the row. Anything with no findable contact gets marked Needs a call.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-researched-cold-email-lead",
@@ -1619,7 +1693,7 @@
     {
       "id": "data-up-spreadsheet-exactly-how",
       "title": "Clean up my spreadsheet exactly how I tell you",
-      "outcome": "A tidy sheet \u2014 deduped, reformatted, and rule-checked without touching the rest",
+      "outcome": "A tidy sheet — deduped, reformatted, and rule-checked without touching the rest",
       "category": "Data",
       "connectors": [
         {
@@ -3222,7 +3296,7 @@
     {
       "id": "docs-rough-notes-polished-google",
       "title": "Turn my rough notes into a polished Google Doc",
-      "outcome": "A clean, structured doc in your Drive \u2014 formatted, titled, and ready to share",
+      "outcome": "A clean, structured doc in your Drive — formatted, titled, and ready to share",
       "category": "Docs",
       "connectors": [
         {
@@ -3957,7 +4031,7 @@
     {
       "id": "monitoring-competitor-pricing-feature-pages",
       "title": "Diff competitor pricing and feature pages weekly",
-      "outcome": "A weekly diff of competitor pages \u2014 what changed and what it signals",
+      "outcome": "A weekly diff of competitor pages — what changed and what it signals",
       "category": "Monitoring",
       "connectors": [],
       "schedule": {
