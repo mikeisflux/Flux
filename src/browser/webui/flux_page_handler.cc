@@ -202,6 +202,10 @@ void FluxPageHandler::ListProviderKeys(ListProviderKeysCallback callback) {
     // and not enough to be worth anything.
     status->hint = key.size() >= 4 ? key.substr(key.size() - 4) : std::string();
     status->validated = validated_.count(ProviderId(provider)) > 0;
+    if (auto it = last_errors_.find(ProviderId(provider));
+        it != last_errors_.end() && !it->second.empty()) {
+      status->last_error = it->second;
+    }
     out.push_back(std::move(status));
   }
   std::move(callback).Run(std::move(out));
@@ -227,11 +231,13 @@ void FluxPageHandler::SetProviderKey(mojom::Provider provider,
                  if (!ok) {
                    // Not stored. A key that does not work is worse than no key,
                    // because it turns into a failure mid-task later.
+                   self->last_errors_[ProviderId(provider)] = error;
                    std::move(cb).Run(false, error);
                    return;
                  }
                  SetApiKey(self->profile_, ProviderId(provider), key);
                  self->validated_.insert(ProviderId(provider));
+                 self->last_errors_.erase(ProviderId(provider));
                  std::move(cb).Run(true, std::nullopt);
                },
                weak_factory_.GetWeakPtr(), provider, key, std::move(callback)));
@@ -240,6 +246,9 @@ void FluxPageHandler::SetProviderKey(mojom::Provider provider,
 void FluxPageHandler::ClearProviderKey(mojom::Provider provider) {
   SetApiKey(profile_, ProviderId(provider), std::string());
   validated_.erase(ProviderId(provider));
+  // Otherwise the row for a provider with no key at all still explains why the
+  // key that used to be there stopped working.
+  last_errors_.erase(ProviderId(provider));
 }
 
 void FluxPageHandler::ValidateProviderKey(mojom::Provider provider,
@@ -254,10 +263,13 @@ void FluxPageHandler::ValidateProviderKey(mojom::Provider provider,
                [](base::WeakPtr<FluxPageHandler> self, mojom::Provider provider,
                   ValidateProviderKeyCallback cb, bool ok, std::string error) {
                  if (self) {
-                   if (ok)
+                   if (ok) {
                      self->validated_.insert(ProviderId(provider));
-                   else
+                     self->last_errors_.erase(ProviderId(provider));
+                   } else {
                      self->validated_.erase(ProviderId(provider));
+                     self->last_errors_[ProviderId(provider)] = error;
+                   }
                  }
                  std::move(cb).Run(ok, ok ? std::nullopt
                                           : std::make_optional(error));

@@ -17,6 +17,13 @@
       "pages_manage_posts requires App Review unless you are a Page admin."
     ]
   },
+  "api": {
+    "base_url": "https://graph.facebook.com/v21.0",
+    "notes": [
+      "Every operation's path is relative to this. Without it the client concatenated an empty base with \"/{page_id}/feed\" and handed GURL a scheme-less string, so all five operations failed at the URL before a request was ever made.",
+      "v21.0 to match the authorize and token URLs above - a token issued against one Graph version is not guaranteed against another, and mixing them is how a working connector starts returning permission errors."
+    ]
+  },
   "operations": {
     "publish": {
       "method": "POST",

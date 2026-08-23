@@ -72,8 +72,14 @@ export class SettingsView {
     if (status?.configured) {
       state.textContent = status.validated
           ? `Connected · ····${status.hint}`
-          : `Saved · ····${status.hint} · not verified`;
-      state.dataset['ok'] = status.validated ? 'yes' : 'unknown';
+          : status.lastError
+              // Why it failed, kept from the last attempt. Without this a key
+              // that stopped working reads as merely "not verified" the moment
+              // the user navigates away from the message that said otherwise.
+              ? `Saved · ····${status.hint} · ${status.lastError}`
+              : `Saved · ····${status.hint} · not verified`;
+      state.dataset['ok'] =
+          status.validated ? 'yes' : (status.lastError ? 'no' : 'unknown');
     } else {
       state.textContent = 'Not connected';
       state.dataset['ok'] = 'no';

@@ -171,6 +171,19 @@ callback as fired while the mojo forward to the console was missing. It now
 looks only for `observer_->X(` in the page handler, which is the only call
 that actually reaches the renderer.
 
+`tools/check-connector-defs.py` catches a connector definition the client
+cannot execute. `facebook_pages` declared five operations with paths relative
+to a base URL it did not have, so `ConnectorClient` concatenated an empty base
+with `/{page_id}/feed` and handed GURL a scheme-less string - all five failed
+before a request was made, and nothing in the file looks wrong, because the
+`api` block was simply absent. `plain` is GraphQL: one endpoint, one method,
+the operation is a named mutation rather than a path, so every operation parsed
+with an empty method and path and the connector still reported itself
+connectable. A definition with no executable operation must now say which
+transport it needs (`api.transport`), so the check can tell a deliberate gap
+from a forgotten field. MCP definitions are exempt - their operations name a
+`tool` and the server supplies the transport.
+
 `tools/check-includes.sh` HEAD-requests every Chromium header `src/browser`
 includes against the pinned tag, because `base/containers/contains.h` does not
 exist in M152 and nothing here knew. The include reads correctly, no other

@@ -16,6 +16,7 @@
 #include "base/uuid.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
+#include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/flux/scheduler/workflow_scheduler.h"
 #include "chrome/browser/flux/skills/skill_registry.h"
 #include "chrome/browser/flux/flux_prefs.h"
@@ -108,7 +109,16 @@ void FluxAgentService::PumpQueue() {
       alt.provider = spec->model->provider == mojom::Provider::kAnthropic
                          ? mojom::Provider::kOpenAI
                          : mojom::Provider::kAnthropic;
-      failover = MakeProvider(alt);
+      // Only if the other provider actually has a key. Building one without
+      // makes failover worse than none: a rate limit, which is temporary and
+      // says so, gets replaced by "No OpenAI API key configured", which is
+      // both wrong about the cause and not retryable.
+      const std::string other =
+          GetApiKey(profile_, alt.provider == mojom::Provider::kAnthropic
+                                  ? "anthropic"
+                                  : "openai");
+      if (!other.empty())
+        failover = MakeProvider(alt);
     }
 
     auto runner = std::make_unique<AgentRunner>(

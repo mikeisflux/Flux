@@ -2,6 +2,7 @@
 
 #include "chrome/browser/flux/connectors/connector_service.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/check.h"
@@ -88,6 +89,30 @@ ConnectorStatus ConnectorService::GetStatus(
     case AuthType::kUnsupported:
       status.detail = "This service has no API Flux can use.";
       break;
+  }
+
+  // A connector whose operations this client cannot execute is not
+  // connectable, whatever its auth says. Plain is GraphQL - one endpoint, one
+  // method, and the operation is a named mutation rather than a path - and
+  // ConnectorClient only builds REST calls, so its operations parse with an
+  // empty method and an empty path. Left as connectable it offered a
+  // paste-your-key form that stored a key and then could not make a single
+  // call with it.
+  //
+  // Computed from the definition rather than hardcoded, so this corrects
+  // itself the day GraphQL support arrives.
+  if (status.connectable && def->auth.type != AuthType::kMcp) {
+    const bool executable = std::ranges::any_of(
+        def->operations, [](const auto& entry) {
+          return !entry.second.method.empty() && !entry.second.path.empty();
+        });
+    if (!executable) {
+      status.connectable = false;
+      status.detail =
+          "Flux cannot call this service yet: its API is GraphQL, and the "
+          "connector client only speaks REST. The site still works in a "
+          "browser.";
+    }
   }
 
   status.has_client = !GetClient(connector_id).client_id.empty();

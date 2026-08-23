@@ -28,6 +28,7 @@
     ]
   },
   "api": {
+    "transport": "graphql",
     "base_url": "https://core-api.uk.plain.com/graphql/v1",
     "headers": {
       "Authorization": "Bearer {api_key}",
@@ -35,7 +36,8 @@
     },
     "schema": "https://core-api.uk.plain.com/graphql/v1/schema.graphql - the full SDL, worth diffing on upgrade.",
     "region_caveat": "Note the `uk` in the host. Plain's published examples use the UK region, which implies other regional hosts exist and that a customer on a different region has a different URL. Confirm the right host for the account before hard-coding this one.",
-    "verified": "search - this URL came from documentation search, not from a page supplied verbatim, unlike the auth mechanics above."
+    "verified": "search - this URL came from documentation search, not from a page supplied verbatim, unlike the auth mechanics above.",
+    "transport_note": "ConnectorClient builds REST calls only, so no operation here is executable yet and GetStatus reports the connector as not connectable. Stated here rather than left to be inferred, so the check can tell \"GraphQL, deliberately not wired\" from \"somebody forgot the method and path\"."
   },
   "operations": {
     "reply_to_thread": {

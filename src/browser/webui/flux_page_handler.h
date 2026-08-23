@@ -3,6 +3,7 @@
 #ifndef CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 #define CHROME_BROWSER_FLUX_WEBUI_FLUX_PAGE_HANDLER_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -135,6 +136,11 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   std::unique_ptr<OAuthRedirectWatcher> redirect_watcher_;
   // Providers whose stored key has been confirmed to work this session.
   std::set<std::string> validated_;
+  // Why a key last failed, per provider. ProviderKeyStatus has always carried
+  // the field and nothing ever wrote it, so a key that stopped working showed
+  // "not verified" with no reason once the user navigated away from the
+  // message the failing call produced.
+  std::map<std::string, std::string> last_errors_;
   mojo::Receiver<mojom::FluxPageHandler> receiver_;
   mojo::Remote<mojom::FluxPageHandlerObserver> observer_;
   base::ScopedObservation<FluxAgentService, FluxAgentService::Observer>
