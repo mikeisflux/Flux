@@ -1730,11 +1730,12 @@ body.shell.collapsed .badge { display: none; }
   position: relative;
 }
 
+/* Fixed, and placed by placeRowMenu() in viewport coordinates. Absolute
+   positioning put it inside .workflow-table, whose overflow:hidden - there to
+   round the corners - clipped it, and z-index cannot escape an overflow. */
 .row-menu-items {
-  position: absolute;
+  position: fixed;
   z-index: 20;
-  top: 34px;
-  right: 0;
   min-width: 180px;
   padding: 6px;
   border: 1px solid var(--border);

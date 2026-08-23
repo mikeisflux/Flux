@@ -171,6 +171,10 @@ export class WorkflowsView {
     const menu = document.createElement('div');
     menu.className = 'row-menu-items';
     menu.hidden = true;
+    // The document handler closes any open menu on a click anywhere. Without
+    // this, a click on the menu's own padding - between two items - counts as
+    // "anywhere" and shuts it. Items close it themselves.
+    menu.addEventListener('click', event => event.stopPropagation());
 
     const item = (label: string, icon: string, onClick: () => void) => {
       const entry = document.createElement('button');
@@ -207,15 +211,19 @@ export class WorkflowsView {
     });
     remove.classList.add('destructive');
 
-    button.addEventListener('click', () => {
+    button.addEventListener('click', event => {
+      // Without this the click reaches the document handler below and closes
+      // the menu in the same gesture that opened it.
+      event.stopPropagation();
       const open = menu.hidden;
       // One menu at a time, and clicking the row's button again closes it.
-      for (const other of
-               document.querySelectorAll<HTMLElement>('.row-menu-items')) {
-        other.hidden = true;
+      closeRowMenus();
+      if (!open) {
+        return;
       }
-      menu.hidden = !open;
-      button.setAttribute('aria-expanded', String(open));
+      menu.hidden = false;
+      button.setAttribute('aria-expanded', 'true');
+      placeRowMenu(menu, button);
     });
 
     wrap.append(button, menu);
@@ -357,3 +365,65 @@ function formatTime(time: {internalValue: bigint}): string {
       {weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric',
        minute: '2-digit'});
 }
+
+
+/**
+ * Places an open row menu against its button, in viewport coordinates.
+ *
+ * The menu is `position: fixed` rather than absolute inside the row, because
+ * two ancestors clip it and no z-index escapes either. `.workflow-table` sets
+ * `overflow: hidden` so its rounded corners clip the rows, which sliced the
+ * menu off at the bottom edge of the table; and `.content` scrolls, so the
+ * last row's menu would have been clipped there even without the table.
+ *
+ * A fixed element's containing block is the viewport, and an ancestor's
+ * overflow does not clip it - but only while no ancestor has a transform,
+ * filter or will-change. Any of those becomes the containing block itself and
+ * brings the clipping straight back, so if this ever starts being cut off
+ * again, that is the first thing to look for.
+ */
+function placeRowMenu(menu: HTMLElement, button: HTMLElement) {
+  const anchor = button.getBoundingClientRect();
+  // Measured after unhiding: a hidden element has no box to place from.
+  const width = menu.offsetWidth;
+  const height = menu.offsetHeight;
+  const gap = 6;
+  const margin = 8;
+
+  let top = anchor.bottom + gap;
+  if (top + height > window.innerHeight - margin) {
+    // Flip above the button rather than running off the bottom, which is
+    // where every row below the fold would otherwise put it.
+    top = Math.max(margin, anchor.top - gap - height);
+  }
+  const left = Math.min(
+      Math.max(margin, anchor.right - width),
+      Math.max(margin, window.innerWidth - margin - width));
+
+  menu.style.top = `${Math.round(top)}px`;
+  menu.style.left = `${Math.round(left)}px`;
+}
+
+function closeRowMenus() {
+  for (const menu of
+           document.querySelectorAll<HTMLElement>('.row-menu-items')) {
+    menu.hidden = true;
+  }
+  for (const button of
+           document.querySelectorAll<HTMLElement>('.row-menu > button')) {
+    button.setAttribute('aria-expanded', 'false');
+  }
+}
+
+// A fixed menu does not travel with its row, so anything that moves the row
+// closes it rather than leaving it stranded over a different one. Scroll is
+// captured because the scrolling element is `.content`, not the document, and
+// a scroll event on a non-root element does not bubble.
+document.addEventListener('click', () => closeRowMenus());
+document.addEventListener('scroll', () => closeRowMenus(), true);
+window.addEventListener('resize', () => closeRowMenus());
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    closeRowMenus();
+  }
+});
