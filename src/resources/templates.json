@@ -2539,7 +2539,12 @@
       "connectors": [],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 5
+      "featured": 5,
+      "prompt": "Build a market map of [category]. Find every company operating in it — not just the ones with the biggest marketing budgets. Work from analyst lists, review-site categories, \"alternatives to\" pages, funding databases and who sponsors the conferences.\n\nFor each vendor, a profile: what they actually do, who they sell to, founded date, headcount, funding and stage, pricing model and public prices, notable customers, and how they position themselves in their own words.\n\nThen the comparison table across all of them on the dimensions that separate them rather than the ones every vendor claims. Everyone says enterprise-grade; what differs is deployment model, data residency, integration depth, price floor and who they actually win against.\n\nThen the map itself: the segments the category really splits into, which vendors sit in each, and where the boundaries are contested. If the category does not split cleanly, say so — a forced 2x2 is worse than a paragraph explaining why the market resists one.\n\nEvery fact gets a source link and a date. Where numbers come from the company's own site, say so; self-reported headcount and customer counts are marketing.\n\nName the companies you deliberately excluded and why, so I can tell the difference between a market with eleven players and a search that found eleven.",
+      "roles": [
+        "analysts",
+        "founders"
+      ]
     },
     {
       "id": "research-competitor-matrix-pricing-features",
@@ -2553,7 +2558,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build a competitor matrix for [competitors] covering pricing, positioning, features, customers and recent news.\n\nPricing: every published tier with price, what is included, the limits, and what is gated to the top tier. Where it is \"contact sales\", say so and note anything credible from reviews about real prices, labelled as second-hand.\n\nPositioning: the headline and subhead from their homepage verbatim, who they say they are for, and the two or three claims they lead with. Verbatim matters — their own words are the position, and a paraphrase is my interpretation of it.\n\nFeatures: build the row list from the union of what they all offer rather than from our feature list, otherwise the matrix just proves we win. Mark each cell yes, no, partial or unknown, and be honest about unknown.\n\nCustomers: named logos from their site, plus anything from G2 about which segments actually use them.\n\nRecent news: the last [6] months — funding, launches, leadership changes, outages, anything from their changelog that matters.\n\nEvery cell sourced and dated. Finish with the two or three things the matrix actually shows, since a table of forty rows does not tell anyone anything on its own.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "research-check-report-against-filings",
@@ -2567,7 +2578,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Fact-check [report / article link] against primary sources.\n\nFirst, extract every checkable claim — a number, a date, an attribution, a stated fact about a company or a market. Skip opinions and predictions, but keep any claim presented as fact that underpins an opinion. List them before checking anything, so I can see the surface area.\n\nThen check each one against the primary source: SEC filings on EDGAR for anything about a public company's financials, headcount or risk factors; earnings call transcripts for management statements; the original study for a cited statistic; the company's own filings or announcements for corporate facts.\n\nGive me a verdict table: the claim, the verdict, the primary source with a link and the specific page, section or line, and a note.\n\nVerdicts: supported, unsupported, contradicted, or unverifiable from public sources. Keep those four distinct — \"unverifiable\" is not \"false\", and a report that conflates them is doing the same thing it is accusing the article of.\n\nWhere a claim is technically true but misleading — a real number over a cherry-picked period, a percentage without the base, a citation that does not say what it is cited for — say so and explain the gap. That is usually where the interesting problems are, and a checker that only looks for outright false statements misses all of them.",
+      "roles": [
+        "analysts",
+        "everyone"
+      ]
     },
     {
       "id": "research-startups-fit-thesis-week",
@@ -2592,7 +2608,12 @@
         "cron": "0 8 * * 1",
         "display": "Mondays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, find startups matching my thesis — [thesis: sector, stage, geography, what has to be true] — and add the new ones to [sheet link].\n\nSources: Y Combinator's current and recent batches, launch and funding announcements from the past week, Product Hunt, and new companies appearing in [relevant communities].\n\nDe-duplicate against everything already in the sheet before adding anything, matching on domain rather than name — companies rename and I do not want the same one reviewed three times.\n\nFor each new company: name, website, one line on what it does, founded date, stage and any funding raised, founders with their backgrounds, headcount, and where you found it.\n\nThen a thesis-fit note per company: which parts of the thesis it hits, which it does not, and what would have to be true for it to be interesting. Score it, and let most of them score low — a weekly source that finds five great companies every week is not being honest with me.\n\nFlag anything with an unusually strong founder signal (a repeat founder, a domain expert leaving a relevant incumbent, a team that has worked together before) even where the company itself is early or unclear. At this stage that is often the only real signal there is.\n\nTell me the counts each week: found, new, added.",
+      "roles": [
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "research-company-s-legitimacy-before",
@@ -2601,7 +2622,13 @@
       "category": "Research",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Vet [company] before I sign a contract or send money.\n\nCheck the official records first, since everything else can be manufactured: the corporate registry for the jurisdiction they claim ([Companies House, the relevant Secretary of State, the local equivalent]) — registration number, status, incorporation date, registered address, officers and any filing history. A company that does not appear in the registry it claims to be registered in is the end of the exercise.\n\nThen: how old the domain is and whether the registration is masked, whether the registered address is a real office or a mail-forwarding service, whether the officers are real people with a findable history, any filed accounts and what they show, any litigation or regulatory action, and any insolvency or strike-off proceedings.\n\nThen the softer signals: how long they have existed publicly, whether their customer logos are corroborated anywhere, whether their team page matches LinkedIn, and what complaints exist.\n\nGive me a table of what was checked, what was found and the source link, and a plain verdict on each item rather than an overall score.\n\nDistinguish clearly between a red flag and an absence of evidence. A young company with a thin footprint is not a fraud, and saying so is as important as finding a real problem. Say what would resolve the remaining doubts.",
+      "roles": [
+        "everyone",
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "research-contact-s-real-connections",
@@ -2615,7 +2642,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Work out how [contact name, LinkedIn URL] is actually connected to the companies and people on my target list at [link].\n\nA documented relationship is worth chasing; a shared connection count is not. So look for evidence: they worked at the same company at overlapping times, they are shown as connections and both engage with each other's posts, one endorsed or recommended the other, they went to the same school in the same years, they appear together on a board, a panel, a podcast or a press release, or one has publicly written about the other.\n\nFor each link found: the two people, the type of relationship, the specific evidence with a link, the dates, and how strong it looks. Overlapping tenure at a 40,000-person company is weak; a written recommendation is strong; a shared employer at ten people means they definitely know each other.\n\nOrganise by target company, so I can see which of my targets this contact can actually help with.\n\nThen say which introductions are worth asking for and roughly how to frame each.\n\nBe honest where there is nothing. \"Two shared connections, no evidence they know each other\" is the correct finding for most pairs, and a map that dresses that up as a relationship will cost me a real favour on an introduction that goes nowhere.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "research-small-cap-stock-catalysts",
@@ -2629,7 +2661,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write a research memo on [ticker].\n\nWork from primary sources: the last two 10-Ks and the recent 10-Qs on EDGAR, the most recent earnings call transcripts, 8-Ks from the last year, and the proxy for compensation and ownership.\n\nThe memo:\n\nThe business — what they actually sell, to whom, and how revenue is recognised. Segment breakdown and concentration: customer, geographic, product. Concentration is usually the whole story in a small cap.\n\nFinancials — revenue and growth, gross margin, operating leverage, cash flow versus net income and why they differ, the balance sheet, debt maturities and covenants, and the share count trend including dilution from stock compensation.\n\nThe thesis as management tells it, quoted from the calls, then what the filings say about whether it is working.\n\nCatalysts — specific, dated events that could change the price, with what the market appears to expect.\n\nRisks — from the actual risk factors, filtered to the ones that are real for this company rather than boilerplate, plus anything the filings disclose that management does not discuss.\n\nValuation context — the multiples, versus comparables and versus its own history.\n\nCite every number to the filing and page. This is research for my own reading, not investment advice, and it should say so.",
+      "roles": [
+        "analysts",
+        "everyone"
+      ]
     },
     {
       "id": "research-funding-m-moves-market",
@@ -2646,7 +2683,12 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, brief me on the funding, M&A and notable talent moves in [market] from the past week.\n\nFunding rounds: company, round and amount, lead investor and participants, valuation if disclosed, what they do, and total raised to date. Then the part that matters — what the round says about the market. A large seed round for a company doing what three funded companies already do says something different from a first institutional round in an untouched niche.\n\nAcquisitions: buyer, target, price if disclosed, and the read on why. Acqui-hire, consolidation, buying a capability, or buying a customer base — say which and why you think so.\n\nTalent moves: senior people joining, leaving or starting something, where they came from and went to. In a small market these predict the next twelve months better than the funding does.\n\nOne line per item, with the source link and the date, grouped by type and ordered by significance rather than chronologically.\n\nFinish with a short read on the week: what the pattern is, if there is one. And if it was a quiet week, say that in a sentence rather than promoting three minor items into a trend.",
+      "roles": [
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "research-research-local-language-forums",
@@ -2660,7 +2702,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Research what people in [country / language] actually say about [topic] on their own forums and communities, and report back in English.\n\nGo where the conversation really is rather than to the English-language coverage of it: the local Reddit equivalents and country subreddits, the local forums and boards for this topic, and the local review sites. English-language sources about a non-English market are mostly summaries of each other.\n\nRead in the original language. For each finding: what is being said, how widely, and where — with the direct link, the date, and the original-language quote alongside your English translation. Keep the original; a translated quote I cannot check is a quote I cannot use.\n\nOrganise by theme, with a note on how much support each has. Say which communities each theme came from, since the same topic reads completely differently across two forums in the same country.\n\nCall out anything that differs from the English-language conventional wisdom on this topic — that gap is the reason to do this at all.\n\nBe explicit about idiom and sarcasm where a literal translation would mislead, and flag anything where you are unsure of the tone. And say which communities you could not access, so I know the shape of what is missing.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "research-predict-interview-questions-real",
@@ -2678,7 +2726,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Predict the interview questions for [role] at [company] from what real candidates have reported.\n\nRead Glassdoor's interview section for this company and role, the relevant Reddit threads, Blind, and anywhere else candidates write up their loops. Get [20-30] reports if they exist.\n\nOrganise by round — recruiter screen, technical phone screen, take-home, onsite panels, hiring manager, executive — because a question list with no idea when it is asked is not preparation.\n\nFor each round: the format and length, and the questions that come up repeatedly, quoted exactly as candidates reported them. Note how many reports mention each. A question in twelve reports is the question; one in a single report from 2021 is noise.\n\nSay how difficult candidates found each round and what specifically tripped people up. The failure modes are more useful than the questions.\n\nSeparate what is well corroborated from what one person said. And say when each report was posted — loops change, and a company that dropped its take-home last year will still have three years of reports about it.\n\nFinish with the [5] questions most worth preparing properly, and say plainly if there is not enough public data to be useful rather than assembling a list from three posts.",
+      "roles": [
+        "everyone",
+        "recruiting"
+      ]
     },
     {
       "id": "research-compare-two-products-feature",
@@ -2696,7 +2749,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare [product A] and [product B] properly, for someone deciding between them for [use case].\n\nGo through both products' docs, pricing and changelogs, and read reviews on G2 and the real discussions on Reddit — the reviews tell you what the marketing says and Reddit tells you what breaks.\n\nBuild the feature table from what matters for this use case rather than from either vendor's feature list. Mark cells yes, no, partial or unknown, and for every partial say what the limitation actually is, because that is where the decision usually turns.\n\nThen:\n\nWhere each genuinely wins, with the evidence.\nThe gaps — what each cannot do that the other can, and how much that costs in practice.\nPricing at [our expected scale], all in, including what is gated to a higher tier and what is charged as usage. Compare the real bill, not the headline.\nWhat users complain about, per product, with quotes and how recent.\nMigration and lock-in: how hard it is to leave each, and what data comes out.\n\nFinish with a recommendation for this use case and the specific circumstances under which the other one wins instead. A comparison that ends in \"it depends\" without saying on what has not made a decision easier.",
+      "roles": [
+        "analysts",
+        "founders",
+        "everyone"
+      ]
     },
     {
       "id": "research-verify-professional-license-against",
@@ -2705,7 +2764,12 @@
       "category": "Research",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Verify [person or company]'s claimed credentials: [list — licence numbers, certifications, registrations, jurisdictions].\n\nFor each one, find the official registry for that credential in that jurisdiction — the state or national licensing board, the professional body, the regulator — and look it up there. Only the issuing body counts. A profile page, a directory listing, a certificate image and the person's own website are all claims, not verification, and the whole point of this is the difference.\n\nBuild a table: the credential as claimed, the issuing body, the registry URL, the record found, whether the name and number match, the status (active, expired, suspended, lapsed, not found), the issue and expiry dates, and any disciplinary history the registry publishes.\n\nWhere the registry is not searchable publicly, say so and say what the verification route is — a phone number, a written request, a paid search. Do not substitute a third-party aggregator and present it as verified.\n\nWhere a name does not match exactly, do not resolve it yourself. Report both spellings and let me judge.\n\nBe precise about status. \"Not found\" means not found in that registry on that date, which is not the same as fraudulent — the credential may sit under a different name, jurisdiction or body. Say which of those you ruled out.",
+      "roles": [
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "research-who-s-who-brief",
@@ -2719,7 +2783,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build a who's-who brief on [company]'s leadership team.\n\nStart from their leadership page and cross-check against LinkedIn, since the two frequently disagree and the disagreement is informative — someone missing from one is often someone on the way out or on the way in.\n\nFor each executive: name, title, how long in the role, what they did immediately before and for how long, the pattern of their career, where they studied, and anything else they hold — boards, advisory roles, investments.\n\nThen what they have actually said in public, which is the part most briefs skip: interviews, podcasts, conference talks, posts, published writing. Quote the two or three statements that reveal how they think about their business, with links and dates. Someone's own words about their priorities are worth more than any biography.\n\nThen the read: who appears to have real power versus a senior title, who is new enough to be making changes, who came from a competitor or a customer, and what the composition of the team suggests about where the company is heading. A leadership team that just hired its first CRO is a different company from one that just hired its first CTO.\n\nFlag recent departures too. Everything sourced and dated, and say clearly where you are inferring.",
+      "roles": [
+        "sales",
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "research-people-worth-meeting-at",
@@ -2728,7 +2798,13 @@
       "category": "Research",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "I am going to [event] on [dates]. My goal there is [selling, hiring, fundraising, learning, partnerships]. Rank the people worth my time.\n\nStart from whatever attendee signal exists: the speaker list, the sponsor list, the agenda, the event app or attendee directory if I have access, and who is posting publicly about going.\n\nFor each person: name, title, company, why they matter for my goal specifically, and where they will be — which session they are speaking at, which booth, which side event. Where they will be is the difference between a list and a plan.\n\nRank into three tiers: must meet (worth reorganising my schedule for), should meet if convenient, and worth knowing they are there.\n\nFor each of the must-meets, give me an opener. Something specific to them — a talk they are giving, something they wrote, a thing their company just shipped. Not \"what brings you here\".\n\nAlso tell me which sessions are worth attending purely because of who will be in the room rather than the content, and whether there is a side event that beats the main agenda. That is usually true and never on the official schedule.\n\nWhere the attendee list is not public, say what you worked from and how complete it is likely to be, rather than presenting a partial picture as the room.",
+      "roles": [
+        "founders",
+        "sales",
+        "marketing"
+      ]
     },
     {
       "id": "research-customer-reviews-complaints-feature",
@@ -2746,7 +2822,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Mine the reviews and discussions of [product] on G2 and Reddit for what people actually complain about and what they wish it did.\n\nRead across the rating range, and weight the middle. A 3-star review is written by someone who uses the product daily and has specific grievances; a 1-star is often a billing dispute and a 5-star is often incentivised.\n\nProduce three sections.\n\nComplaints, grouped into themes: what the theme is, how many mentions across how many sources, whether it skews to a segment or use case, whether it has got better or worse over time, and two or three exact quotes with dates and links.\n\nPraise, the same way. What people love is what we would have to match, and it is usually not what the marketing emphasises.\n\nFeature gaps: things people explicitly ask for or work around. Separate a genuine gap from a discoverability problem — half of \"it can't do X\" is \"I couldn't find X\", and confusing the two sends a roadmap in the wrong direction. Say which you think each is.\n\nCounts on everything, and say how many reviews you read over what period. A theme resting on three mentions gets labelled as such rather than presented alongside one with forty.",
+      "roles": [
+        "analysts",
+        "founders",
+        "marketing"
+      ]
     },
     {
       "id": "research-competitor-pricing-releases-changes",
@@ -2758,7 +2840,13 @@
         "cron": "0 16 * * 5",
         "display": "Fridays at 4pm"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Friday afternoon, check [competitors] for changes and report only what is different from last week.\n\nWatch, per competitor: the pricing page (prices, tiers, limits, what is gated, and the plan names), the changelog or release notes, the blog and newsroom, the docs for new pages, the careers page for roles that reveal direction, and the homepage headline.\n\nCompare against what you recorded last week and report the diff. A weekly report that restates the current state every Friday is one nobody reads by week four; the whole value is that it is short when nothing happened.\n\nFor each change: what it was before, what it is now, when it appeared, the link, and one line on what it means. A price rise, a limit quietly tightened, a feature moved to a higher tier, a plan removed — these are the ones to lead with, and a quiet change to an included limit is the one competitors hope nobody notices.\n\nIf nothing changed for a competitor, one line saying so.\n\nKeep the running record so the diff is possible at all, and say when your baseline for a competitor is missing rather than reporting their entire pricing page as new.",
+      "roles": [
+        "analysts",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "research-read-company-s-strategy",
@@ -2775,7 +2863,13 @@
         "cron": "0 9 * * *",
         "display": "First of the month at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the first of each month, read [company]'s open job postings and tell me what they say about strategy.\n\nJob postings are the most honest public document a company produces. They are written to attract people who can actually do the work, so they describe real problems and real plans months before any announcement.\n\nPull every open role: title, team, level, location, and posted date. Then compare against last month.\n\nWhat I want to know:\n\nWhere they are growing — which teams and functions, and at what rate relative to their size.\n\nNew functions — a first hire in a discipline they have never had is the loudest signal there is. A first compliance hire, a first partnerships hire, a first hire in a new geography.\n\nWhat the descriptions reveal — quote the lines that describe a project, a system or a market they have not talked about publicly.\n\nWhere they have stopped hiring, or roles that were posted and pulled. Contraction is as informative as growth and nobody announces it.\n\nGeography — new locations, or a shift in where roles are based.\n\nThen the read in a few sentences: what this company appears to be doing over the next two quarters. Say what is evidence and what is inference, and note when the sample is too small to support a conclusion.",
+      "roles": [
+        "analysts",
+        "founders",
+        "recruiting"
+      ]
     },
     {
       "id": "research-compare-neighborhoods-before-you",
@@ -2793,7 +2887,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare [neighborhoods] in [city] for someone with [situation — household, budget, commute to X, schools needed, car or no car].\n\nFor each area:\n\nCost — actual current listing prices and rents for [property type] on Zillow, not a citywide average. Give a range and the median, plus property tax rates and anything else that varies by area.\n\nCommute — real door-to-door time to [destination] at rush hour by each mode I would plausibly use, not the distance.\n\nSchools — the catchment schools by name with their ratings and how the catchment boundary runs, since it often splits a neighbourhood in ways the neighbourhood name does not.\n\nSafety — the actual reported crime data for the area with a link to the source, and its trend. Not a vibe, and not a single composite score.\n\nDay to day — groceries, healthcare, green space, transit, and what is genuinely walkable.\n\nThen what people who live there say on Reddit and local forums: the specific complaints and the specific reasons they stay. Quote them, with dates.\n\nFinish with a verdict for my situation, with the trade-off each area asks me to accept, and name the thing about each place that people only mention after they have moved in.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "research-research-account-apollo-list",
@@ -2807,7 +2905,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Take every account in my Apollo list [list name or link] and research each one properly.\n\nFor each company: what they actually do and how they make money, size and headcount trend, funding and stage, key leadership, their customers, and their tech stack where it is visible.\n\nThen the parts that decide whether it is worth working:\n\nSignals — anything in the last [6] months that suggests they have our problem now. Funding, a relevant hire, a reorg, a new market, an acquisition, a public statement about a priority, a job posting that names the pain.\n\nFit against my ICP: [criteria]. Score it, with a line on each criterion, and say plainly where you are inferring.\n\nWho to approach and why that person — the role that owns the problem, not the most senior name.\n\nAn opening angle specific to what you found.\n\nWrite it as a ranked table with the detail per account below, and rank on signal strength rather than company size. A perfect-fit company with nothing happening is a worse target this quarter than an imperfect one that just hired for the exact problem.\n\nSay which accounts you would drop from the list entirely. A researched list that still contains everything I started with has not done the useful half of the job.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "research-angel-investment-opportunities-week",
@@ -2832,7 +2935,12 @@
         "cron": "0 8 * * 1",
         "display": "Mondays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, find seed-stage companies worth a look from the past week.\n\nSources: TechCrunch and similar funding coverage, the current Y Combinator batch, Product Hunt launches with real traction, and new company announcements in [sectors I care about].\n\nFilter to [stage, sector, geography, cheque size]. Then filter harder on founder signal, because at this stage that is most of what there is to judge: a repeat founder with an outcome, a domain expert leaving an incumbent where they saw the problem, a technical team that has shipped together before, or someone with unusual access to the customer.\n\nFor each: company, website, one line on the product, stage and any announced raise, the founders with their actual backgrounds and links, why the founder signal is strong, what would have to be true for this to work, and the obvious reason it might not.\n\nThat last one is not optional. A weekly list of companies with no stated risk is a list I will stop trusting.\n\nDe-duplicate against everything reported in previous weeks.\n\nKeep it short — three to five companies. And say plainly when a week produced nothing that clears the bar, which most weeks should. This is research to inform my own decisions, not investment advice.",
+      "roles": [
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "research-experts-interview-topic",
@@ -2850,7 +2958,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find me experts to interview about [topic], for [purpose — a piece of research, a podcast, a product decision, a report].\n\nCredibility here means demonstrated work, not a title. Look for: people who have published on this, people who have built or run the thing, practitioners quoted repeatedly by others, academics with relevant papers, and people who have spoken about it at a conference where the audience knew the subject.\n\nFor each: name, current role and organisation, why they are credible with the specific evidence linked, their particular angle on the topic, and anything they have already said publicly about it so I do not spend the interview on ground they have already covered.\n\nThen how to reach them: a public email, a booking form, a route via LinkedIn, or a mutual connection if one exists.\n\nAim for a spread of perspectives rather than five people who agree. If the topic is contested, include people on both sides and say which is which.\n\nWrite it to a Google Sheet ranked by how useful I think they would be, with two or three questions I would actually ask each of them, drawn from their specific work.\n\nExclude people whose only claim is a large following. And say where someone is likely to be unreachable, so the list is ranked on realistic value rather than aspiration.",
+      "roles": [
+        "everyone",
+        "marketing",
+        "analysts"
+      ]
     },
     {
       "id": "research-tear-down-competitor-s",
@@ -2864,7 +2978,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Sign up for [competitor] and tear down their signup and onboarding funnel, page by page, into a Google Doc.\n\nStart from the ad or the landing page and go all the way to first value. At every step record: what the page asks for, what it says, what it does not say, how many fields, whether anything is optional, what the CTA is, and what happens if you hesitate or leave.\n\nCapture the whole flow in order, including the parts nobody documents — the email verification, the welcome email sequence and its timing, the empty state of the product, the first-run tour, what they use to demonstrate value before you have any data of your own, and where they ask for a credit card relative to where you first get something useful.\n\nThen the analysis:\n\nThe three smartest things they do, and why each works.\nThe three places I would expect people to drop, and why.\nWhat they clearly optimise for — signups, activation, or qualified pipeline. Those produce very different funnels and it is usually obvious which one somebody chose.\nWhat we should steal, ranked by effort against likely impact.\n\nUse a throwaway account and real-looking but not real personal details. Do not enter payment details, and stop before anything that would charge or that requires a contract.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "research-everyone-network-who-matches",
@@ -2878,7 +2997,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search my LinkedIn network — 1st and 2nd degree — for everyone matching [criteria: role, industry, company type, location, seniority].\n\nFor 1st degree connections: name, title, company, location, profile URL, how we are connected if the history shows it, and when we last interacted anywhere I can see.\n\nFor 2nd degree: the same, plus which of my 1st degree connections could introduce me, and how strong that connecting relationship looks based on the evidence — did they work together, is there a recommendation, do they engage with each other.\n\nThat evidence column is the point. A shared connection who barely knows the person is not a route to an introduction, and asking for one that goes nowhere costs me the favour and the credibility.\n\nRank by relevance to my criteria, not by degree. A well-matched 2nd degree with a strong path beats a 1st degree who is a loose fit.\n\nSeparate out anyone I have clearly never actually spoken to despite being connected — a connection from a conference badge scan is functionally a stranger, and treating it as warm makes for an awkward message.\n\nRead and log only. Do not message anyone, do not send connection requests, and do not view profiles in a way that spams notifications if the pass can be done from search results.",
+      "roles": [
+        "everyone",
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "research-dossier-someone-before-meet",
@@ -2896,7 +3021,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a brief on [person] before I meet them on [date] about [subject].\n\nWhat I need, in a page:\n\nWho they are — current role and how long, what the role actually covers at their company, and the path that got them there. The path matters: someone who came up through engineering runs a meeting differently from someone who came from consulting.\n\nWhat they own — what they are likely measured on, and what a good quarter looks like for them.\n\nRecent — anything in the last [12] months: a move, a promotion, a launch they led, a reorg, something their company announced that lands on their desk.\n\nIn their own words — what they have said publicly. Posts, talks, interviews, writing. Two or three quotes that show how they think, with links. This is the most useful part and the one most briefs skip.\n\nCommon ground — anything real we share. People, employers, schools, places, interests. Only if it is genuinely there.\n\nTalking points — three things to raise and one to avoid, given the subject of the meeting.\n\nOnly professional and public information. Nothing about their family, their home, or anything from a source that is not plainly public. Say where you are inferring rather than stating, and keep it to a page — a dossier I cannot read in three minutes will not get read.",
+      "roles": [
+        "everyone",
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "ops-confirmed-orders-quickbooks-invoices",
