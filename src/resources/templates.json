@@ -1247,7 +1247,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Draft an offer letter in Google Docs for [candidate], [role], [level], starting [date].\n\nComp: base [amount], equity [amount and type], bonus or commission [structure], sign-on [amount if any]. Location and work arrangement: [details]. Reporting to [manager].\n\nUse our template at [link] if there is one; otherwise write a clean one covering: role and title, start date, reporting line, base salary and how it is paid, equity with the number of units, the strike or grant terms, the vesting schedule and cliff spelled out in plain words, bonus or variable comp and how it is earned, benefits summary, work location and arrangement, at-will or the equivalent for the jurisdiction, and the offer expiry.\n\nWrite the equity section so someone who has never held options can understand it. \"[N] options vesting over 4 years with a 1-year cliff\" means nothing to most people; say what it means for them.\n\nLeave every number I have not given you as a clearly marked placeholder rather than a plausible-looking default — a wrong number in an offer letter is a real problem, and one that looks deliberate is worse than an obvious blank.\n\nThis is a draft for me and legal to review. It does not send and it is not advice on employment law in [jurisdiction]; flag anything that needs a lawyer's eye.",
       "roles": [
         "recruiting",
@@ -1664,7 +1664,7 @@
         "cron": "0 17 * * 0",
         "display": "Sundays at 5pm"
       },
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Every Sunday evening, look at how my posts performed this week on Instagram and TikTok and plan next week from it.\n\nStart with the data: every post from the last [7] days with its views, engagement rate, saves, shares and follows gained. Compare each against my recent median rather than against each other, so a slow week does not make a mediocre post look like a winner.\n\nThen work out why the top two or three did well. Be specific and be honest about uncertainty: it might be the hook, the format, the topic, the sound, the time, or it might be that the algorithm picked it up and there is nothing to learn. Say which you think it is and how confident you are.\n\nThen give me next week's plan: [5] post ideas, each with the format, the hook line, what it is about, which of this week's learnings it is built on, and which day to post it. Put them on my Google Calendar as tentative entries.\n\nInclude at least one idea that is not derived from what already worked. A plan built only on last week's winners converges on one format and then stops working, and by the time the numbers show it I have lost a month.",
       "roles": [
         "marketing",
@@ -1863,7 +1863,7 @@
         "cron": "0 9 * * *",
         "display": "Daily at 9am"
       },
-      "writeScope": "readonly",
+      "writeScope": "send",
       "prompt": "Every morning, check my watchlist at [link — YouTube channels, subreddits, creators] for anything new in the last 24 hours and post a digest to [Slack channel].\n\nNet-new only. Keep track of what has already been reported so the same video does not appear three mornings running because it is still on the channel page.\n\nFor each new item: who posted it, the title, the link, how long it is or how long it takes to read, and two or three sentences on what it actually says. Not the description they wrote — what is in it. The whole value of a digest is that the reader can decide from the summary whether to open it.\n\nFlag anything that mentions us, a competitor, or [key topics], and put those at the top of the message.\n\nKeep the Slack message tight: a bold line per source, bullets under it, links inline. If it runs long, cut the least important items and say how many you cut rather than posting a wall nobody reads.\n\nIf nothing new appeared, post one line saying so. A silent day is information, and a digest that only posts when there is news makes people wonder whether it broke.",
       "roles": [
         "marketing",
@@ -1913,7 +1913,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Build me a press list for [story — the launch, funding, research, whatever it is] and draft a pitch for each journalist.\n\nFind journalists who have actually written about [topic / this space] in the last [12] months. Recency and beat are everything: a reporter who covered our space two years ago and has since moved to another beat is a wasted send, and they remember the ones who did not check.\n\nFor each: name, publication, their beat in their own words if their bio states it, two or three recent relevant pieces with links and dates, their contact route (email if published, otherwise the outlet's tips address or their social), and their location.\n\nThen draft the pitch, one per journalist, and make each genuinely different. Reference a specific piece they wrote and why our story connects to it. Subject line under [60] characters and specific. Then: what the story is in two sentences, why it matters to their readers, what we can offer (data, an interview, an exclusive, early access), and one line on who we are. Under 200 words total.\n\nNo embargoes or exclusives promised to more than one person — say explicitly which pitch offers what.\n\nWrite the list to a Google Sheet with the drafts. Nothing sends. And do not put an email address in the sheet that you guessed from a name pattern.",
       "roles": [
         "marketing",
@@ -2046,7 +2046,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Clean up [sheet link] according to these rules and no others: [rules — e.g. dedupe on email, title-case names, phone numbers to E.164, trim whitespace, dates to YYYY-MM-DD, drop rows with no email].\n\nWork on a copy, not the original. Name it [original name] — cleaned.\n\nApply exactly what I asked for. Do not also fix the things you notice that I did not mention, do not reorder columns, do not delete a column that looks empty, and do not \"helpfully\" normalise a field I did not name. A cleanup that quietly did more than it was told is one I have to diff against the original before I can use it, which costs more than doing it by hand.\n\nWhere a rule cannot be applied to a value — a phone number that is not a phone number, a date in a format the rule does not cover — leave the original value in place and add the row to an Exceptions tab with the field, the value, and which rule could not be applied. Those exceptions are usually the most interesting thing in the sheet.\n\nWhen you dedupe, say which record you kept and why (most complete, most recent) and put the discarded duplicates on their own tab rather than deleting them.\n\nFinish with a summary: rows in, rows out, per-rule counts of what changed, and how many exceptions.",
       "roles": [
         "analysts",
@@ -3100,7 +3100,7 @@
         "cron": "0 7 * * *",
         "display": "Daily at 7am"
       },
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Every morning, go through everything that arrived in my Gmail overnight and label it.\n\nLabels: [my labels, or: Needs me, Waiting on someone, FYI, Newsletter, Receipt, Automated]. Apply exactly one primary label per thread.\n\nNeeds me means there is a decision or an answer only I can give. Be strict about it — a Needs me label on twenty threads is the same as no labels at all. Something I have been cc'd on, something answered by someone else in the thread, and something that is merely interesting all go elsewhere.\n\nThen give me a brief, and put it in the order I should act rather than the order it arrived:\n\nToday — the handful that genuinely need me, each with who, what they want, and how long it has been waiting.\nWaiting — what I am owed by someone else, and how long it has been outstanding. This is the section people never keep and always need.\nFYI — one line each, or a count if there are many.\nEverything else — counts by label, no detail.\n\nLabel only. Do not archive, delete, mark read, or reply to anything. And where a thread is genuinely ambiguous, leave it unlabelled and list it — a wrong label buries a thread more effectively than no label.",
       "roles": [
         "everyone",
@@ -3326,7 +3326,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "send",
       "prompt": "Sync client records from Airtable [base and table] into the Webflow CMS collection [collection].\n\nMatch records on [the key field — a slug or an external ID, never the name]. Then work out the three sets before changing anything: records in Airtable that Webflow does not have, records in both where a field differs, and records in Webflow with no Airtable counterpart.\n\nShow me those three sets and the counts before making any changes. If the numbers look wrong — half the collection about to be created, or a large number about to be orphaned — the key mapping is broken and the correct move is to stop rather than to proceed.\n\nThen apply: create the missing ones, update the changed fields, and for the orphans, list them for me rather than deleting anything. Deleting a live CMS item takes a page down.\n\nMap fields per [mapping], and handle the type differences deliberately: rich text, image references, multi-references and dates all need converting rather than copying.\n\nWrite a change log — every record touched, the field, the old value, the new value, and the timestamp. That log is what makes this reversible.\n\nDo not publish. Leave changes as drafts if the collection supports it, and tell me what needs publishing.",
       "roles": [
         "ops",
@@ -3692,7 +3692,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Design Gmail filters for me based on how I actually handle email, not on what I say I want.\n\nFirst, analyse [6] months of my mail: which senders and threads I read, which I archive unread, which I reply to and how fast, which I search for later, and which I have never once opened. Present that before proposing anything — the analysis usually surprises people and it is what makes the rules defensible.\n\nThen propose the filter set. For each rule: the exact criteria, the action, roughly how many messages from the last six months it would have caught, and — this is the important one — the messages it would have caught that I did read. A rule that would have archived four things I replied to is a bad rule however clean it makes the inbox.\n\nCover the obvious wins: automated notifications I never act on, newsletters I read at the weekend rather than on arrival, receipts that should be labelled and archived, and calendar noise.\n\nBe conservative with anything that skips the inbox. Losing an email is much worse than seeing one too many, so anything with a false-positive risk should label rather than archive.\n\nGive me the rules to review, then apply the ones I approve and document each one with what it does and why.",
       "roles": [
         "everyone",
@@ -3933,7 +3933,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "send",
       "prompt": "Set up a webhook on [repo] pointing at [payload URL] for [events], and prove it actually fires.\n\nConfigure it: the payload URL, content type [application/json], the secret from [where I keep it], the events, and active. Do not paste the secret into anything visible or log it anywhere.\n\nThen verify, which is the part that gets skipped. GitHub sends a ping on creation — find that delivery in the webhook's recent deliveries and report the response code and body. A 2xx there is the only evidence the endpoint exists and accepts what we are sending.\n\nThen trigger a real event of the configured type and find that delivery too. A ping succeeding while a real payload 500s is common, because the ping payload is trivial and the real one is not.\n\nGive me: the webhook ID, its configuration with the secret redacted, the ping delivery with its status and response, the real delivery with the same, and the request headers GitHub sent including the signature header name so the receiving end can verify it.\n\nIf a delivery fails, report the exact status and response body rather than retrying blindly. And if the endpoint is not reachable at all, say so plainly rather than leaving a configured webhook that has never successfully delivered anything — that is the state everyone assumes is working.",
       "roles": [
         "engineering",
@@ -4015,7 +4015,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "send",
       "prompt": "Turn my raw bug notes at [link or pasted below] into clean Linear issues in [team/project].\n\nFirst, de-duplicate. Notes taken over a week almost always contain the same bug described three ways, and filing three issues means three people investigate the same thing. Group them, and say what you merged.\n\nFor each issue, write it properly: a title that names the specific broken behaviour rather than the area (\"Checkout submit does nothing when the discount field is empty\", not \"checkout bug\"), a description with what happens and what should, numbered repro steps from a known starting state, environment where noted, and any evidence from my notes.\n\nWhere a note is too thin to reproduce from — and most raw notes are — do not invent the steps. File it with what there is and label it needs-repro. An issue with fabricated repro steps that do not work wastes more time than one that admits it is incomplete.\n\nSet severity from actual impact, and apply labels per [our conventions]. Leave assignee and priority alone unless I said otherwise; those are a triage decision.\n\nShow me the issues before creating them, with the merges marked, so I can check the grouping. Then create them and give me the list with links.",
       "roles": [
         "engineering",
@@ -4183,7 +4183,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Apply all the feedback on [doc link] in one pass.\n\nThe feedback is [in comments on the doc / in this list / in this email thread]. Read all of it before changing anything, because comments frequently conflict and applying them one at a time in order produces a document that follows the last reviewer.\n\nFirst, give me the inventory: every distinct point, who raised it, and whether it is a fix, a rewrite, a question, or a matter of taste. Then say which points conflict with each other.\n\nThen apply. Work on a copy so the original with its comments survives.\n\nFor conflicts, apply [whose feedback wins, or: the more senior reviewer's] and note the one you did not take. For a comment that is a question rather than an instruction, do not guess — leave it and list it.\n\nFor anything that would change the meaning rather than the wording, flag it rather than applying it silently. A reviewer's suggested rephrasing that shifts a commitment or a claim is exactly the kind of edit that should not happen quietly.\n\nGive me a summary at the end: every point, what you did about it, and the ones needing my decision. That summary is what I use to reply to the reviewers, so make it specific enough to quote.",
       "roles": [
         "everyone"
@@ -4440,7 +4440,7 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly",
+      "writeScope": "draft",
       "prompt": "Draft a [proposal / statement of work] for [client] from my notes at [link].\n\nStructure: what they are trying to achieve in their words, the approach, the scope, the deliverables, the timeline, the commercials, what we need from them, and the terms.\n\nThe two sections that decide whether this job goes well:\n\nScope — say what is included and, explicitly, what is not. An out-of-scope list is not a defensive gesture, it is the thing that prevents the argument in month three. Include the obvious adjacent things a client would assume are covered.\n\nDeliverables — each one named, described specifically enough that we can both tell when it is done, with a date and an acceptance criterion. \"Strategy document\" is not a deliverable; a document covering these four things, delivered by this date, accepted unless comments come back within five working days, is.\n\nThen: assumptions the pricing depends on, dependencies on the client with what happens if they slip, change-request handling, payment schedule and terms, and the validity period of the proposal.\n\nLeave every number I have not given you as a marked blank rather than a plausible default.\n\nList at the end what is still missing and anything in my notes that is too vague to commit to. This is a draft for me and a lawyer to review, not legal advice.",
       "roles": [
         "founders",

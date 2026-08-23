@@ -351,6 +351,10 @@ void AgentRunner::ResolveApproval(bool approved,
   ToolCall call = std::move(*pending_call_);
   pending_call_.reset();
 
+  // For the transcript line below: the declined action is worth recording as
+  // what it would have done, not as a bare tool name.
+  Tool* tool = tools_->Get(call.name);
+
   if (!approved) {
     ToolResult result;
     result.tool_call_id = call.id;
@@ -359,7 +363,11 @@ void AgentRunner::ResolveApproval(bool approved,
           "approach or stop and explain what you cannot do."
         : base::StrCat({"The user declined this action, saying: ", user_note});
     result.is_error = true;
-    RecordAction(call.name, result);
+    RecordAction(call.name,
+                 base::StrCat({"Declined: ", tool ? tool->DescribeEffect(
+                                                        call.input)
+                                                  : call.name}),
+                 base::TimeTicks::Now(), result);
     OnToolFinished(std::move(result));
     return;
   }

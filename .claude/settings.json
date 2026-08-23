@@ -55,6 +55,10 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/tools/check-connector-defs.py"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-arity.py"
           }
         ]
       }

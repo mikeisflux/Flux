@@ -141,6 +141,29 @@ it. Breaking a new rule on purpose is what caught that, and it is the third
 time a check in this repo has passed while the thing it was written for went
 through.
 
+### There is no compiler here, so arity is checked instead
+
+`tools/check-arity.py` catches a call to one of this project's own methods
+with the wrong number of arguments. Nothing else here can: `check-cpp.sh` is a
+grep list, and Chromium does not build in this container, so a mismatch
+reaches the user's machine and costs them twenty minutes. One did -
+`RecordAction` grew from two parameters to four and the call site inside
+`ResolveApproval` was left at two. It reads perfectly and every other check
+passed.
+
+It is deliberately narrow: uniquely-named methods only, skipping overloads,
+templates and anything it cannot count. A false positive on a real build is
+worse than a miss.
+
+Getting it to work took four goes, and the first three all reported success
+while the bug went through - destructors read as constructor calls (28 false
+findings), wrapped declarations invisible to a line-at-a-time regex (so
+`RecordAction`, the method it exists for, was never in the table), a
+declaration guard that skipped every single-line call ending in `;`, and an
+argument counter that read a four-argument call containing a `StrCat({...})`
+and a ternary as two. It now carries a `_self_test()` over the nine argument
+shapes that broke it, and refuses to run if any of them miscounts.
+
 ### Two checks for code that compiles and does nothing
 
 `tools/check-never-assigned.py` looks for a `raw_ptr`, `unique_ptr`,
