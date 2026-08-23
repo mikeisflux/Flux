@@ -88,7 +88,10 @@ export function connectorMark(
   const mark = document.createElement('span');
   mark.className = className;
 
-  const brand = BRAND_MARKS[id];
+  // Slugified, because the same service is named two ways: the connector
+  // catalogue calls it "google_analytics" and a template card calls it
+  // "Google Analytics". Both reach the same mark.
+  const brand = BRAND_MARKS[id.toLowerCase().replace(/[^a-z0-9]/g, '')];
   if (!brand) {
     mark.textContent = (monogram ?? id).slice(0, 1).toUpperCase();
     return mark;

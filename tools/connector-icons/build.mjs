@@ -71,7 +71,42 @@ const SLUGS = {
 const ICONIFY = {
   outlook: {set: 'mdi', name: 'microsoft-outlook', license: 'Apache-2.0'},
   monday: {set: 'logos', name: 'monday-icon', license: 'CC0-1.0'},
+  mondaycom: {set: 'logos', name: 'monday-icon', license: 'CC0-1.0'},
+  chrome: {set: 'logos', name: 'chrome', license: 'CC0-1.0'},
+  chromedevtools: {set: 'logos', name: 'chrome', license: 'CC0-1.0'},
 };
+
+// Names in templates.json and skills.json are display labels - "Docs",
+// "Hacker News", "AT&T" - not catalogue ids, so normalising is not enough.
+// Every entry here is a judgement that the mark is the RIGHT one, not merely
+// a near-enough string:
+//
+//   Docs / Sheets      Google's, from the company they appear beside.
+//   Hacker News        HN is a Y Combinator property and flies the orange Y.
+//   Chrome DevTools    part of Chrome; Chrome's mark is accurate, not a stand-in.
+//   Analytics          Google Analytics - the card is a dashboards sweep.
+//
+// Deliberately absent: Apollo (Apollo.io, and the only Apollo mark available
+// is Apollo GraphQL's), Grain, Gong, Outreach, Ahrefs, Ashby, OpenTable, Resy,
+// Kayak, Zocdoc, TodayTix, Vivid Seats, and every government registry. A logo
+// that belongs to a different company is worse than the letter it replaces.
+const ALIASES = {
+  docs: 'googledocs',
+  sheets: 'googlesheets',
+  hackernews: 'ycombinator',
+  acrobat: 'adobeacrobatreader',
+  att: 'atandt',
+  analytics: 'googleanalytics',
+  googleanalytics: 'googleanalytics',
+  facebookpages: 'facebook',
+  superhumanmail: 'superhuman',
+  calcom: 'caldotcom',
+};
+
+/** Lowercase alphanumerics only, so "Google Drive" and "google_drive" agree. */
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
 
 const ICONIFY_SETS = {logos: logosSet, mdi: mdiSet};
 
@@ -120,6 +155,25 @@ const connectors =
     JSON.parse(readFileSync(join(ROOT, 'src/resources/connectors.json'), 'utf8'))
         .connectors;
 
+// The catalogue's 40 ids are not the only things the console draws a mark for.
+// Template and skill cards name the services they touch by DISPLAY LABEL -
+// "Docs", "Hacker News", "AT&T" - so a table keyed on catalogue ids missed
+// every card chip in the product, which is most of them. Both vocabularies are
+// resolved to the same slug and share one table.
+const referenced = new Map();
+for (const connector of connectors) {
+  referenced.set(slugify(connector.id), connector.id);
+}
+for (const file of ['templates.json', 'skills.json']) {
+  const data =
+      JSON.parse(readFileSync(join(ROOT, 'src/resources', file), 'utf8'));
+  for (const row of data.templates ?? data.skills ?? []) {
+    for (const used of row.connectors ?? row.worksWith ?? []) {
+      if (used && used.id) referenced.set(slugify(used.id), used.id);
+    }
+  }
+}
+
 // A mark the user supplied themselves wins: they own the rights decision.
 const OVERRIDE_DIR = join(ROOT, 'branding/connectors');
 const overrides = new Map();
@@ -143,17 +197,18 @@ if (existsSync(OVERRIDE_DIR)) {
 
 const entries = [];
 const missing = [];
-for (const connector of connectors) {
-  const own = overrides.get(connector.id);
+for (const [slugKey, label] of [...referenced].sort()) {
+  const connector = {id: label};
+  const own = overrides.get(label) ?? overrides.get(slugKey);
   if (own) {
-    entries.push([connector.id, own, 'branding/connectors']);
+    entries.push([slugKey, own, 'branding/connectors']);
     continue;
   }
-  const slug = SLUGS[connector.id];
+  const slug = SLUGS[label] ?? ALIASES[slugKey] ?? slugKey;
   const icon = slug ? bySlug.get(slug) : undefined;
   if (icon) {
     entries.push([
-      connector.id,
+      slugKey,
       {
         viewBox: '0 0 24 24',
         shapes: [{tag: 'path', attrs: {fill: `#${icon.hex}`, d: icon.path}}],
@@ -163,7 +218,7 @@ for (const connector of connectors) {
     continue;
   }
 
-  const extra = ICONIFY[connector.id];
+  const extra = ICONIFY[slugKey] ?? ICONIFY[slug];
   if (extra) {
     const set = ICONIFY_SETS[extra.set];
     const found = set.icons[extra.name];
@@ -173,7 +228,7 @@ for (const connector of connectors) {
     const width = found.width ?? set.width ?? 24;
     const height = found.height ?? set.height ?? 24;
     entries.push([
-      connector.id,
+      slugKey,
       {
         viewBox: `0 0 ${width} ${height}`,
         shapes: shapesFromIconifyBody(found.body),
@@ -183,7 +238,7 @@ for (const connector of connectors) {
     continue;
   }
 
-  missing.push(connector.id);
+  missing.push(label);
 }
 
 const body = entries
@@ -206,7 +261,9 @@ const out = `// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium A
 // is CC0; the marks themselves remain the trademarks of their owners and are
 // used to identify the service each connector talks to.
 //
-// ${entries.length} of ${connectors.length} connectors have a mark. The rest
+// ${entries.length} of ${referenced.size} services referenced by the console
+// have a mark - the connector catalogue plus every service a template or
+// skill card names. The rest
 // render as a monogram, because their mark is not in a source this repo can
 // redistribute. To give one a real logo, put an SVG at
 // branding/connectors/<id>.svg and re-run the generator.

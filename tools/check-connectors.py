@@ -128,15 +128,20 @@ def check_brand_marks(errors):
     missing_line = re.search(r'^// Missing: (.*)$', text, re.M)
     declared_missing = set()
     if missing_line and missing_line.group(1).strip() != 'none':
+        # Slugified on both sides: the Missing: line names services the way
+        # the UI does ("Apollo", "SEC EDGAR"), the catalogue uses ids
+        # ("apollo"), and the mark table is keyed on the slug of either.
         declared_missing = {
-            part.strip() for part in missing_line.group(1).split(',')
+            re.sub(r'[^a-z0-9]', '', part.strip().lower())
+            for part in missing_line.group(1).split(',')
         }
-    keys = set(re.findall(r'^  "([a-z0-9_]+)": \{$', text, re.M))
+    keys = set(re.findall(r'^  "([a-z0-9]+)": \{$', text, re.M))
 
     catalogue = json.loads(CATALOGUE.read_text(encoding='utf-8'))['connectors']
     for connector in catalogue:
         cid = connector['id']
-        if cid not in keys and cid not in declared_missing:
+        slug = re.sub(r'[^a-z0-9]', '', cid.lower())
+        if slug not in keys and slug not in declared_missing:
             fail('connector_icons.ts',
                  f'"{cid}" has no brand mark and is not listed as missing - '
                  're-run node tools/connector-icons/build.mjs', errors)
