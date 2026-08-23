@@ -457,7 +457,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Open [sheet link] and work through every row that has no draft yet.\n\nFor each lead, spend a minute actually researching them before writing anything: open their LinkedIn profile and their company's recent activity, and find one specific, recent, verifiable thing — a launch, a funding round, a hire, a post they wrote, a change in how they describe themselves. That is the hook.\n\nThen write a Gmail draft to them, addressed properly, in this shape: one sentence on the hook in their words not mine, one sentence connecting it to [what we do], one specific ask that costs them under fifteen minutes. Under 120 words. No \"I hope this finds you well\", no three-paragraph pitch, no merge-field tells.\n\nWrite the draft's subject line and a one-line note on the hook back into the sheet so I can review the reasoning without opening every draft.\n\nIf you cannot find a real hook for someone — the profile is empty, the company has published nothing in a year — do not invent one and do not fall back on \"I saw you work at X\". Mark that row No hook found and move on. A generic email sent from my address costs me more than a lead I skipped.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-account-before-next-sales",
@@ -471,7 +476,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "I have a call with [company] at [time]. The attendees are [names, or paste the calendar invite].\n\nBuild me a one-page brief I can read in three minutes:\n\nThe company — what they actually sell and to whom, size and stage, anything that changed in the last six months (funding, leadership, layoffs, launches, acquisitions), and how they make money.\n\nEach attendee — current role and how long they have held it, what they did before, what they post or speak about, and what they are likely measured on. That last one matters more than the rest: it tells me what they need this call to do for them.\n\nThen five discovery questions specific to this account, not generic ones. Each should be a question I could only ask having done this research, and each should open a door rather than close one.\n\nFinish with the two things most likely to kill the deal, based on what you found.\n\nWhere something is inference rather than fact, say so in the line itself. Walking into a call confident about something you guessed is worse than walking in without it.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-job-changes-among-past",
@@ -496,7 +506,12 @@
         "cron": "0 8 * * 1",
         "display": "Mondays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Open my contact sheet at [sheet link]. It lists people I have worked with or sold to before.\n\nCheck each person's LinkedIn for a title or company change since the last time this ran (the sheet's Last checked column). A mover is the single warmest lead in sales: they know me, they just landed somewhere with something to prove, and they usually have budget.\n\nFor everyone who moved, update their row with the new company, new title, and the date the change appeared, and draft a short Gmail to them. Congratulations first and genuinely — one sentence, specific to the move. Then one sentence that reopens the door without pitching: what they are walking into and why I might be useful in it. Never mention that I noticed via an automated check.\n\nPut the drafts in a digest and stop. Nothing sends.\n\nIf someone's profile is private or you cannot load it, mark the row Could not check with the date rather than leaving it looking checked. A stale row that thinks it is fresh is how a mover gets missed for six months.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-companies-hiring-roles-signal",
@@ -510,7 +525,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search job boards for companies with live postings for [role titles, e.g. \"Revenue Operations\", \"Head of Data\"]. A company hiring for that role is telling the market it has the problem we solve and has budget approved to solve it.\n\nFilter to [company size / industry / geography]. For each match, capture: company name, the posting title and URL, when it was posted, how many related roles they have open, and one line from the job description that states the problem in their own words. That line is the whole point — it is what I quote back to them.\n\nThen find the person who would own this: the hiring manager if the posting names one, otherwise the most senior person in that function on LinkedIn. Capture name, title, and profile URL.\n\nWrite it all into a CSV sorted by posting date, newest first, since a posting three days old is worth ten times one from March.\n\nIf a posting is from a staffing agency rather than the company itself, drop it — there is nobody there to sell to. If you cannot identify an owner, keep the row and mark it Owner unknown rather than discarding a good signal over a missing name.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-public-complaints-about-competitor",
@@ -528,7 +548,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search Reddit and G2 for people publicly complaining about [competitor].\n\nOn Reddit, search the subreddits where our buyers actually are ([list them]) plus a site-wide search for the product name. On G2, read the 1, 2 and 3-star reviews — the 3-star ones are the most useful, because they are written by people still using it who have specific grievances rather than an axe.\n\nFor each complaint worth acting on, capture: the person or company if identifiable, where they work if their profile says, the direct quote of the complaint, the link, the date, and one line on the angle — what we would say to that specific person, given that specific frustration.\n\nBuild it as a table sorted by how recent and how specific the complaint is. \"It's expensive\" is noise; \"we hit their API rate limit every month-end close and support took nine days\" is a deal.\n\nDo not include anonymous accounts with nothing else to go on, and do not include anything older than [12 months] — the thing they complained about may be fixed by now, and quoting a resolved problem back at someone makes us look like we did not check.",
+      "roles": [
+        "sales",
+        "founders",
+        "marketing"
+      ]
     },
     {
       "id": "sales-tiered-lead-list-apollo",
@@ -546,7 +572,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Pull a lead list from Apollo matching my ICP: [industry, headcount range, geography, tech stack, titles].\n\nGrade every result A to C rather than handing me an undifferentiated list:\n\nA — matches every ICP criterion and shows at least one buying signal (recent funding, relevant hire, growth in headcount, a technology they just adopted).\nB — matches the firmographics but shows no signal, or is one criterion off in a way that does not matter.\nC — plausible but a stretch on size, industry or seniority. Keep these; they are what I work when the A list is exhausted.\n\nFor each lead: name, title, company, headcount, industry, LinkedIn URL, email if Apollo has a verified one, the grade, and one line saying why it got that grade. That last column is what lets me trust or overrule the grading.\n\nDe-duplicate against [existing sheet link] on email first, then on name plus company, and write the result to a new Google Sheet.\n\nDo not include leads whose email Apollo marks unverified or guessed without flagging them in an Email confidence column. Burning my domain reputation on bounces costs more than the leads are worth.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-stale-crm-deals-draft",
@@ -567,7 +598,12 @@
         "cron": "30 7 * * 1",
         "display": "Mondays at 7:30am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Look through my HubSpot pipeline for open deals with no logged activity in [14] days.\n\nFor each one, read the deal record properly before writing anything: the stage, the amount, the close date, the last few notes and emails, and who the contacts are. What I need to know is not that it went quiet but why, and what the actual next step was supposed to be.\n\nBuild me a Monday digest, ordered by amount times how close the stated close date is. Each entry gets: deal name, amount, stage, days since last touch, a one-line read on where it actually stands, and whether the close date is now fiction.\n\nThen draft the follow-up in Gmail. Not \"just checking in\" — reference the specific thing that was outstanding, and give them an easy way to say no. A clear no on a dead deal is worth more to me than a fourth unanswered nudge.\n\nFlag separately any deal where the close date has already passed and nobody moved it. Those are not stale deals, they are a forecast that is lying to me.\n\nEverything stays as a draft.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-day-gong-deal-briefing",
@@ -585,7 +621,12 @@
         "display": "Weekdays at 8am"
       },
       "writeScope": "readonly",
-      "featured": 7
+      "featured": 7,
+      "prompt": "Open Gong and review everything from the last 24 hours across my deals.\n\nGive me a briefing I can read with coffee, in this order:\n\nWhat happened — calls that took place, who was on them, and the one thing that actually changed in each deal as a result. Not a recap of the conversation; what moved.\n\nRisks — any deal where a new person appeared who was not in the plan, a competitor got named, a timeline slipped, pricing came up before value did, or my champion went quiet. Say which call and quote the moment.\n\nToday's actions — at most five, ordered by what moves revenue, each naming the deal, the person, and the specific thing to do. If a call yesterday ended with me promising something, that promise is the action.\n\nKeep the whole thing under a page. A briefing I skim is worse than one I read.\n\nIf nothing meaningful happened yesterday, say exactly that in one line rather than padding the sections. A daily digest that always looks full is one I stop trusting.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-gong-pipeline-deal-hygiene",
@@ -602,7 +643,13 @@
         "cron": "0 8 * * 1",
         "display": "Mondays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Audit every open opportunity in Gong for deal hygiene and give me the list of what is broken, worst first.\n\nCheck each deal for:\n\nStale activity — no call or meaningful email in [21] days while the deal sits in a stage that implies momentum.\n\nMissing next step — no scheduled follow-up meeting on the calendar. A deal with no next meeting booked is a deal that is over, whatever the stage says.\n\nSingle-threading — only one contact engaged. Name who else appears anywhere in the thread that we have not built a relationship with.\n\nStage-reality mismatch — the deal sits in a late stage but the transcripts show we are still explaining what the product does, or nobody with budget authority has been on a call.\n\nClose date fiction — the date has passed, or it is inside two weeks with no procurement or legal conversation having happened.\n\nOne row per deal, with the specific evidence and the call it came from. Do not report a problem you cannot point at.\n\nRank by amount at risk, not by how many flags a deal collected. Three minor flags on a small deal is not worse than one fatal flag on the quarter's biggest.",
+      "roles": [
+        "sales",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "sales-battlecard-competitor",
@@ -624,7 +671,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a call-ready battlecard for [competitor]. Not a marketing document — something I can glance at mid-call.\n\nResearch: their G2 reviews (weight the 2 and 3-star ones), their pricing page, their docs, their changelog, and the sequences and objection notes in Outreach where reps have already run into them.\n\nWrite it into a Google Doc with these sections and nothing else:\n\nWhere they win — honestly. A battlecard that says the competitor is bad at everything gets me caught out on the first call.\n\nWhere they lose — the specific, verifiable weak spots, each with the review or doc it came from. Not \"poor support\" but the actual pattern reviewers describe.\n\nOur win themes — three, each phrased as something I say to a customer, not as a feature.\n\nObjection and rebuttal — the six things a prospect actually says when they are also evaluating them, and what to say back. Include the price objection and answer it without discounting.\n\nTraps — questions I can ask that are easy for us and hard for them, phrased neutrally so they do not sound like traps.\n\nDate the document and name the sources. A battlecard nobody can date is one nobody can tell has gone stale.",
+      "roles": [
+        "sales",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "sales-forecast-pipeline-quarter",
@@ -646,7 +699,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build my forecast for [quarter] from Salesforce and HubSpot and write it into a Google Sheet.\n\nPull every open opportunity with a close date in the quarter. For each: account, amount, stage, close date, days in current stage, last activity date, and how many contacts are engaged.\n\nThen categorise, and use evidence rather than the stage field:\n\nCommit — a champion, a confirmed budget, a date that both sides have said out loud, and activity in the last two weeks.\nBest case — real engagement and a plausible path, but at least one of those four missing.\nPipeline — everything else that is genuinely open.\nAt risk — in the quarter on paper but with no activity in [30] days or a close date already passed. Call these out separately; they are the difference between a forecast and a wish.\n\nWeight it, total each category, and show the gap to [quota].\n\nThen tell me the shortest path to closing the gap: which specific three deals, and what has to be true in each. And say plainly if the gap cannot be closed with what is in the pipeline today, because knowing that in week three is worth more than finding out in week twelve.",
+      "roles": [
+        "sales",
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "sales-connection-requests-list-linkedin",
@@ -668,7 +727,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Open my list at [sheet link]. Each row has a person, their LinkedIn URL, and a column for why I want to reach them.\n\nWork down the list in order. For each person: open their profile, read enough to write a real note, then send a connection request with a personalised message under 200 characters. Reference the specific reason from the sheet, or something on their profile if the sheet's reason is thin. No pitching in a connection request — the ask is the connection, nothing more.\n\nLog every send back into the sheet: the date, the exact message sent, and the outcome. If they are already a connection, or a request is already pending, mark that and skip rather than sending anything.\n\nStop and tell me if LinkedIn shows a weekly invitation limit warning, an unusual-activity prompt, or starts requiring an email address to connect. Do not work around it and do not keep going.\n\nThis sends real invitations from my account to real people, so pace it like a person would rather than firing the whole list at once.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-sales-call-recording",
@@ -682,7 +746,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Open [Gong call link] and coach me on it properly. I want the review a good manager would give, not a summary.\n\nStart with the numbers Gong already has: my talk ratio, longest monologue, how many questions I asked, and how late in the call the first customer question came. Say what each one means for this call specifically.\n\nThen the substance:\n\nWhat worked — two or three specific moments, quoted, and why they landed.\n\nWhat I missed — the moments where the customer opened a door and I did not walk through it. Quote what they said, then write the question I should have asked right there.\n\nWhere I talked past a signal — hesitation, a hedge, a mention of someone not on the call, a price reaction. Quote it and say what it meant.\n\nBetter lines — take the three weakest things I said and rewrite them.\n\nFinish with the one habit that would improve my next ten calls more than anything else on this list.\n\nBe direct. A review that opens with three compliments to soften one criticism wastes the criticism.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "sales-event-attendee-list-outreach",
@@ -704,7 +773,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Take the attendee list at [link or sheet] from [event] and turn it into something I can work.\n\nFor each attendee, find their LinkedIn profile and confirm it is the right person — matching a name alone gets me emailing the wrong human. Capture: full name, current title, company, company size, location, profile URL, and how confident the match is.\n\nThen prioritise, and be opinionated about it. Tier 1: right title, right company profile, and a reason to talk this quarter. Tier 2: right company, wrong or unclear title. Tier 3: worth knowing, not worth a sequence.\n\nAdd a column for the angle — what I open with, given that we were both at [event]. Reference a session or a theme from the event where you can; \"we were at the same conference\" on its own is not a hook.\n\nWrite it to a Google Sheet, sorted by tier.\n\nWhere you cannot confidently identify someone, keep the row with Match uncertain rather than guessing between two profiles. And do not add email addresses you had to guess at from a name pattern — mark those rows Needs enrichment instead.",
+      "roles": [
+        "sales",
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "sales-who-mentioned-topic-across",
@@ -718,7 +793,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search all my Gong calls from the last [90] days for anyone who raised [topic — a competitor, an integration, a compliance requirement, a pricing model].\n\nFor each mention, give me: the account, the person and their role, the call date, the direct quote with a sentence either side so I can see the context, and a link to the moment.\n\nThen tell me what it meant in that deal, which is the part a keyword search cannot do. Someone naming a competitor while comparing pricing is a different situation from someone naming them as the incumbent they are trying to leave, and both are different from a passing reference.\n\nGroup by account rather than chronologically, since what I want to know is which accounts care about this, not the order in which the words came up. Where one account raised it repeatedly, say whether the concern grew or faded.\n\nFinish with a follow-up angle per account, specific to what they actually said.\n\nIf the topic came up fewer than three times across the whole period, say so plainly rather than presenting two mentions as a trend.",
+      "roles": [
+        "sales",
+        "founders",
+        "marketing"
+      ]
     },
     {
       "id": "sales-relationships-ve-let-go",
@@ -743,7 +824,12 @@
         "cron": "0 9 1 * *",
         "display": "1st of each month 9am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Go through my Gmail and LinkedIn and find people I have a real relationship with who I have not spoken to in [six] months.\n\nA real relationship means a genuine back-and-forth at some point — several exchanged emails, a meeting, a referral, work done together. One cold email they replied to once does not count, and neither does a newsletter.\n\nFor each person: name, company and title now (check LinkedIn; people move), how we know each other, the date and gist of the last real exchange, and anything that has changed for them since.\n\nRank by a combination of how strong the relationship was and how relevant they are now. A former champion who just became a VP at a target account goes at the top.\n\nDraft a short Gmail to the top [15]. It has to sound like me noticing, not like a system firing. Reference the specific thing we last talked about, mention the change I found if there is one, and ask nothing except whether they are well. No pitch, no calendar link, no \"I'd love to reconnect and also show you\".\n\nWrite the list to a sheet with the drafts logged. Nothing sends.",
+      "roles": [
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-30-candidates-role-sheet",
@@ -766,7 +852,12 @@
       ],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 4
+      "featured": 4,
+      "prompt": "Source 30 candidates for [role] from LinkedIn. My must-haves are [requirements]; my nice-to-haves are [preferences]; the deal-breakers are [exclusions].\n\nSearch by what people have actually done rather than by title alone — titles for this role differ at every company, and searching on the title will miss the best half of the market. Use skills, current and past employers, and the kind of product they have shipped.\n\nFor each candidate capture: name, current title and company, time in role, location, LinkedIn URL, the two or three specific things that make them a fit, and anything that gives me pause. Write it all to a Google Sheet with a Status column.\n\nRank them, and be willing to say the bottom ten are weak. A list of thirty where I have to work out which five matter is barely better than no list.\n\nDo not include anyone who has been at their current job under [12] months unless they are exceptional, and say why when you do. Do not include people whose profile has not changed in five years — they are usually not real. If you cannot find thirty who meet the must-haves, give me the ones who do and say how many you found rather than padding to the number.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-interview-job-post",
@@ -785,7 +876,12 @@
       ],
       "schedule": null,
       "writeScope": "draft",
-      "featured": 9
+      "featured": 9,
+      "prompt": "I am interviewing for [role] at [company]. The job post is at [link] and my background is [resume link or paste].\n\nBuild me a prep doc in Google Docs:\n\nThe company — what they sell, how they make money, their stage and recent news, who their competitors are, and what is probably hard for them right now. Include anything in the Greenhouse posting or careers page that reveals how they think about the team.\n\nThe role decoded — what the posting is actually asking for underneath the boilerplate, and which of its requirements are real versus wish-list. Say which parts of my background map to which requirements, and where the gaps are.\n\nLikely questions — twelve of them, split between behavioural, role-specific and company-specific. For the behavioural ones, draft a STAR answer from my actual experience: situation, task, action, result, with a real number in the result. If my background does not contain a good story for a question, say so rather than inventing one — I need to know which gap to prepare for.\n\nMy questions for them — six, that show I read past the job post.\n\nFinish with the one weakness in my candidacy they are most likely to probe, and how I would answer it honestly.",
+      "roles": [
+        "recruiting",
+        "everyone"
+      ]
     },
     {
       "id": "recruiting-candidates-haven-t-messaged",
@@ -799,7 +895,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Search LinkedIn for candidates matching [role criteria], then filter out everyone I have already been in touch with — check my LinkedIn messages and my sent connection requests before adding anyone to the list. Messaging someone for the second time as though it were the first is the fastest way to look like a bot.\n\nFor everyone genuinely net-new, read their profile properly and write a DM under 300 characters. It has to reference something specific to them — a project, a company they were at when something notable happened, a talk, a repo — and it has to say what the role is and why they in particular. No \"exciting opportunity\", no \"I came across your profile\".\n\nGive me the list with the draft alongside each person, so I can review the message and the reasoning together.\n\nNothing sends. These are drafts.\n\nWhere someone is clearly happy where they are — just promoted, just joined, posting enthusiastically about their team — keep them but mark the row Long shot and write the message accordingly. And where a profile gives you nothing specific to open with, say so rather than falling back on a generic line; I would rather send twenty good messages than fifty forgettable ones.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-recruiting-inbox-morning",
@@ -816,7 +917,12 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Triage my Gmail every weekday morning and sort everything that arrived since yesterday into these buckets:\n\nCandidates — anyone applying, replying to outreach, or following up. For each: who they are, which role, where they are in the process, and what they are actually asking. If they asked a question, draft the answer.\n\nScheduling — interview times, reschedules, cancellations, availability. Draft the reply for each, and flag any that conflict with something already on my calendar.\n\nNeeds me — hiring managers, offers, anything with a decision in it. These get no draft, just a summary and what the decision is.\n\nNoise — job board digests, vendor pitches, newsletters. Count them and name the senders, do not summarise them.\n\nGive me the digest in that order, since it is also the order of how much it costs me to be slow.\n\nDraft the replies but send nothing. Where a candidate is waiting on something that has been sitting for more than [3] days, say how long — a candidate you lose to silence is a candidate you never find out you lost.",
+      "roles": [
+        "recruiting",
+        "ops"
+      ]
     },
     {
       "id": "recruiting-job-boards-weekly-apply",
@@ -841,7 +947,11 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Every Monday, sweep [job boards / LinkedIn saved searches] for new postings matching [titles], in [locations / remote], posted in the last week.\n\nScore each against my criteria at [link to my criteria, or: seniority, comp floor, industry, company size, tech stack]. For anything scoring a strong match, apply: use my resume at [link], answer the screening questions honestly from my background, and use the cover letter template at [link] adapted to the specific posting — one paragraph that has to be about them.\n\nLog everything to my tracker sheet: company, role, link, posted date, comp if listed, applied or skipped, and the fit note. Skipped rows matter as much as applied ones — they are the record of what I decided not to do and why.\n\nThis one actually submits applications on my behalf, so: never apply anywhere I have already applied in the last [6] months, never apply to a posting from a staffing agency unless I said to, and never guess at an answer to a screening question about eligibility, visa status, or compensation. Stop and ask me instead. An application with a wrong answer in it is worse than one not sent.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "recruiting-recruiter-pipeline-against-job",
@@ -855,7 +965,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Open my LinkedIn Recruiter project for [role] and review every candidate in the pipeline against the job spec at [link].\n\nFor each person, decide one of three things and say why in a sentence:\n\nStrong — meets the must-haves with evidence on the profile. Draft a personalised InMail for these: reference the specific evidence, say what the role is, and make the first ask small.\n\nMaybe — one must-have unclear or missing. Say what I would need to find out to move them either way.\n\nArchive — not a fit. Give the reason. \"Not a fit\" without a reason means the next person to look at this pipeline redoes the work.\n\nWork through the whole pipeline rather than the first screenful, and tell me the totals at the end.\n\nIf the pipeline is mostly Archive, that is a sourcing problem rather than a screening problem — say so and name which search criteria are producing the misses. And do not archive anyone whose profile is thin but whose background is unusual; mark those Needs a look and leave them to me.",
+      "roles": [
+        "recruiting"
+      ]
     },
     {
       "id": "recruiting-folder-resumes-against-rubric",
@@ -869,7 +983,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Read every resume in [Drive folder] and score them against my rubric at [link, or: the dimensions and weights I care about].\n\nFor each candidate: name, current role, years relevant experience, the score per dimension, the total, and two or three lines of rationale quoting the specific thing on the resume that earned it. Never a score without the evidence — a number I cannot audit is a number I have to redo.\n\nFlag separately, without scoring them down for it automatically:\n- Gaps over [6] months, with the dates, since many have good explanations.\n- Short tenures — three roles under 18 months in a row is a pattern worth asking about.\n- Claims that are vague where they should be specific: \"led a team\" with no size, \"improved performance\" with no number.\n- Anything that looks inconsistent between sections.\n\nGive me a ranked shortlist of the top [10], and for each, two interview questions aimed squarely at what the resume does not tell me.\n\nDo not infer seniority from a title alone; a Director at a twelve-person company and a Director at a five-thousand-person one are different jobs. And do not score anyone down for a non-traditional background if the evidence is there.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-slack-referrals-ats-week",
@@ -894,7 +1013,12 @@
         "cron": "0 10 * * 1",
         "display": "Mondays at 10am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, read [#referrals Slack channel] for anything posted in the last week and turn it into ATS records.\n\nA referral in Slack is usually half a record: a name, maybe a link, and a sentence from the referrer. For each one, work out who the person actually is — find the LinkedIn profile and confirm it matches — then check Ashby for whether they are already in the system.\n\nAlready in Ashby: note the referral against the existing record, including who referred them and what they said, and say what stage the person is at so the referrer can be told something true.\n\nNot in Ashby: file them with source Referral, the referrer's name, the Slack permalink, the LinkedIn URL, and the referrer's own words. Those words are usually the most useful thing in the record and they are the first thing lost.\n\nGive me the week's summary: how many referrals, how many were new, which roles they map to, and who is referring the most people.\n\nWhere you cannot confidently identify a person from what was posted, do not guess between two profiles — list them for me with both candidates and the Slack link. A wrong person filed as a referral is worse than an empty row.",
+      "roles": [
+        "recruiting",
+        "ops"
+      ]
     },
     {
       "id": "recruiting-how-company-actually-runs",
@@ -912,7 +1036,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Work out how [company] actually runs its interviews for [role], from what candidates have said publicly.\n\nSearch Reddit (r/cscareerquestions, r/ExperiencedDevs, and any company or industry-specific subreddit), Glassdoor and Blind interview sections, and anything the company itself publishes — a Greenhouse posting or careers page sometimes describes the loop.\n\nBuild me a report covering: the stages in order and roughly how long each takes, what actually happens in each one, the questions that come up repeatedly with the exact wording where people quoted it, how hard people found it and what tripped them up, how long the whole process takes end to end, and how much the accounts differ from each other.\n\nThat last part matters. Where reports conflict, say so and say when each was posted — a process described two years ago may not exist any more, and companies change loops constantly.\n\nSeparate what is well corroborated from what one person said once. Two accounts describing the same take-home is a signal; one anonymous post claiming a nine-round loop is a story. Label them differently, and say plainly if there is not enough public information to be useful.",
+      "roles": [
+        "everyone",
+        "recruiting"
+      ]
     },
     {
       "id": "recruiting-candidate-s-github-tell",
@@ -926,7 +1055,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Look at [GitHub profile] and tell me what this person has actually built.\n\nStart by separating signal from noise: forks with no commits, tutorial follow-alongs and config repos are not evidence of anything. What I want is original work and real contributions to projects that were not theirs.\n\nFor their own repos: what the project does, how big it actually is, whether it was maintained past the first weekend, whether there are tests, and whether anyone else used it. Read some code in the two or three most substantial ones and tell me what it is like — how they structure things, how they handle errors and edge cases, what their commit messages and PR descriptions are like. How someone writes a PR description tells you more about working with them than the code does.\n\nFor contributions to other projects: which projects, what the changes were, and whether they were merged. A merged non-trivial PR to a project with real maintainers is worth more than any personal repo.\n\nThen five interview questions grounded in specific things you found, with the file or PR to point at.\n\nBe honest if the profile shows very little. An empty GitHub says nothing bad about an engineer — plenty of excellent ones do all their work in private repos — so say \"not much public signal here\" rather than manufacturing a read from three forks.",
+      "roles": [
+        "recruiting",
+        "engineering"
+      ]
     },
     {
       "id": "recruiting-interview-rubric-role-edge",
@@ -940,7 +1074,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build an interview rubric for [role] and write it into a Google Doc. The role is unusual because [what makes it hard to hire for], so the rubric has to handle that rather than pretending it is a standard req.\n\nStart with the dimensions — five or six, each one a thing that actually predicts success in this job, with a weight. Say why each is on the list. If a dimension is there because it is easy to test rather than because it matters, take it off.\n\nFor each dimension: two or three questions, the follow-up probes that separate a rehearsed answer from a real one, and scoring anchors that describe what a 1, 3 and 5 answer sounds like. The anchors are the part that makes a rubric work — without them, five interviewers produce five different scales.\n\nThen the edge cases explicitly: how to score someone strong on the hard dimension and weak elsewhere, how to score a career changer whose evidence is in a different domain, and what an automatic no looks like regardless of the total.\n\nFinish with who asks what across the loop, so the same ground is not covered four times while something important is covered never.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-linkedin-profile-match-resume",
@@ -954,7 +1093,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "My resume is at [link] and I am targeting [role type] at [company type]. Read my LinkedIn profile and rewrite it to match.\n\nStart by telling me what is wrong with it now: where it undersells the work, where it is vague, where it says something different from my resume, and where it reads like a job description rather than a record of what I did.\n\nThen rewrite:\n\nHeadline — what I do and for whom, in the language the target roles use. Not \"Passionate about X\". Give me three options with different emphases.\n\nAbout — three short paragraphs. What I do, the evidence, what I am looking for. First person, no third-person bio voice, no buzzword list.\n\nEach experience entry — bullets that lead with the outcome and carry a number. Match the vocabulary of the target job posts, since recruiters search on those words, but never claim anything my resume does not support.\n\nSkills — the ones the target roles actually list, ordered by how much evidence I have.\n\nMark clearly anything where you are guessing at a number or a scope. I will fill those in — but a profile that overstates something is a profile I have to defend in an interview.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "recruiting-linkedin-connection-requests-weekly",
@@ -971,7 +1114,12 @@
         "cron": "0 16 * * 5",
         "display": "Fridays at 4pm"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Every Friday afternoon, go through my pending LinkedIn connection requests.\n\nMy criteria: accept [who I want to connect with — e.g. people in my industry, anyone with a personalised note, people at target companies]. Decline [who I do not — e.g. recruiters for roles I am not looking at, obvious sales prospecting, accounts with no history].\n\nFor each pending invite, look at the profile before deciding: how long the account has existed, whether it has real activity, whether we have shared connections, whether they sent a note and what it said. A personalised note that mentions something true about me should usually win, even from someone outside my criteria.\n\nAct on each one and log every call in a table: name, company, whether they wrote a note, the decision, and the reason. The log is what lets me correct the criteria when it gets something wrong.\n\nThis accepts and declines for real, so: when a profile is borderline, leave it pending and put it in a Needs me list rather than guessing. Never decline someone with a shared connection I actually work with. And if the pending list is longer than [50], do the clear ones and tell me the rest need a pass together.",
+      "roles": [
+        "everyone",
+        "recruiting"
+      ]
     },
     {
       "id": "recruiting-benchmark-pay-role-before",
@@ -989,7 +1137,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Benchmark pay for [role] at [level] in [location] before I make an offer to [candidate, or: a candidate].\n\nPull from what is actually public: salary ranges in comparable job postings (pay transparency laws mean many now carry them), Levels.fyi and similar for the companies where those bands exist, and any range on our own Greenhouse postings for adjacent roles.\n\nBuild a table: source, company, role and level, base range, equity if disclosed, location, and the date. Date every row — comp data from 2022 is a different market.\n\nThen the analysis: the 25th, 50th and 75th percentile for base, what equity looks like at comparable stages, and how much the range moves with location. Say which comparables are genuinely comparable and which you included for want of better — a range built from four postings is not the same as one built from forty, and I need to know which I am holding.\n\nFinish with a recommendation: a specific number, the reasoning, and where the flexibility is. Say plainly if the market rate is above what [our band] allows, because that is the thing worth knowing before the conversation rather than during it.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-candidates-github-speaker-circuits",
@@ -1011,7 +1164,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Source candidates for [role] from places that are not LinkedIn: GitHub, conference speaker lists, and technical writing.\n\nOn GitHub: find people making substantial contributions to [relevant projects / projects using our stack]. Merged non-trivial PRs, maintainer status, or an original project with real users. Not stars on a tutorial repo.\n\nSpeaker circuits: the last two or three years of [relevant conferences and meetups]. Someone who has explained [our domain] to a room can explain it to a team.\n\nWriting: technical blogs, deep-dive posts, well-answered questions in the places our kind of engineer hangs out.\n\nFor each person: name, where you found them, the specific evidence with a link, current employer and title if you can find them, LinkedIn or contact route if one exists, and a line on what the evidence tells me about them.\n\nThe evidence link is the whole point of sourcing this way — a row without one is just another name.\n\nWrite it to a Google Sheet. Do not include anyone who currently works at [our company] or at [companies we do not poach from]. And keep people whose evidence is strong even if you cannot find their employer; mark those Needs enrichment rather than dropping the best signal on the list.",
+      "roles": [
+        "recruiting",
+        "engineering"
+      ]
     },
     {
       "id": "recruiting-scheduling-emails-interview-loop",
@@ -1029,7 +1187,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Set up the scheduling for [candidate]'s loop for [role]. The panel is [names and what each covers], each session [length], and the whole loop should land [timeframe].\n\nCheck everyone's Google Calendar and find slots that work for the panel with no conflicts, respecting working hours in each person's own timezone. Leave [15] minutes between sessions rather than stacking them back to back — a loop with no breaks produces worse interviews and a worse impression.\n\nPropose [three] complete options, each with every session placed. Show me the whole option as a block, since a slot that works for four interviewers and not the fifth is not an option.\n\nThen draft the emails:\n\nTo the candidate — the proposed times in their timezone, who they will meet with role and a line on each, the format of each session, and what to prepare. Warm, specific, no HR voice.\n\nTo each interviewer — their slot, what they are assessing, and a link to the candidate's resume.\n\nEverything stays a draft, and no calendar invite goes out until I pick an option. If no option covers the full panel in the timeframe, say who the constraint is rather than quietly dropping a session or squeezing the gaps.",
+      "roles": [
+        "recruiting",
+        "ops"
+      ]
     },
     {
       "id": "recruiting-job-description-benchmarked-against",
@@ -1038,7 +1201,12 @@
       "category": "Recruiting",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write a job description for [role] at [level] on [team]. What the person will actually do: [responsibilities]. What we genuinely need: [must-haves].\n\nBefore writing, benchmark it. Find [10-15] postings for the same role at comparable companies — similar stage, similar size, similar domain — and work out what is standard: how they scope the role, which requirements appear everywhere versus once, what years-of-experience they ask for at this level, and how they describe the team.\n\nTell me what the benchmark says before you write the JD, especially where our must-haves are out of line with the market. A requirement nobody else asks for is a requirement that will cost us candidates, and it is worth knowing that before the req goes live rather than after eight weeks of no applicants.\n\nThen write the posting: what the team does and why the role exists, what the person will actually work on in the first six months, what we need and what would help (short lists, honestly sorted — every item in Requirements filters out real candidates), how the process runs, and the comp range.\n\nPlain English. No \"rockstar\", no \"wear many hats\", no \"work hard play hard\". If the role is demanding, say what is demanding about it — the people who want that job will self-select in.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-re-engage-past-finalists",
@@ -1060,7 +1228,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "I have a new opening for [role]. Go back through my past finalists at [sheet link or ATS] — people who reached the final stages for a similar role and did not get an offer, or got one and declined.\n\nFor each: recheck where they are now on LinkedIn. Did they take another job, and how long ago? Have they been promoted? Does what they are doing now make them a better or worse fit than they were?\n\nSort them into: worth reaching out now, worth reaching out later with a date, and no longer a fit with the reason. Someone who joined a new company three months ago is a later; someone eighteen months into a role that looks like a plateau is a now.\n\nFor the nows, draft a short email. It has to acknowledge the history honestly — they know how it ended, and pretending otherwise is worse than naming it. One line on what is different about this role, and a low-pressure ask.\n\nBe careful with anyone who was rejected rather than declined: read what the notes actually say before writing to them, and skip anyone the notes say we would not hire again. And do not reach out to anyone we turned down in the last [6] months for the same role — that email reads as either careless or desperate.\n\nDrafts only.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-offer-letter-comp",
@@ -1074,7 +1247,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Draft an offer letter in Google Docs for [candidate], [role], [level], starting [date].\n\nComp: base [amount], equity [amount and type], bonus or commission [structure], sign-on [amount if any]. Location and work arrangement: [details]. Reporting to [manager].\n\nUse our template at [link] if there is one; otherwise write a clean one covering: role and title, start date, reporting line, base salary and how it is paid, equity with the number of units, the strike or grant terms, the vesting schedule and cliff spelled out in plain words, bonus or variable comp and how it is earned, benefits summary, work location and arrangement, at-will or the equivalent for the jurisdiction, and the offer expiry.\n\nWrite the equity section so someone who has never held options can understand it. \"[N] options vesting over 4 years with a 1-year cliff\" means nothing to most people; say what it means for them.\n\nLeave every number I have not given you as a clearly marked placeholder rather than a plausible-looking default — a wrong number in an offer letter is a real problem, and one that looks deliberate is worse than an obvious blank.\n\nThis is a draft for me and legal to review. It does not send and it is not advice on employment law in [jurisdiction]; flag anything that needs a lawyer's eye.",
+      "roles": [
+        "recruiting",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "recruiting-reference-checks-finalist",
@@ -1092,7 +1271,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "I am checking references for [candidate] for [role]. The references are [names, relationships, contact details]. My notes from the loop are at [link].\n\nRead the interview notes first and find the open questions — the things the loop could not settle. Those are what reference calls are for. A reference call that asks \"what are their strengths\" wastes everybody's time and produces a paragraph of nothing.\n\nFor each reference, write a tailored question set: their actual working relationship and for how long, then five or six questions aimed at my open questions specifically. Include at least one that is hard to answer with a platitude — how they handled a specific kind of situation, what they would need to be different for this person to do their best work, whether the referee would hire them again and for what.\n\nWrite the questions to a Google Doc with room to take notes.\n\nThen draft the outreach email to each reference: who I am, the role, that [candidate] gave me their name, how long it will take, and two or three times to choose from. Short and easy to say yes to.\n\nDrafts only. And note in the doc which references the candidate chose versus which I found myself, because the two are worth different amounts.",
+      "roles": [
+        "recruiting",
+        "founders"
+      ]
     },
     {
       "id": "recruiting-fresh-candidates-role-morning",
@@ -1117,7 +1301,11 @@
         "cron": "0 9 * * 1-5",
         "display": "Weekdays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday morning, check LinkedIn for candidates newly matching my search for [role]: [criteria].\n\nNew means new to me. Before adding anyone, check them against my sourcing sheet at [link] — on profile URL, not on name, since names repeat and URLs do not. Someone I sourced in March and passed on should not reappear in June as a fresh find.\n\nFor each genuinely new person, append a row: name, title, company, location, profile URL, the fit note, the date found, and an empty Status column. Keep the sheet append-only so the history stays intact.\n\nA drip like this should be small. If a morning turns up twenty new matches, the search is too loose and I would rather you told me that than filled the sheet. If it turns up none, say none — a daily job that always produces something is one where something is being padded.\n\nFlag anything unusual: someone who just left a target company, someone who changed their headline to something that suggests they are looking, someone with a mutual connection I actually know. Those are worth acting on the same day, and they are exactly what gets lost in a list.",
+      "roles": [
+        "recruiting"
+      ]
     },
     {
       "id": "marketing-50-creators-niche-contact",
@@ -1140,7 +1328,12 @@
       ],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 6
+      "featured": 6,
+      "prompt": "Find 50 creators in [niche] on Instagram and TikTok who are a plausible fit for [brand / product].\n\nSearch by hashtag, by who the creators I already work with collaborate with, and by working outward from [2-3 creators I already know are a fit] through their tagged posts and comment sections. That last route finds the ones a hashtag search never surfaces.\n\nFor each creator capture: handle, platform, follower count, median views or likes over their last ten posts, engagement rate calculated from those rather than quoted from a bio, what they actually post about, whether they have done brand deals before, location and language, and an email if one is published in their bio or link-in-bio page.\n\nSort by fit rather than by follower count — a 12k creator whose whole feed is our category beats a 400k generalist, and the sheet should say so. Write it to a Google Sheet with a Status column.\n\nOnly include an email you actually found published. Do not construct one from a name pattern, and do not put a management agency's generic address in the personal email column without labelling it. If you cannot find fifty who genuinely fit, give me the ones who do and say how many rather than padding the list out with near-misses.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-creators-already-sponsored-by",
@@ -1162,7 +1355,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find creators who have already run paid partnerships with [competitor brands] on Instagram and TikTok.\n\nA creator with a proven paid-partnership history in our category is worth more than a bigger one with none: they know how to disclose, they know how to make an ad that does not tank, and their audience is already used to seeing brands like ours from them.\n\nGo through each competitor's tagged posts, their branded-content library, and the paid-partnership labels on posts mentioning them. For each creator found: handle, platform, follower count, which competitor they worked with and roughly when, how the sponsored post performed relative to their normal posts, and whether they have done more than one deal in the category.\n\nThat performance comparison is the most useful column. A sponsored post that got a tenth of their usual engagement tells me the audience rejected it.\n\nWrite it to a Google Doc grouped by which competitor they worked with, so I can see who is working with everyone and who is exclusive.\n\nExclude anyone whose only branded post is over [18] months old, and flag anyone currently in an ongoing ambassadorship — approaching those is a different conversation and I want to know before I send anything.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-instagram-dms-replies-outreach",
@@ -1187,7 +1385,12 @@
         "cron": "0 9 * * *",
         "display": "Daily at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check my Instagram DMs against my outreach tracker at [sheet link] and bring it up to date.\n\nFor each creator in the tracker with status Sent, look for a reply. When there is one, update the row with the date, what they said, and a read on where it stands: interested, asking about rate, asking for product, not now, declined, or unclear.\n\nThat last category matters. A one-word reply or an emoji is not an answer, and marking it Interested because it was not a no puts a dead lead at the top of my follow-up list.\n\nSummarise the day in a short email to me: who replied, who needs an answer today, who has now been silent past [7] days and should be followed up, and anyone who replied with a question I have to answer personally — a rate, an exclusivity term, a deadline.\n\nAlso flag replies that came from an account other than the one I messaged, usually a manager. Those change who I am negotiating with.\n\nRead and log only. Do not reply to anyone, do not react to messages, and do not open message requests from accounts not in the tracker.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-trending-content-formats-niche",
@@ -1208,7 +1411,12 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, tell me what formats are actually working in [niche] on TikTok and Instagram right now.\n\nLook at the last week of high-performing posts from [10-15 accounts in the niche] plus what is surfacing on the hashtags and sounds we care about. What I want is the format, not the individual post: the structure, the hook pattern, the length, the editing convention, the sound.\n\nFor each format worth knowing about: describe it in a sentence, link three examples with their view counts, say roughly how long it has been running, and say why it works — what the hook does in the first two seconds and what keeps someone past five.\n\nThen the part that makes this useful: say which of these we could actually make with what we have, and which we could not. A format that needs a studio and six people is not an insight for us, it is a fact about someone else.\n\nSeparate genuinely new formats from ones that have been around for months and just showed up in my feed this week. And if nothing much changed, say so in a line — a weekly briefing that always finds a trend is one that invents them.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-what-s-blowing-up",
@@ -1229,7 +1437,13 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday morning, go through my X and LinkedIn feeds and tell me what actually matters from the last 24 hours.\n\nNot everything that got engagement — what matters to me, given that I work on [what I work on] and care about [topics].\n\nStructure it:\n\nWorth reading — three to five posts or threads with a real idea in them. One line on what the idea is, the link, and who wrote it. If it is a thread, summarise the argument rather than the first tweet.\n\nConversations happening — where several people I follow are all discussing the same thing. Say what the disagreement is, since that is usually the interesting part.\n\nPeople I know — anything notable from people in my network: a job change, a launch, a post doing unusually well for them. These are the ones where a reply from me is worth something.\n\nSkip — name the recurring noise you filtered out so I can tell whether the filter is right.\n\nUnder a page, and rank by how much I would regret missing it rather than by engagement. A viral post about something irrelevant to me is not news.",
+      "roles": [
+        "marketing",
+        "founders",
+        "everyone"
+      ]
     },
     {
       "id": "marketing-buying-intent-posts-reddit",
@@ -1246,7 +1460,13 @@
         "cron": "30 8 * * *",
         "display": "Daily at 8:30am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, search Reddit for people actively looking for something like [product] and draft replies I could post.\n\nSearch [relevant subreddits] plus a site-wide search for phrases people actually use when they are shopping: \"looking for a tool that\", \"any recommendations for\", \"alternatives to [competitor]\", \"how do you all handle\". Only posts from the last [48] hours — a three-week-old thread has already been answered.\n\nFor each real one: the subreddit, the link, when it was posted, what they are actually asking for, how many replies it already has, and whether anyone has recommended a competitor.\n\nThen draft a reply. It has to be a genuinely useful answer to their question first, and it should mention us only where we honestly fit. If a competitor is the better answer for their specific case, say that in the draft — a reply that recommends the right thing is the only kind that survives on Reddit, and being caught astroturfing costs more than every lead this ever produces.\n\nSay in each draft whether I should disclose an affiliation, and check the subreddit's rules on self-promotion before drafting anything for it. Where a subreddit forbids it outright, say so and skip the draft.\n\nDrafts only. Nothing posts.",
+      "roles": [
+        "marketing",
+        "founders",
+        "sales"
+      ]
     },
     {
       "id": "marketing-x-followers-collab-worthy",
@@ -1260,7 +1480,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Go through my X followers and find the ones worth doing something about.\n\nMost followers are nothing. What I am looking for: people who run something relevant, people with an audience that overlaps mine without duplicating it, people who have engaged with my posts more than once, and people at companies I would like to know.\n\nFor each candidate: handle, name, bio, follower count, what they post about, how they have interacted with me, and any mutual connections. Then say what the move is — a collaboration, an introduction to someone else, a meeting, or just a reply next time they post.\n\nRank by how much the relationship is plausibly worth, not by follower count. Someone with 900 followers who runs the tooling team at a target company is worth more than a 50k account in an unrelated niche.\n\nBe strict. A shortlist of fifteen I will act on is useful; a list of two hundred is another thing I will not read.\n\nExclude obvious follow-back farms, accounts with no posts, and anyone whose bio is a link to a course. And where someone has engaged with me repeatedly and I have never replied, put them at the top and say so — that is the cheapest thing on the list.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-hunt-down-working-promo",
@@ -1278,7 +1503,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "For every merchant in [sheet link], find current working promo codes and offers.\n\nCheck the merchant's own site first — banner offers, newsletter signup discounts, and the checkout page, which sometimes reveals an active code. Then Reddit, where the codes that actually work get posted and where people say when one stops working.\n\nFor each merchant, capture: the code, what it gives, any minimum spend or exclusions, where you found it, the date of that source, and an expiry if stated. Add a confidence column: confirmed on the merchant's own site, reported working recently by more than one person, or reported once and unverified.\n\nThat column is the whole value of this. A CSV of forty codes where a third are dead is worse than one with twelve that work, because I stop trusting all of them.\n\nWrite it to a CSV, one row per code, with merchants that have no current offer still present and marked None found. A missing row reads like the merchant was skipped.\n\nDo not include codes from coupon-aggregator sites that scrape each other — they are mostly expired and they all cite each other. And do not attempt any code at checkout with real payment details.",
+      "roles": [
+        "marketing",
+        "ops",
+        "everyone"
+      ]
     },
     {
       "id": "marketing-fill-social-links-brand",
@@ -1300,7 +1531,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Open [sheet link]. Each row is a brand with some columns filled in and social profile columns empty. Fill them in.\n\nFor each brand, find their real profile on [platforms — Instagram, TikTok, LinkedIn, X, YouTube]. Start from the brand's own website footer, since that is the only source that is definitionally correct. Only search the platform directly when the site does not list one.\n\nVerify each link before writing it: the profile has to load, and it has to actually be that brand rather than a fan account, a regional franchise, a dormant account from a rebrand, or a squatter. Check that the account has posted in the last [6] months and that its bio or link points back at the brand.\n\nWhere a brand runs several regional accounts, take the primary one and note the others in a comments column.\n\nWhere you cannot verify a profile, write Not found rather than the closest match. A plausible wrong link is the worst possible output here — it looks filled in, so nobody checks it, and it ends up in an outreach list. Same for accounts that exist but have been dead for years: write the link and mark it Inactive.\n\nAdd a column for the date checked, since this decays.",
+      "roles": [
+        "marketing",
+        "ops"
+      ]
     },
     {
       "id": "marketing-affiliate-programs-track-status",
@@ -1318,7 +1554,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Work through the affiliate programs listed in [sheet link] and apply to each one.\n\nUse my details at [link to my info: site, audience size, traffic, niche, payment details, tax info]. Answer every application question honestly from those details.\n\nFor each program, log to the tracker: program name, network or direct, the application URL, the date applied, the commission terms and cookie window if published, and the status.\n\nStatus has to be specific: applied and pending, approved, rejected with the reason if given, requires manual review, application form broken, or could not apply and why. \"Submitted\" for everything tells me nothing about where the work is.\n\nThis submits real applications with my real details, so the rules are strict. Never guess at a number — traffic, audience size, revenue. If a form asks for something not in my details file, stop and put that program in a Needs me list rather than estimating. Never accept terms that include exclusivity or a minimum commitment without flagging them to me first. And never re-apply to a program that has already rejected me; a second application from the same site is how you get permanently blocked.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-podcasts-should-have-as",
@@ -1340,7 +1581,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find podcasts that should have me on as a guest. I talk about [topics] and my background is [one line].\n\nSearch by topic across podcast directories and YouTube, and work outward from the shows that have hosted people like me. Guests move between shows in clusters, and the guest list of one good fit will point at five more.\n\nFor each show capture: name, host, roughly how many episodes and how often it runs, whether it is still active (last episode date — a show dormant for eight months is not a target), audience size where you can find it, the format and typical length, and three recent guests with what they talked about.\n\nThen the part that makes the sheet usable: an angle per show. Not \"I could talk about [my topic]\", but a specific episode idea that fits what this host actually does, ideally connected to an episode they have already made. Cite that episode.\n\nAnd a contact route: a booking form, an email in the show notes, or the host's own contact. Say which.\n\nRank by fit rather than audience size. A show with 2,000 listeners who are all our buyers is worth more than a general business show with 200,000.\n\nExclude anything that charges guests to appear — say so if you find one rather than dropping it silently.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-social-mentions-brand-log",
@@ -1365,7 +1611,12 @@
         "cron": "0 17 * * *",
         "display": "Daily at 5pm"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every afternoon, search X for mentions of [brand name, product names, common misspellings, our handle, our domain] and log them.\n\nSearch for the plain words too, not just the handle — most people talking about a brand do not tag it, and those are the mentions that matter because nobody has answered them.\n\nAppend each mention to [sheet link]: date, author handle and follower count, the full text, the link, and a priority.\n\nPriority is the point:\n\nP1 — a complaint, a support problem, or anything from an account with real reach saying something negative. These need a human today and the row should say what the person actually needs.\n\nP2 — a question about the product that nobody has answered.\n\nP3 — positive mentions and recommendations. Worth a like or a thank you, worth knowing about, not urgent.\n\nP4 — passing references, our name used generically, obvious noise.\n\nSuggest a next move for every P1 and P2, and say when the right move is to stay out of it, which it sometimes is.\n\nRead and log only — nothing posts, nothing likes. And do not log mentions of unrelated companies with a similar name; check the context before adding a row.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-comments-linkedin-posts-matter",
@@ -1382,7 +1633,13 @@
         "cron": "30 8 * * 1-5",
         "display": "Weekdays at 8:30am"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every weekday morning, go through my LinkedIn feed and find the [5-8] posts where a comment from me would actually be worth something.\n\nWorth something means: posted by someone I want to be visible to (people at [target companies / roles]), on a topic I genuinely know about, recent enough that the comment section is still live, and not already carrying two hundred comments where mine will vanish.\n\nFor each, draft the comment. It has to add something the post did not say: an experience, a counterpoint, a specific detail, a question that moves the discussion. Two to four sentences. No \"Great post!\", no restating their point back at them with an emoji, no closing with a pitch.\n\nA good test: if the comment would read as strange coming from someone who had not read the post carefully, it is not ready.\n\nGive me the post, the author and why they matter, the link, and the draft together, so I can judge the comment against the room it is going into.\n\nDrafts only, nothing posts.\n\nWhere a post is doing well but I have nothing genuinely useful to say about it, leave it out and say so. Showing up in a comment section with nothing to add is worse than not showing up.",
+      "roles": [
+        "marketing",
+        "founders",
+        "sales"
+      ]
     },
     {
       "id": "marketing-next-week-s-posts",
@@ -1407,7 +1664,12 @@
         "cron": "0 17 * * 0",
         "display": "Sundays at 5pm"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Sunday evening, look at how my posts performed this week on Instagram and TikTok and plan next week from it.\n\nStart with the data: every post from the last [7] days with its views, engagement rate, saves, shares and follows gained. Compare each against my recent median rather than against each other, so a slow week does not make a mediocre post look like a winner.\n\nThen work out why the top two or three did well. Be specific and be honest about uncertainty: it might be the hook, the format, the topic, the sound, the time, or it might be that the algorithm picked it up and there is nothing to learn. Say which you think it is and how confident you are.\n\nThen give me next week's plan: [5] post ideas, each with the format, the hook line, what it is about, which of this week's learnings it is built on, and which day to post it. Put them on my Google Calendar as tentative entries.\n\nInclude at least one idea that is not derived from what already worked. A plan built only on last week's winners converges on one format and then stops working, and by the time the numbers show it I have lost a month.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-swipe-file-winning-ugc",
@@ -1429,7 +1691,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a swipe file of 30 high-performing UGC ads in [category] from TikTok and Instagram.\n\nFind them in the platforms' ad libraries, in the creators' own feeds where the post is labelled as a paid partnership, and by watching what keeps reappearing in the feeds of accounts that follow our category. Only include things that are actually ads, and only ones where I can see they performed — high view counts relative to the creator's normal posts, or long-running placements in the ad library, which is the strongest signal there is because nobody keeps paying for an ad that does not work.\n\nFor each one, write into a Google Doc: the link, the brand, the creator, the platform, how long it has been running or its view count, and a breakdown:\n\nThe hook — the first three seconds, transcribed word for word, plus what is on screen. Transcribe it exactly; paraphrasing the hook loses the thing worth stealing.\nThe structure — what happens in what order, with timestamps.\nThe proof — how they make the claim believable.\nThe CTA — what it is and how hard it lands.\nWhy it works.\n\nThen group them by hook pattern at the end, so the file is browsable by problem rather than being thirty entries in the order you found them.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-tear-down-competitor-s",
@@ -1447,7 +1714,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Tear down [competitor]'s social strategy on Instagram and TikTok. I want something I can act on, not a list of observations.\n\nGo through their last [90] days on both platforms and work out:\n\nCadence — how often they post, on what days and at what times, and whether that has changed.\n\nFormats — the mix, with rough percentages. Which formats they use for which purpose.\n\nWhat actually works for them — their top posts by engagement relative to their own median, and what those have in common. Their worst performers too; what a competitor has tried and abandoned is as useful as what they keep doing.\n\nVoice and positioning — how they talk about themselves, what claims they lean on, who they are implicitly talking to.\n\nProduction — how much each post plausibly costs to make. A strategy that needs a full-time editor is not a strategy we can copy.\n\nThen the part I actually need: three things they are doing that we should, one thing they are doing that we should deliberately not, and one gap in their coverage we could take.\n\nUse their real numbers throughout, and say when you are estimating. And do not conclude that something works for them just because they do a lot of it — plenty of accounts post the same failing format for a year.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-personalized-collab-dms-creator",
@@ -1469,7 +1741,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Open my creator list at [sheet link] and write a collab DM for each one.\n\nBefore writing anything for a creator, look at their last ten posts. The message has to reference something specific and recent from their actual content — a post, a series they run, a bit they do, something they said. If it could be sent to any creator in the niche, it is not ready.\n\nThe DM: under 400 characters. Open with the specific thing. Say who we are in half a sentence. Say what the collab is concretely — [product, paid, affiliate, gifted, whatever it is] — because a vague \"let's collaborate\" wastes their time and gets ignored. Close with one easy question.\n\nDo not open with \"Hi [name], love your content!\" Do not call it an exciting opportunity. Do not mention their follower count.\n\nWrite each draft into the sheet next to the creator, along with the specific post you built it on, so I can check the reasoning rather than just the message.\n\nWhere a creator's recent content makes them a bad fit — they just did a deal with a competitor, they have shifted niche, the audience is wrong — say so in the row and skip the draft rather than writing something I should not send.\n\nDrafts only. Nothing sends.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-youtube-comments-content-ideas",
@@ -1487,7 +1764,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Mine the comments on the most-watched videos in [niche] for content ideas.\n\nTake [10-15] popular videos from the last [6] months in the niche and read their comment sections properly — sorted by top and by newest, since those surface different things. Cross-reference against what people are asking about the same topic on X.\n\nWhat I am looking for: questions the video did not answer, disagreements with what the creator said, \"but what about\" comments, people describing their specific situation and asking how it applies, and requests for a follow-up.\n\nGroup them into themes rather than listing individual comments. Twenty people asking variations of the same question is one content idea with strong demand behind it, and that is the thing worth knowing.\n\nFor each theme: the question in plain terms, how many comments across how many videos raised it, two or three representative quotes with links, whether anyone has already made the video that answers it, and a suggested title and angle.\n\nRank by demand and by how badly the existing content covers it. A question asked constantly that nobody has answered well is the whole point of this exercise.\n\nIgnore spam, bot comments, and the generic praise that makes up most of any comment section.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-viral-posts-about-topic",
@@ -1504,7 +1786,12 @@
         "cron": "0 12 * * *",
         "display": "Daily at noon"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every day at noon, find the posts about [topic] on X that are breaking out, and draft something I could say about them.\n\nBreaking out means unusual for that account — a post doing 20x what the author normally does is more interesting than a big account's normal Tuesday. Only the last [12] hours; joining a conversation a day late is joining nothing.\n\nFor each of the [3-5] worth my attention: the link, the author and who they are, the post text, the numbers, and what is actually driving it — is it a genuinely good point, a controversy, a well-made claim that happens to be wrong, or a joke.\n\nThen draft two things for each: a reply and a quote post. The reply should add something specific from my experience with [my domain]. The quote post should have a real position in it — agreement with a reason, a counterpoint, or a piece of context the thread is missing.\n\nNever draft something that just agrees enthusiastically. Never draft a reply that pivots to my product; the ones that work are the ones that are about the topic.\n\nAnd where a post is breaking out because it is a pile-on or because someone is being attacked, say so and do not draft anything. Drafts only.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-pick-fair-giveaway-winner",
@@ -1518,7 +1805,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Pick the winner of my giveaway from the comments on [Instagram post link]. The entry rules were [rules — e.g. follow the account, tag a friend, comment].\n\nCollect every comment on the post with the username, the text, and the timestamp, and check each against the rules. Someone who did not tag anyone did not enter; someone who tagged four people in four comments entered once, not four times, unless the rules said otherwise.\n\nThen filter out entries that should not be in the pool: accounts created in the last [30] days, accounts with no posts and no followers, giveaway-farming accounts that enter hundreds of these, and duplicate accounts run by the same person where that is evident. Say how many you removed and why, as a group — the credibility of the draw rests on that number being visible.\n\nWrite the full audit trail to a sheet: every comment collected, whether it qualified, and the reason if not.\n\nThen pick one winner and [3] backups from the valid pool, using a method you state explicitly — the index selected, out of how many, and how the ordering was fixed. A draw nobody can reproduce is one somebody will accuse me of rigging.\n\nDo not announce anything, do not DM anyone, do not comment on the post.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-profiles-links-across-platform",
@@ -1540,7 +1832,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Audit my presence across LinkedIn, Instagram, TikTok [and any others I list] and give me a punch list of what is broken or stale.\n\nCheck every link first: bio links, link-in-bio pages and everything on them, links in pinned posts, links in the About section. Follow each one and report its actual status — 200, redirect chain, 404, dead domain, parked page, or a page that loads but no longer says what it used to. A link that quietly started redirecting to a marketing homepage instead of the thing I meant is the kind of thing that survives for a year.\n\nThen consistency: is the profile photo the same across platforms, is the name written the same way, does the bio describe the same thing, is the current role right everywhere. Quote what each one says so I can see the drift.\n\nThen staleness: anything mentioning a company I have left, an old title, an event that has passed, a product we renamed, a launch that shipped.\n\nGive me a punch list ordered by how bad it is — a dead link on my most-visited profile first, an inconsistent capitalisation last. One line each: platform, what is wrong, what to change it to.\n\nRead only. Do not edit any profile.",
+      "roles": [
+        "marketing",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "marketing-slack-digest-when-creators",
@@ -1565,7 +1863,12 @@
         "cron": "0 9 * * *",
         "display": "Daily at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check my watchlist at [link — YouTube channels, subreddits, creators] for anything new in the last 24 hours and post a digest to [Slack channel].\n\nNet-new only. Keep track of what has already been reported so the same video does not appear three mornings running because it is still on the channel page.\n\nFor each new item: who posted it, the title, the link, how long it is or how long it takes to read, and two or three sentences on what it actually says. Not the description they wrote — what is in it. The whole value of a digest is that the reader can decide from the summary whether to open it.\n\nFlag anything that mentions us, a competitor, or [key topics], and put those at the top of the message.\n\nKeep the Slack message tight: a bold line per source, bullets under it, links inline. If it runs long, cut the least important items and say how many you cut rather than posting a wall nobody reads.\n\nIf nothing new appeared, post one line saying so. A silent day is information, and a digest that only posts when there is news makes people wonder whether it broke.",
+      "roles": [
+        "marketing",
+        "ops"
+      ]
     },
     {
       "id": "marketing-seo-content-brief-keyword",
@@ -1583,7 +1886,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write an SEO content brief for [keyword] and put it in a Google Doc.\n\nStart with the search results. Read the top [10] pages properly and tell me what they have in common: the format they take, how long they are, what sections they all include, and what search intent they are all serving. That last one settles everything else — a keyword whose results are all comparison pages does not want a how-to guide, however good the guide is.\n\nThen the brief:\n\nTarget keyword, the related terms and questions that appear across the results and in People Also Ask, and the intent in one sentence.\n\nA recommended angle — what we can do that the top ten do not. If the honest answer is that the results are already comprehensive and we would be the eleventh identical page, say that; it is worth more than a brief for a piece that will never rank.\n\nAn outline: H1, then every H2 and H3 with a line on what goes under it, in an order that answers the query fastest.\n\nWhat to include — the specific data, examples, screenshots or original material that would make this better than what exists.\n\nInternal links from our site, external sources worth citing, a title tag and meta description, and a target word count with the reasoning.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-press-list-draft-pitches",
@@ -1605,7 +1913,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Build me a press list for [story — the launch, funding, research, whatever it is] and draft a pitch for each journalist.\n\nFind journalists who have actually written about [topic / this space] in the last [12] months. Recency and beat are everything: a reporter who covered our space two years ago and has since moved to another beat is a wasted send, and they remember the ones who did not check.\n\nFor each: name, publication, their beat in their own words if their bio states it, two or three recent relevant pieces with links and dates, their contact route (email if published, otherwise the outlet's tips address or their social), and their location.\n\nThen draft the pitch, one per journalist, and make each genuinely different. Reference a specific piece they wrote and why our story connects to it. Subject line under [60] characters and specific. Then: what the story is in two sentences, why it matters to their readers, what we can offer (data, an interview, an exclusive, early access), and one line on who we are. Under 200 words total.\n\nNo embargoes or exclusives promised to more than one person — say explicitly which pitch offers what.\n\nWrite the list to a Google Sheet with the drafts. Nothing sends. And do not put an email address in the sheet that you guessed from a name pattern.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-creators-before-partnership",
@@ -1627,7 +1940,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Vet [creator handles] before we do a partnership. Build a scorecard for each in a Google Sheet.\n\nAudience quality first, because this is where the money is lost. Look at their last [15] posts and calculate engagement from actual numbers rather than a media kit. Check whether engagement scales with reach or sits suspiciously flat. Read the comments: real comments about the content, or emoji strings and generic praise from accounts with no posts. Check the follower growth curve for step changes that look bought. Check whether the audience geography and language match where we sell.\n\nThen brand fit: what they actually post about, the proportion that is sponsored (a feed that is half ads converts badly), which brands they have worked with, and whether any of those are our competitors or in categories we would not want to sit next to.\n\nThen risk: anything in their history that would be a problem for us, and how they have handled controversy. Say what you found and where, without editorialising.\n\nScore each dimension with the evidence beside it, and give a recommendation: go, go with conditions, or no. Where the numbers do not add up but nothing is provable, say \"the pattern is consistent with purchased engagement\" rather than either accusing them or ignoring it.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "marketing-ad-copy-variations-test",
@@ -1641,7 +1959,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Write ad copy variations for [product] to test on [platform]. The audience is [who], the offer is [what], and the format needs [character limits / structure]. Our brand voice is [description, or: see examples at link].\n\nGive me [4] distinct angles, not four rewrites of the same sentence. Variations that all say the same thing differently produce a test that teaches nothing. Make them genuinely different bets:\n\nOne on the problem — name the pain sharply enough that the right person recognises themselves.\nOne on the outcome — what life looks like after, concretely.\nOne on proof — a number, a named result, a specific customer situation.\nOne that is a real contrarian take on how people usually solve this.\n\nFor each angle: three hook or headline options, the body copy, and two CTA options. Say in a line what hypothesis that angle is testing, because that is what I read the results against.\n\nWrite it into a Google Doc grouped by angle.\n\nStay inside the character limits exactly — copy that gets truncated mid-sentence in the feed is a wasted variation. Make no claim I have not given you evidence for, and flag anything that would need legal or substantiation review before it runs.",
+      "roles": [
+        "marketing",
+        "founders"
+      ]
     },
     {
       "id": "data-directory-spreadsheet",
