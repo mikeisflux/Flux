@@ -38,6 +38,10 @@ FluxAgentService::FluxAgentService(Profile* profile)
       scheduler_(std::make_unique<WorkflowScheduler>(this)),
       concurrency_limit_(ComputeConcurrencyLimit()) {
   tools_.RegisterBuiltins();
+  // After the scheduler is constructed, not inside it: LoadFromPrefs reaches
+  // back through this service for the profile, and doing that from the
+  // scheduler's own constructor would read a half-built object.
+  scheduler_->LoadFromPrefs();
 }
 
 FluxAgentService::~FluxAgentService() = default;

@@ -60,6 +60,16 @@ inline constexpr char kConnectorTokens[] = "flux.connector_tokens";
 // themselves - so every connector is the user's own registration.
 inline constexpr char kConnectorClients[] = "flux.connector_clients";
 
+// Saved workflows, keyed by id, as {command, name, description, cron, prompt,
+// template_id, write_scope, model, profile_id, credit_budget, enabled,
+// last_run, last_fire_missed}.
+//
+// The scheduler holds these in memory and fires them; this is where they live
+// between runs. Without it a workflow saved at 5pm is gone by morning, which
+// is the one thing a scheduled task must not be - and the failure is silent,
+// because an empty list looks exactly like a user who has not made one yet.
+inline constexpr char kWorkflows[] = "flux.workflows";
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace flux::prefs

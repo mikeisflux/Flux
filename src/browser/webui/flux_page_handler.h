@@ -88,6 +88,14 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void GetSidebarCollapsed(GetSidebarCollapsedCallback callback) override;
   void SetSidebarCollapsed(bool collapsed) override;
   void ShowScreen(const std::string& screen) override;
+  void ListWorkflows(ListWorkflowsCallback callback) override;
+  void SaveWorkflow(mojom::WorkflowDraftPtr draft,
+                    SaveWorkflowCallback callback) override;
+  void DeleteWorkflow(const std::string& workflow_id) override;
+  void SetWorkflowEnabled(const std::string& workflow_id,
+                          bool enabled) override;
+  void RunWorkflowNow(const std::string& workflow_id,
+                      RunWorkflowNowCallback callback) override;
 
   // Turns a ConnectorStatus into the mojom struct the console renders.
   mojom::ConnectorStatusPtr ToMojom(const ConnectorStatus& status) const;

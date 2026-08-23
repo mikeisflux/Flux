@@ -41,7 +41,7 @@ class FluxApp {
   private welcome: WelcomeView;
   private newTask: NewTaskView;
   private templates = new TemplatesView();
-  private workflows = new WorkflowsView();
+  private workflows: WorkflowsView;
 
   constructor() {
     this.handler = new FluxPageHandlerRemote();
@@ -64,6 +64,7 @@ class FluxApp {
     this.newTask = new NewTaskView(this.handler);
     this.customize = new CustomizeView(this.handler);
     this.welcome = new WelcomeView(this.handler);
+    this.workflows = new WorkflowsView(this.handler);
 
     // Ctrl+K reaches the panel from any console screen. The same chord over a
     // web page is handled in the frame - see patches/0013 - because a page that

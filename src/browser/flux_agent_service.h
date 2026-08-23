@@ -46,6 +46,12 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   };
 
   explicit FluxAgentService(Profile* profile);
+
+  // The scheduler needs prefs to persist saved workflows across restarts.
+  Profile* profile() { return profile_; }
+
+  // Saved workflows. The console reaches these through FluxPageHandler.
+  WorkflowScheduler* scheduler() { return scheduler_.get(); }
   ~FluxAgentService() override;
 
   FluxAgentService(const FluxAgentService&) = delete;

@@ -1647,3 +1647,211 @@ body.shell.collapsed .nav-item svg { flex: none; }
 
 body.shell.collapsed .nav-section,
 body.shell.collapsed .badge { display: none; }
+
+/* --- Workflows table ------------------------------------------------------
+ *
+ * A table rather than cards, because the columns are the point: a person
+ * opening this screen is checking that a thing still runs, and "when does it
+ * next fire" and "did the last one work" are comparisons down a column.
+ */
+.workflow-table {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 40px;
+  overflow: hidden;
+}
+
+.workflow-row {
+  display: grid;
+  align-items: start;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  gap: 16px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) 40px;
+}
+
+.workflow-row:first-child {
+  border-top: 0;
+}
+
+.workflow-header {
+  background: var(--bg-subtle, transparent);
+  color: var(--fg-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.workflow-row p {
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-command {
+  color: var(--accent-text);
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.workflow-command:hover {
+  text-decoration: underline;
+}
+
+.workflow-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.workflow-status svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+
+.workflow-status[data-state='active'] {
+  color: var(--accent-text);
+}
+
+.workflow-status[data-state='paused'] {
+  color: var(--fg-muted);
+}
+
+/* --- Row menu ------------------------------------------------------------- */
+.row-menu {
+  position: relative;
+}
+
+.row-menu-items {
+  position: absolute;
+  z-index: 20;
+  top: 34px;
+  right: 0;
+  min-width: 180px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
+}
+
+.row-menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  gap: 10px;
+  text-align: left;
+}
+
+.row-menu-item:hover {
+  background: var(--bg-hover, rgb(0 0 0 / 5%));
+}
+
+.row-menu-item svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+}
+
+.row-menu-item.destructive {
+  color: var(--danger, #c0392b);
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Dialog --------------------------------------------------------------- */
+.flux-dialog {
+  width: min(680px, 92vw);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.flux-dialog::backdrop {
+  background: rgb(0 0 0 / 35%);
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 24px 20px;
+  gap: 16px;
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.dialog-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 200px;
+}
+
+.dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.dialog-field input,
+.dialog-field select,
+.dialog-field textarea {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+
+.dialog-field textarea {
+  resize: vertical;
+}
+
+.dialog-error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--danger, #c0392b);
+  border-radius: 9px;
+  color: var(--danger, #c0392b);
+  font-size: 13px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

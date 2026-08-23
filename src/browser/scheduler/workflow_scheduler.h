@@ -12,18 +12,28 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/wall_clock_timer.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/flux/mojom/flux.mojom.h"
+
+class PrefService;
 
 namespace flux {
 
 class FluxAgentService;
+
 
 // A saved task that runs on a schedule.
 struct Workflow {
   std::string id;
   std::string command;           // reachable from the Ctrl+K palette
   std::string name;
-  std::string cron;              // 5-field, local time
+  std::string description;       // one line, shown under the command
+  std::string cron;              // 5-field, local time; empty = on demand only
+  // "Daily at 7am". Rendered when the workflow is saved rather than derived
+  // from the cron every time it is drawn: the dialog knows what the user
+  // picked, and turning a 5-field expression back into English is guesswork
+  // the moment anyone types one by hand.
+  std::string schedule_display;
   mojom::TaskSpecPtr spec;
   bool enabled = true;
 
@@ -48,6 +58,11 @@ class WorkflowScheduler {
   void Remove(const std::string& workflow_id);
   void SetEnabled(const std::string& workflow_id, bool enabled);
   std::vector<const Workflow*> List() const;
+  const Workflow* Get(const std::string& workflow_id) const;
+
+  // Reads the saved workflows back at startup. Called once by
+  // FluxAgentService; the scheduler writes on every change of its own accord.
+  void LoadFromPrefs();
 
   // Turns a successful run's action trace into a workflow that replays the
   // same steps without model inference.
@@ -75,6 +90,12 @@ class WorkflowScheduler {
 
   void ScheduleNext();
   void OnTimerFired();
+
+  // Every mutation goes through this. A workflow that exists only in memory is
+  // one that quietly stops existing when the browser restarts, and a schedule
+  // that silently stops is worse than one that was never created.
+  void SaveToPrefs() const;
+  PrefService* Prefs() const;
 
   raw_ptr<FluxAgentService> service_;
   std::map<std::string, Workflow> workflows_;

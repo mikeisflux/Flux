@@ -49,6 +49,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kApiKeys);
   registry->RegisterDictionaryPref(kConnectorTokens);
   registry->RegisterDictionaryPref(kConnectorClients);
+
+  // Saved workflows. Not syncable: a schedule that fires on two machines runs
+  // the task twice, and the second one has no way to know.
+  registry->RegisterDictionaryPref(kWorkflows);
 }
 
 }  // namespace flux::prefs

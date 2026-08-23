@@ -1,6 +1,10 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {shape, svgRoot} from './icons.js';
+import {connectorMark, pathIcon, shape, svgRoot} from './icons.js';
+
+import type {FluxPageHandlerRemote, WorkflowSummary} from
+    './flux.mojom-webui.js';
+import {WorkflowDialog} from './workflow_dialog.js';
 
 import {loadTemplates, transportLabel, trustLabel} from './catalog.js';
 import type {Template} from './catalog.js';
@@ -22,8 +26,27 @@ const EXAMPLE_TITLES: string[] = [
 ];
 
 export class WorkflowsView {
+  private handler: FluxPageHandlerRemote;
+  private dialog: WorkflowDialog;
+  private root: HTMLElement|null = null;
+
+  constructor(handler: FluxPageHandlerRemote) {
+    this.handler = handler;
+    this.dialog = new WorkflowDialog(handler, () => void this.repaint());
+  }
+
   async render(root: HTMLElement) {
-    const all = await loadTemplates();
+    this.root = root;
+    await this.repaint();
+  }
+
+  private async repaint() {
+    const root = this.root;
+    if (!root) {
+      return;
+    }
+    const [all, {workflows}] =
+        await Promise.all([loadTemplates(), this.handler.listWorkflows()]);
 
     root.replaceChildren();
     root.classList.remove('two-column');
@@ -35,13 +58,186 @@ export class WorkflowsView {
     head.className = 'screen-head';
     const h1 = document.createElement('h1');
     h1.textContent = 'Workflows';
+
+    const buttons = document.createElement('div');
+    buttons.className = 'head-actions';
+    if (workflows.length > 0) {
+      // Only once there is a table to put it beside. On the empty screen the
+      // examples are already the whole page.
+      const examples = document.createElement('a');
+      examples.className = 'button';
+      examples.href = '#templates/tasks';
+      examples.textContent = 'View examples';
+      buttons.append(examples);
+    }
     const create = document.createElement('button');
     create.className = 'primary';
     create.textContent = 'New workflow';
-    head.append(h1, create);
+    create.addEventListener('click', () => this.dialog.open({}));
+    buttons.append(create);
+    head.append(h1, buttons);
+    screen.append(head);
 
-    screen.append(head, this.emptyState(), this.examples(all));
+    if (workflows.length === 0) {
+      screen.append(this.emptyState(), this.examples(all));
+    } else {
+      screen.append(this.table(workflows), this.recommended(all));
+    }
     root.append(screen);
+  }
+
+  private table(workflows: WorkflowSummary[]): HTMLElement {
+    const table = document.createElement('div');
+    table.className = 'workflow-table';
+
+    const header = document.createElement('div');
+    header.className = 'workflow-row workflow-header';
+    for (const label of ['Workflow', 'Schedule', 'Last run', 'Status', '']) {
+      const cell = document.createElement('span');
+      cell.textContent = label;
+      header.append(cell);
+    }
+    table.append(header);
+
+    for (const workflow of workflows) {
+      table.append(this.row(workflow));
+    }
+    return table;
+  }
+
+  private row(workflow: WorkflowSummary): HTMLElement {
+    const row = document.createElement('div');
+    row.className = 'workflow-row';
+
+    const first = document.createElement('div');
+    const command = document.createElement('a');
+    command.className = 'workflow-command';
+    command.href = '#workflows';
+    command.textContent = `/${workflow.command}`;
+    const description = document.createElement('p');
+    description.textContent = workflow.description || workflow.name;
+    first.append(command, description);
+
+    const schedule = document.createElement('div');
+    if (workflow.cron) {
+      const cron = document.createElement('span');
+      cron.textContent = workflow.scheduleDisplay || workflow.cron;
+      cron.title = workflow.cron;
+      const next = document.createElement('p');
+      next.textContent = workflow.enabled ?
+          nextRunText(workflow) :
+          'Paused - it will not fire until resumed';
+      schedule.append(cron, next);
+    } else {
+      const manual = document.createElement('span');
+      manual.className = 'muted';
+      manual.textContent = 'Only when you run it';
+      schedule.append(manual);
+    }
+
+    const lastRun = document.createElement('div');
+    lastRun.textContent =
+        workflow.lastRun ? formatTime(workflow.lastRun) : 'Never run';
+    if (workflow.lastFireMissed) {
+      const missed = document.createElement('p');
+      missed.className = 'muted';
+      // Surfaced, because a workflow that quietly skipped a firing looks
+      // exactly like one that fired and found nothing to do.
+      missed.textContent = 'A scheduled run was missed';
+      lastRun.append(missed);
+    }
+
+    const status = document.createElement('div');
+    status.className = 'workflow-status';
+    status.dataset['state'] = workflow.enabled ? 'active' : 'paused';
+    status.append(
+        pathIcon(workflow.enabled ? 'M4 10.5l4 4 8-9' : 'M7 4v12M13 4v12'));
+    status.append(workflow.enabled ? 'Active' : 'Paused');
+
+    row.append(first, schedule, lastRun, status, this.rowMenu(workflow));
+    return row;
+  }
+
+  private rowMenu(workflow: WorkflowSummary): HTMLElement {
+    const wrap = document.createElement('div');
+    wrap.className = 'row-menu';
+
+    const button = document.createElement('button');
+    button.className = 'ghost-icon';
+    button.setAttribute('aria-label', `Actions for /${workflow.command}`);
+    button.setAttribute('aria-expanded', 'false');
+    button.textContent = '\u22ef';
+
+    const menu = document.createElement('div');
+    menu.className = 'row-menu-items';
+    menu.hidden = true;
+
+    const item = (label: string, icon: string, onClick: () => void) => {
+      const entry = document.createElement('button');
+      entry.className = 'row-menu-item';
+      entry.append(pathIcon(icon));
+      entry.append(label);
+      entry.addEventListener('click', () => {
+        menu.hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+        onClick();
+      });
+      menu.append(entry);
+      return entry;
+    };
+
+    item('Run now', 'M6 4l10 6-10 6V4z', () => {
+      void this.handler.runWorkflowNow(workflow.id).then(() => this.repaint());
+    });
+    item(workflow.enabled ? 'Pause schedule' : 'Resume schedule',
+         workflow.enabled ? 'M7 4v12M13 4v12' : 'M6 4l10 6-10 6V4z', () => {
+           this.handler.setWorkflowEnabled(workflow.id, !workflow.enabled);
+           void this.repaint();
+         });
+    item('Edit', 'M3 15.5V17h1.5l9-9L12 6.5l-9 9z', () => {
+      // The summary carries no instructions - they can be pages long and the
+      // table shows a line. The dialog opens on what the row knows and the
+      // user re-states the instructions, rather than the list dragging every
+      // workflow's full prompt across the pipe to render five words.
+      this.dialog.edit(workflow, '');
+    });
+    const remove = item('Delete', 'M5 6h10l-1 11H6L5 6zm3-3h4v2H8V3z', () => {
+      this.handler.deleteWorkflow(workflow.id);
+      void this.repaint();
+    });
+    remove.classList.add('destructive');
+
+    button.addEventListener('click', () => {
+      const open = menu.hidden;
+      // One menu at a time, and clicking the row's button again closes it.
+      for (const other of
+               document.querySelectorAll<HTMLElement>('.row-menu-items')) {
+        other.hidden = true;
+      }
+      menu.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+    });
+
+    wrap.append(button, menu);
+    return wrap;
+  }
+
+  private recommended(all: Template[]): HTMLElement {
+    const section = document.createElement('section');
+    const h2 = document.createElement('h2');
+    h2.className = 'section-title';
+    h2.textContent = 'Recommended next';
+    const body = document.createElement('p');
+    body.className = 'subtitle';
+    body.textContent = 'More scheduled workflows that fit your context.';
+
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    for (const t of all.filter(t => t.schedule !== null).slice(0, 3)) {
+      grid.append(this.card(t));
+    }
+    section.append(h2, body, grid);
+    return section;
   }
 
   private emptyState(): HTMLElement {
@@ -111,10 +307,8 @@ export class WorkflowsView {
     const marks = document.createElement('div');
     marks.className = 'connector-marks';
     for (const c of t.connectors) {
-      const mark = document.createElement('span');
-      mark.className = 'connector-mark';
+      const mark = connectorMark(c.id, 'connector-mark');
       mark.dataset['transport'] = c.transport;
-      mark.textContent = c.id.slice(0, 1);
       mark.title = transportLabel(c.id, c.transport);
       marks.append(mark);
     }
@@ -137,4 +331,29 @@ export class WorkflowsView {
     card.append(title, outcome, footer);
     return card;
   }
+}
+
+/** "Next Tue, Sep 1 at 7:00 AM" - the row says when, not a cron expression. */
+function nextRunText(workflow: WorkflowSummary): string {
+  if (!workflow.nextRun) {
+    return 'No next run';
+  }
+  return `Next ${formatTime(workflow.nextRun)}`;
+}
+
+/**
+ * Mojo carries a time as microseconds since the Windows epoch (1601), which is
+ * not what Date wants. Converting through the documented offset rather than
+ * eyeballing it: getting this wrong shows a plausible date that is centuries
+ * off, and nobody reads a date carefully enough to catch it.
+ */
+const WINDOWS_TO_UNIX_EPOCH_MS = 11644473600000;
+
+function formatTime(time: {internalValue: bigint}): string {
+  const ms = Number(time.internalValue / BigInt(1000)) -
+      WINDOWS_TO_UNIX_EPOCH_MS;
+  return new Date(ms).toLocaleString(
+      undefined,
+      {weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric',
+       minute: '2-digit'});
 }

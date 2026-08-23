@@ -158,6 +158,13 @@ export declare class FluxPageHandlerRemote {
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
   showScreen(screen: string): void;
+  listWorkflows(): Promise<{workflows: WorkflowSummary[]}>;
+  saveWorkflow(draft: WorkflowDraft):
+      Promise<{workflowId: string|null, error: string|null}>;
+  deleteWorkflow(workflowId: string): void;
+  setWorkflowEnabled(workflowId: string, enabled: boolean): void;
+  runWorkflowNow(workflowId: string):
+      Promise<{runId: string|null, error: string|null}>;
 }
 
 // Every method the observer must implement, so that a class handed to the
@@ -190,3 +197,28 @@ export declare const FluxPageHandlerFactory: {
     createPageHandler(observer: unknown, handler: unknown): void,
   },
 };
+
+export interface WorkflowSummary {
+  id: string;
+  command: string;
+  name: string;
+  description: string;
+  cron: string;
+  scheduleDisplay: string;
+  lastRun: {internalValue: bigint}|null;
+  nextRun: {internalValue: bigint}|null;
+  enabled: boolean;
+  lastFireMissed: boolean;
+  writeScope: WriteScope;
+}
+
+export interface WorkflowDraft {
+  id: string;
+  command: string;
+  name: string;
+  description: string;
+  cron: string;
+  scheduleDisplay: string;
+  spec: TaskSpec;
+  enabled: boolean;
+}

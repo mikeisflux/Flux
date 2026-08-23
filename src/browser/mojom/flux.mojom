@@ -102,6 +102,42 @@ struct TaskSpec {
   uint64 credit_budget;
 };
 
+// What the console needs to draw one row of the workflow table. Not the whole
+// workflow: the instructions can be pages long and the list shows a summary.
+struct WorkflowSummary {
+  string id;
+  string command;
+  string name;
+  string description;
+  string cron;
+  // Rendered for the row - "Daily at 7am" - because a cron expression is not
+  // something to make a person parse at a glance. Empty when there is no
+  // schedule.
+  string schedule_display;
+  // Null when it has never run, which the row says in words rather than
+  // showing an epoch.
+  mojo_base.mojom.Time? last_run;
+  mojo_base.mojom.Time? next_run;
+  bool enabled;
+  // A firing that was missed because the machine was asleep. Surfaced rather
+  // than swallowed: a workflow that never fired looks identical to one that
+  // fired and found nothing.
+  bool last_fire_missed;
+  WriteScope write_scope;
+};
+
+// What the Save workflow dialog sends. `id` empty creates a new one.
+struct WorkflowDraft {
+  string id;
+  string command;
+  string name;
+  string description;
+  string cron;
+  string schedule_display;
+  TaskSpec spec;
+  bool enabled;
+};
+
 // Browser -> renderer. Live updates for the console.
 // What the connectors screen renders per row. Deliberately not the whole
 // definition: the console already has names, descriptions and badges packed in
@@ -233,6 +269,21 @@ interface FluxPageHandler {
       => (bool stored, string? error);
 
   Disconnect(string connector_id);
+
+  // --- Workflows -------------------------------------------------------------
+
+  ListWorkflows() => (array<WorkflowSummary> workflows);
+
+  // Creates one, or replaces the one with this id. `cron` may be empty for a
+  // workflow that only ever runs on demand from the palette.
+  SaveWorkflow(WorkflowDraft draft) => (string? workflow_id, string? error);
+
+  DeleteWorkflow(string workflow_id);
+  SetWorkflowEnabled(string workflow_id, bool enabled);
+
+  // Fires it now, outside its schedule. Returns the run it started so the
+  // console can follow it, the same as StartRun.
+  RunWorkflowNow(string workflow_id) => (string? run_id, string? error);
 
   // --- The shell ------------------------------------------------------------
 

@@ -13,6 +13,10 @@
 #include "base/strings/string_split.h"
 #include "base/uuid.h"
 #include "chrome/browser/flux/flux_agent_service.h"
+#include "chrome/browser/flux/flux_prefs.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace flux {
 namespace {
@@ -127,6 +131,124 @@ std::optional<base::Time> WorkflowScheduler::NextFireTime(
   return std::nullopt;
 }
 
+PrefService* WorkflowScheduler::Prefs() const {
+  Profile* profile = service_ ? service_->profile() : nullptr;
+  return profile ? profile->GetPrefs() : nullptr;
+}
+
+namespace {
+
+// One workflow as a pref dictionary. TaskSpec is flattened rather than nested:
+// the spec is five scalars and a nested dict buys nothing but another level to
+// get wrong when reading it back.
+base::DictValue ToDict(const Workflow& workflow) {
+  base::DictValue out;
+  out.Set("command", workflow.command);
+  out.Set("name", workflow.name);
+  out.Set("description", workflow.description);
+  out.Set("cron", workflow.cron);
+  out.Set("schedule_display", workflow.schedule_display);
+  out.Set("enabled", workflow.enabled);
+  out.Set("last_fire_missed", workflow.last_fire_missed);
+  // Times as microseconds since the Windows epoch, which is what
+  // base::Time::ToDeltaSinceWindowsEpoch gives on every platform - a double
+  // would lose precision on a value this large.
+  out.Set("last_run",
+          base::NumberToString(
+              workflow.last_run.ToDeltaSinceWindowsEpoch().InMicroseconds()));
+  if (workflow.spec) {
+    out.Set("prompt", workflow.spec->prompt);
+    if (workflow.spec->template_id)
+      out.Set("template_id", *workflow.spec->template_id);
+    out.Set("write_scope", static_cast<int>(workflow.spec->write_scope));
+    out.Set("profile_id", workflow.spec->profile_id);
+    out.Set("credit_budget",
+            base::NumberToString(workflow.spec->credit_budget));
+  }
+  return out;
+}
+
+base::Time TimeFromDict(const base::DictValue& dict, std::string_view key) {
+  const std::string* raw = dict.FindString(key);
+  int64_t micros = 0;
+  if (!raw || !base::StringToInt64(*raw, &micros))
+    return base::Time();
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(micros));
+}
+
+}  // namespace
+
+void WorkflowScheduler::SaveToPrefs() const {
+  PrefService* prefs = Prefs();
+  if (!prefs)
+    return;
+  base::DictValue all;
+  for (const auto& [id, workflow] : workflows_)
+    all.Set(id, ToDict(workflow));
+  prefs->SetDict(prefs::kWorkflows, std::move(all));
+}
+
+void WorkflowScheduler::LoadFromPrefs() {
+  PrefService* prefs = Prefs();
+  if (!prefs)
+    return;
+
+  workflows_.clear();
+  for (const auto entry : prefs->GetDict(prefs::kWorkflows)) {
+    if (!entry.second.is_dict())
+      continue;
+    const base::DictValue& dict = entry.second.GetDict();
+
+    Workflow workflow;
+    workflow.id = entry.first;
+    if (const std::string* v = dict.FindString("command"))
+      workflow.command = *v;
+    if (const std::string* v = dict.FindString("name"))
+      workflow.name = *v;
+    if (const std::string* v = dict.FindString("description"))
+      workflow.description = *v;
+    if (const std::string* v = dict.FindString("cron"))
+      workflow.cron = *v;
+    if (const std::string* v = dict.FindString("schedule_display"))
+      workflow.schedule_display = *v;
+    workflow.enabled = dict.FindBool("enabled").value_or(true);
+    workflow.last_fire_missed =
+        dict.FindBool("last_fire_missed").value_or(false);
+    workflow.last_run = TimeFromDict(dict, "last_run");
+
+    auto spec = mojom::TaskSpec::New();
+    if (const std::string* v = dict.FindString("prompt"))
+      spec->prompt = *v;
+    if (const std::string* v = dict.FindString("template_id"))
+      spec->template_id = *v;
+    spec->write_scope = static_cast<mojom::WriteScope>(
+        dict.FindInt("write_scope")
+            .value_or(static_cast<int>(mojom::WriteScope::kReadOnly)));
+    if (const std::string* v = dict.FindString("profile_id"))
+      spec->profile_id = *v;
+    uint64_t budget = 0;
+    if (const std::string* v = dict.FindString("credit_budget"))
+      base::StringToUint64(*v, &budget);
+    spec->credit_budget = budget;
+    workflow.spec = std::move(spec);
+
+    // Recomputed rather than restored: the saved next_run is in the past by
+    // definition after a restart, and a stale one would fire immediately.
+    if (std::optional<base::Time> next =
+            NextFireTime(workflow.cron, base::Time::Now())) {
+      workflow.next_run = *next;
+    }
+
+    workflows_[workflow.id] = std::move(workflow);
+  }
+  ScheduleNext();
+}
+
+const Workflow* WorkflowScheduler::Get(const std::string& workflow_id) const {
+  auto it = workflows_.find(workflow_id);
+  return it == workflows_.end() ? nullptr : &it->second;
+}
+
 std::string WorkflowScheduler::Add(Workflow workflow) {
   if (workflow.id.empty())
     workflow.id = base::Uuid::GenerateRandomV4().AsLowercaseString();
@@ -139,12 +261,14 @@ std::string WorkflowScheduler::Add(Workflow workflow) {
   const std::string id = workflow.id;
   workflows_[id] = std::move(workflow);
   ScheduleNext();
+  SaveToPrefs();
   return id;
 }
 
 void WorkflowScheduler::Remove(const std::string& workflow_id) {
   workflows_.erase(workflow_id);
   ScheduleNext();
+  SaveToPrefs();
 }
 
 void WorkflowScheduler::SetEnabled(const std::string& workflow_id,
@@ -154,6 +278,7 @@ void WorkflowScheduler::SetEnabled(const std::string& workflow_id,
     return;
   it->second.enabled = enabled;
   ScheduleNext();
+  SaveToPrefs();
 }
 
 std::vector<const Workflow*> WorkflowScheduler::List() const {
@@ -205,6 +330,9 @@ void WorkflowScheduler::OnTimerFired() {
     workflow.next_run = next.value_or(base::Time());
   }
   ScheduleNext();
+  // last_run and last_fire_missed changed above. Without this the table says
+  // "Never run" forever, and a missed firing is forgotten by the next restart.
+  SaveToPrefs();
 }
 
 // static

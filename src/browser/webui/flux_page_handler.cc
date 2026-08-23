@@ -16,6 +16,7 @@
 #include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
 #include "chrome/browser/flux/connectors/connector_service.h"
+#include "chrome/browser/flux/scheduler/workflow_scheduler.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -516,6 +517,159 @@ void FluxPageHandler::GetSidebarCollapsed(
     GetSidebarCollapsedCallback callback) {
   std::move(callback).Run(
       profile_->GetPrefs()->GetBoolean(prefs::kSidebarCollapsed));
+}
+
+namespace {
+
+// A workflow's command is how it is invoked from the palette, and it shares a
+// namespace with skills. Normalised rather than rejected: a user typing
+// "Weekly Report" in the dialog means /weekly-report, and making them learn
+// the slug rules is not worth the round trip.
+std::string NormalizeCommand(std::string_view raw) {
+  std::string out;
+  out.reserve(raw.size());
+  for (char c : raw) {
+    if (base::IsAsciiAlphaNumeric(c)) {
+      out += base::ToLowerASCII(c);
+    } else if (!out.empty() && out.back() != '-') {
+      out += '-';
+    }
+  }
+  while (!out.empty() && out.back() == '-')
+    out.pop_back();
+  return out;
+}
+
+mojom::WorkflowSummaryPtr ToSummary(const Workflow& workflow) {
+  auto summary = mojom::WorkflowSummary::New();
+  summary->id = workflow.id;
+  summary->command = workflow.command;
+  summary->name = workflow.name;
+  summary->description = workflow.description;
+  summary->cron = workflow.cron;
+  summary->schedule_display = workflow.schedule_display;
+  // Null rather than the epoch, so the row can say "Never run" instead of
+  // rendering 1601.
+  if (!workflow.last_run.is_null())
+    summary->last_run = workflow.last_run;
+  if (!workflow.next_run.is_null())
+    summary->next_run = workflow.next_run;
+  summary->enabled = workflow.enabled;
+  summary->last_fire_missed = workflow.last_fire_missed;
+  summary->write_scope = workflow.spec ? workflow.spec->write_scope
+                                       : mojom::WriteScope::kReadOnly;
+  return summary;
+}
+
+}  // namespace
+
+void FluxPageHandler::ListWorkflows(ListWorkflowsCallback callback) {
+  std::vector<mojom::WorkflowSummaryPtr> out;
+  if (service_ && service_->scheduler()) {
+    for (const Workflow* workflow : service_->scheduler()->List())
+      out.push_back(ToSummary(*workflow));
+  }
+  std::move(callback).Run(std::move(out));
+}
+
+void FluxPageHandler::SaveWorkflow(mojom::WorkflowDraftPtr draft,
+                                   SaveWorkflowCallback callback) {
+  if (!service_ || !service_->scheduler() || !draft || !draft->spec) {
+    std::move(callback).Run(std::nullopt, "Agent service unavailable.");
+    return;
+  }
+
+  const std::string command = NormalizeCommand(draft->command);
+  if (command.empty()) {
+    std::move(callback).Run(std::nullopt,
+                            "A workflow needs a command to run it by.");
+    return;
+  }
+  if (draft->spec->prompt.empty()) {
+    std::move(callback).Run(
+        std::nullopt, "A workflow needs instructions - there is nothing to run.");
+    return;
+  }
+
+  // Commands are one namespace shared with skills, so a collision would
+  // shadow whichever the palette resolved second. Checked against other
+  // workflows here; the skill registry owns its own half.
+  for (const Workflow* existing : service_->scheduler()->List()) {
+    if (existing->command == command && existing->id != draft->id) {
+      std::move(callback).Run(
+          std::nullopt,
+          base::StrCat({"/", command, " is already taken by another workflow."}));
+      return;
+    }
+  }
+
+  // An unparseable cron is rejected rather than saved as never-firing. A
+  // workflow that silently never runs is the worst outcome here: it looks
+  // saved, and the first sign of trouble is the report that never arrives.
+  if (!draft->cron.empty() &&
+      !WorkflowScheduler::NextFireTime(draft->cron, base::Time::Now())) {
+    std::move(callback).Run(
+        std::nullopt,
+        base::StrCat({"\"", draft->cron,
+                      "\" is not a schedule this can read. Five fields, "
+                      "minute first."}));
+    return;
+  }
+
+  Workflow workflow;
+  workflow.id = draft->id;
+  workflow.command = command;
+  workflow.name = draft->name;
+  workflow.description = draft->description;
+  workflow.cron = draft->cron;
+  workflow.schedule_display = draft->schedule_display;
+  workflow.enabled = draft->enabled;
+  workflow.spec = std::move(draft->spec);
+  if (const Workflow* previous = service_->scheduler()->Get(workflow.id)) {
+    // Editing keeps the history. Losing "last run" because a description was
+    // corrected would be its own small betrayal.
+    workflow.last_run = previous->last_run;
+    workflow.last_fire_missed = previous->last_fire_missed;
+  }
+
+  const std::string id = service_->scheduler()->Add(std::move(workflow));
+  std::move(callback).Run(id, std::nullopt);
+}
+
+void FluxPageHandler::DeleteWorkflow(const std::string& workflow_id) {
+  if (service_ && service_->scheduler())
+    service_->scheduler()->Remove(workflow_id);
+}
+
+void FluxPageHandler::SetWorkflowEnabled(const std::string& workflow_id,
+                                         bool enabled) {
+  if (service_ && service_->scheduler())
+    service_->scheduler()->SetEnabled(workflow_id, enabled);
+}
+
+void FluxPageHandler::RunWorkflowNow(const std::string& workflow_id,
+                                     RunWorkflowNowCallback callback) {
+  if (!service_ || !service_->scheduler()) {
+    std::move(callback).Run(std::nullopt, "Agent service unavailable.");
+    return;
+  }
+  const Workflow* workflow = service_->scheduler()->Get(workflow_id);
+  if (!workflow || !workflow->spec) {
+    std::move(callback).Run(std::nullopt, "That workflow no longer exists.");
+    return;
+  }
+
+  // Runs the same spec the schedule would, and deliberately does NOT touch
+  // last_run or next_run: this is a manual run, and folding it into the
+  // schedule's history would make a paused workflow look like it fired.
+  std::string error;
+  std::optional<std::string> run_id =
+      service_->StartRun(workflow->spec->Clone(), &error);
+  if (!run_id) {
+    std::move(callback).Run(std::nullopt, error);
+    return;
+  }
+  std::move(callback).Run(*run_id, std::nullopt);
 }
 
 void FluxPageHandler::ShowScreen(const std::string& screen) {
