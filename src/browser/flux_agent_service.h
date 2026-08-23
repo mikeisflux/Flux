@@ -40,6 +40,8 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
     virtual void OnRunAction(const std::string& run_id,
                              const mojom::ActionRecord& action) {}
     virtual void OnApprovalRequested(const mojom::ApprovalRequest& request) {}
+    virtual void OnRunArtifact(const std::string& run_id,
+                               const mojom::RunArtifact& artifact) {}
     virtual void OnRunFinished(const std::string& run_id,
                                mojom::RunState state,
                                const std::string& summary) {}
@@ -70,6 +72,26 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
                        const std::string& user_note);
 
   std::vector<mojom::RunProgressPtr> ListRuns() const;
+
+  // Everything the run screen needs to draw a run it did not watch happen.
+  mojom::RunProgressPtr GetProgress(const std::string& run_id) const;
+  std::string GetSummary(const std::string& run_id) const;
+  std::vector<mojom::RunArtifactPtr> GetArtifacts(
+      const std::string& run_id) const;
+
+  // Called by the agent's own tools. The model sets a plan before it starts
+  // and records a file when it produces one; both are how the run screen says
+  // what is happening rather than counting tool calls.
+  void SetPlan(const std::string& run_id, std::vector<mojom::TaskStepPtr> plan);
+  void AdvancePlan(const std::string& run_id,
+                   uint32_t index,
+                   mojom::TaskStepState state);
+  void AddArtifact(const std::string& run_id, mojom::RunArtifactPtr artifact);
+
+  // A follow-up typed into a run's composer.
+  bool SendFollowUp(const std::string& run_id,
+                    const std::string& text,
+                    std::string* error);
   std::vector<mojom::ActionRecordPtr> GetActions(const std::string& run_id) const;
 
   // Compiles a finished run's action trace into a replayable workflow.
@@ -123,6 +145,12 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   base::circular_deque<mojom::TaskSpecPtr> queue_;
   std::map<std::string, mojom::RunProgressPtr> progress_;
   std::map<std::string, std::vector<mojom::ActionRecordPtr>> actions_;
+  // The closing summary, kept per run. It arrives once, on OnFinished, and
+  // was previously forwarded to whoever happened to be listening and then
+  // dropped - so reopening a finished run showed its steps and no answer,
+  // which is the part the user actually wanted.
+  std::map<std::string, std::string> summaries_;
+  std::map<std::string, std::vector<mojom::RunArtifactPtr>> artifacts_;
 
   const uint32_t concurrency_limit_;
   base::ObserverList<Observer> observers_;

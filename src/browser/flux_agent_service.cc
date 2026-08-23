@@ -164,6 +164,77 @@ std::vector<mojom::RunProgressPtr> FluxAgentService::ListRuns() const {
   return out;
 }
 
+std::vector<mojom::RunArtifactPtr> FluxAgentService::GetArtifacts(
+    const std::string& run_id) const {
+  std::vector<mojom::RunArtifactPtr> out;
+  auto it = artifacts_.find(run_id);
+  if (it == artifacts_.end())
+    return out;
+  out.reserve(it->second.size());
+  for (const mojom::RunArtifactPtr& artifact : it->second)
+    out.push_back(artifact.Clone());
+  return out;
+}
+
+void FluxAgentService::SetPlan(const std::string& run_id,
+                               std::vector<mojom::TaskStepPtr> plan) {
+  auto it = progress_.find(run_id);
+  if (it == progress_.end())
+    return;
+  it->second->plan = std::move(plan);
+  for (Observer& o : observers_)
+    o.OnRunProgress(*it->second);
+}
+
+void FluxAgentService::AdvancePlan(const std::string& run_id,
+                                   uint32_t index,
+                                   mojom::TaskStepState state) {
+  auto it = progress_.find(run_id);
+  if (it == progress_.end() || index >= it->second->plan.size())
+    return;
+  it->second->plan[index]->state = state;
+  for (Observer& o : observers_)
+    o.OnRunProgress(*it->second);
+}
+
+void FluxAgentService::AddArtifact(const std::string& run_id,
+                                   mojom::RunArtifactPtr artifact) {
+  if (!artifact)
+    return;
+  for (Observer& o : observers_)
+    o.OnRunArtifact(run_id, *artifact);
+  artifacts_[run_id].push_back(std::move(artifact));
+}
+
+bool FluxAgentService::SendFollowUp(const std::string& run_id,
+                                    const std::string& text,
+                                    std::string* error) {
+  if (text.empty()) {
+    *error = "Nothing to send.";
+    return false;
+  }
+  auto it = runs_.find(run_id);
+  if (it == runs_.end() || !it->second) {
+    // A finished run's runner is gone. Rather than silently starting an
+    // unrelated task, say so - the console offers to open a new one.
+    *error = "That run has ended. Start a new task to carry on from it.";
+    return false;
+  }
+  it->second->AddUserMessage(text);
+  return true;
+}
+
+mojom::RunProgressPtr FluxAgentService::GetProgress(
+    const std::string& run_id) const {
+  auto it = progress_.find(run_id);
+  return it == progress_.end() ? nullptr : it->second.Clone();
+}
+
+std::string FluxAgentService::GetSummary(const std::string& run_id) const {
+  auto it = summaries_.find(run_id);
+  return it == summaries_.end() ? std::string() : it->second;
+}
+
 std::vector<mojom::ActionRecordPtr> FluxAgentService::GetActions(
     const std::string& run_id) const {
   std::vector<mojom::ActionRecordPtr> out;
@@ -241,6 +312,11 @@ void FluxAgentService::OnFinished(mojom::RunState state,
 
   if (auto it = progress_.find(finished_id); it != progress_.end())
     it->second->state = state;
+
+  // Kept, not just forwarded. The summary is the answer the user asked for,
+  // and it arrives exactly once - a console opened after the run ended, or
+  // reloaded, had its steps and no result.
+  summaries_[finished_id] = summary;
 
   for (Observer& o : observers_)
     o.OnRunFinished(finished_id, state, summary);

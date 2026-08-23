@@ -10,6 +10,7 @@ import type {
   ActionRecord,
   ApprovalRequest,
   ConnectorStatus,
+  RunArtifact,
   RunProgress,
 } from './flux.mojom-webui.js';
 
@@ -144,6 +145,11 @@ class FluxSidebar {
 
   onAction(runId: string, action: ActionRecord) {
     this.runs.appendAction(runId, action);
+  }
+
+  onArtifact(_runId: string, _artifact: RunArtifact) {
+    // The tab's run view shows these. The sidebar's list is one line per run
+    // and has nowhere to put a file.
   }
 
   onApprovalRequested(request: ApprovalRequest) {

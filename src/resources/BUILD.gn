@@ -41,6 +41,7 @@ build_webui("resources") {
     "workflows_view.ts",
     "workflow_dialog.ts",
     "runs.ts",
+    "run_view.ts",
     "approvals.ts",
     "settings.ts",
   ]

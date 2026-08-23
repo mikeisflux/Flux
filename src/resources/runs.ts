@@ -41,6 +41,18 @@ export class RunList {
       row = document.createElement('div');
       row.className = 'run';
       row.tabIndex = 0;
+      row.setAttribute('role', 'link');
+      // The sidebar is a different document from the tab, so it navigates the
+      // window through the browser process rather than setting a hash the tab
+      // would never see. Same path the nav rows take.
+      const open = () => this.handler.showScreen(`run/${progress.runId}`);
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
       row.append(
           Object.assign(document.createElement('span'), {className: 'run-dot'}),
           Object.assign(document.createElement('span'), {className: 'run-title'}),

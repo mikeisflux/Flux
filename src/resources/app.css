@@ -1855,3 +1855,214 @@ body.shell.collapsed .badge { display: none; }
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* --- Run screen -----------------------------------------------------------
+ *
+ * A transcript, not a dashboard. The column is narrow on purpose: the summary
+ * at the end is prose meant to be read, and prose at full window width is not.
+ */
+.run-screen {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.run-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 18px;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.run-head-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.run-head-link:hover {
+  text-decoration: underline;
+}
+
+.step-count {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+}
+
+.step-count::before {
+  display: inline-block;
+  margin-right: 6px;
+  content: '›';
+  transform: rotate(90deg);
+}
+
+.run-stream[data-collapsed] .tool-chip,
+.run-stream[data-collapsed] .run-prose {
+  display: none;
+}
+
+.run-user {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin: 12px 0 12px auto;
+  background: var(--bg-subtle, rgb(0 0 0 / 5%));
+  width: fit-content;
+}
+
+.run-prose {
+  margin: 14px 0;
+  line-height: 1.55;
+}
+
+/* Every tool call, in order. The verb is the readable part and the target is
+ * monospace beside it, because the filename is what someone scanning the
+ * transcript is actually looking for. */
+.tool-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin: 6px 0;
+  gap: 10px;
+}
+
+.tool-chip code {
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.tool-chip[data-ok='false'] {
+  border-color: var(--danger, #c0392b);
+}
+
+.tool-error {
+  color: var(--danger, #c0392b);
+  font-size: 13px;
+}
+
+.run-summary {
+  margin: 18px 0;
+  line-height: 1.6;
+}
+
+.run-summary ul {
+  padding-left: 22px;
+}
+
+.run-summary li {
+  margin: 8px 0;
+}
+
+/* --- Plan panel ----------------------------------------------------------- */
+.plan-panel {
+  position: sticky;
+  bottom: 96px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 24px;
+  background: var(--bg);
+}
+
+.plan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  font-weight: 600;
+}
+
+.plan-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  gap: 10px;
+}
+
+.plan-mark {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.plan-row[data-state='active'] .plan-mark {
+  fill: var(--accent-text);
+  stroke: var(--accent-text);
+}
+
+.plan-row[data-state='done'] .plan-mark {
+  stroke: var(--accent-text);
+}
+
+.plan-row[data-state='done'] span {
+  color: var(--fg-muted);
+}
+
+/* --- Artifacts ------------------------------------------------------------ */
+.artifact-card {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.artifact-card h3 {
+  margin: 0 0 14px;
+}
+
+.artifact-primary {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  gap: 12px;
+}
+
+.artifact-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+}
+
+.artifact-open {
+  margin-left: auto;
+  color: inherit;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.artifact-open:hover {
+  text-decoration: underline;
+}
+
+.artifact-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.artifact-file {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: inherit;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.send[data-mode='stop'] {
+  background: var(--danger, #c0392b);
+}

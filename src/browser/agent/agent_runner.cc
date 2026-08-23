@@ -355,6 +355,23 @@ void AgentRunner::Resume() {
   }
 }
 
+void AgentRunner::AddUserMessage(const std::string& text) {
+  if (text.empty())
+    return;
+
+  Message note;
+  note.role = Message::Role::kUser;
+  note.text = text;
+  history_.push_back(std::move(note));
+
+  // If the loop has run out of turns to take - paused, or waiting because the
+  // last assistant turn made no tool call - the new message is what restarts
+  // it. A run that is mid-tool picks it up when that tool returns.
+  if (state_ == mojom::RunState::kPaused) {
+    Resume();
+  }
+}
+
 void AgentRunner::Finish(mojom::RunState state, const std::string& summary) {
   state_ = state;
   weak_factory_.InvalidateWeakPtrs();

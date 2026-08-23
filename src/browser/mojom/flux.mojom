@@ -78,6 +78,38 @@ struct ApprovalRequest {
   string? payload_preview;
 };
 
+// One line of the agent's plan. The model writes the plan before it starts and
+// ticks items off as it goes, which is the difference between a progress bar
+// that counts tool calls and one that says what is left to do.
+struct TaskStep {
+  string text;
+  TaskStepState state;
+};
+
+enum TaskStepState {
+  kPending,
+  kActive,
+  kDone,
+  kSkipped,
+};
+
+// A file the run produced. Runs that end in "here is your spreadsheet" are the
+// point of the product, and until now the answer only existed as prose in the
+// summary.
+struct ArtifactFile {
+  string name;
+  url.mojom.Url url;
+};
+
+struct RunArtifact {
+  string title;
+  // "Webpage", "Spreadsheet", "Document" - what the primary output is, shown
+  // on the row beside Open.
+  string kind;
+  url.mojom.Url url;
+  array<ArtifactFile> files;
+};
+
 struct RunProgress {
   string run_id;
   RunState state;
@@ -88,6 +120,11 @@ struct RunProgress {
   uint32 input_tokens;
   uint32 output_tokens;
   uint64 credits_spent;
+  // The plan, in order. Empty until the model sets one.
+  array<TaskStep> plan;
+  // Time spent in model inference since the last action, so the transcript can
+  // say "Thought for 15s" rather than showing a gap.
+  uint32 thinking_ms;
 };
 
 struct TaskSpec {
@@ -163,6 +200,11 @@ interface FluxPageHandlerObserver {
   OnAction(string run_id, ActionRecord action);
   OnApprovalRequested(ApprovalRequest request);
   OnRunFinished(string run_id, RunState final_state, string? summary);
+
+  // A run produced a file. Sent as it happens rather than only at the end: a
+  // long run that writes three artifacts should show the first one while it
+  // is still working on the third.
+  OnArtifact(string run_id, RunArtifact artifact);
   // Emitted when the agent writes back to the Instructions buffer, so the UI
   // can show provenance rather than silently mutating what the user wrote.
   OnLearnedFact(string fact, string source_run_id);
@@ -269,6 +311,19 @@ interface FluxPageHandler {
       => (bool stored, string? error);
 
   Disconnect(string connector_id);
+
+  // Everything the run screen needs for a run it did not watch happen: a
+  // reload, or opening one that finished while the console was elsewhere.
+  // Null progress means the run is not known.
+  GetRun(string run_id)
+      => (RunProgress? progress,
+          array<ActionRecord> actions,
+          string? summary,
+          array<RunArtifact> artifacts);
+
+  // A message typed into a run's composer. Continues the run if it is still
+  // going, and reopens it as a follow-up turn if it has finished.
+  SendFollowUp(string run_id, string text) => (bool accepted, string? error);
 
   // --- Workflows -------------------------------------------------------------
 

@@ -51,6 +51,12 @@ class AgentRunner {
   void Resume();
   void ResolveApproval(bool approved, const std::string& user_note);
 
+  // A message typed into the run's composer while it is going. Appended to the
+  // history and picked up on the next turn rather than interrupting the one in
+  // flight: cutting off a tool call mid-execution to read a new instruction is
+  // how a half-finished write happens.
+  void AddUserMessage(const std::string& text);
+
   const std::string& run_id() const { return run_id_; }
   mojom::RunState state() const { return state_; }
 

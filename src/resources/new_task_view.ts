@@ -332,15 +332,19 @@ export class NewTaskView {
       creditBudget: this.depth.creditBudget,
     });
 
-    this.status.hidden = false;
-    this.status.textContent = error ?
-        error :
-        `Started. Follow it in the sidebar (${runId.slice(0, 8)}).`;
-    this.status.classList.toggle('error', Boolean(error));
-    if (!error) {
-      this.prompt.value = '';
-      this.templateId = null;
+    if (error) {
+      this.status.hidden = false;
+      this.status.textContent = error;
+      this.status.classList.add('error');
+      return;
     }
+
+    this.prompt.value = '';
+    this.templateId = null;
+    // Straight to the run. Starting a task and being left on the form, told to
+    // "follow it in the sidebar", is the console describing what it just did
+    // instead of showing it.
+    window.location.hash = `#run/${runId}`;
   }
 }
 

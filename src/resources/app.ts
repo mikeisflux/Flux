@@ -6,7 +6,7 @@ import {
   FluxPageHandlerRemote,
   RunState,
 } from './flux.mojom-webui.js';
-import type {ActionRecord, ApprovalRequest, ConnectorStatus, RunProgress} from './flux.mojom-webui.js';
+import type {ActionRecord, ApprovalRequest, ConnectorStatus, RunArtifact, RunProgress} from './flux.mojom-webui.js';
 
 import {ApprovalQueue} from './approvals.js';
 import {FluxSettingsView} from './settings_view.js';
@@ -17,6 +17,7 @@ import {WelcomeView} from './welcome_view.js';
 import {NewTaskView} from './new_task_view.js';
 import {TemplatesView} from './templates_view.js';
 import {WorkflowsView} from './workflows_view.js';
+import {RunView} from './run_view.js';
 
 /**
  * The console's content column, running in a tab.
@@ -42,6 +43,7 @@ class FluxApp {
   private newTask: NewTaskView;
   private templates = new TemplatesView();
   private workflows: WorkflowsView;
+  private run: RunView;
 
   constructor() {
     this.handler = new FluxPageHandlerRemote();
@@ -65,6 +67,7 @@ class FluxApp {
     this.customize = new CustomizeView(this.handler);
     this.welcome = new WelcomeView(this.handler);
     this.workflows = new WorkflowsView(this.handler);
+    this.run = new RunView(this.handler);
 
     // Ctrl+K reaches the panel from any console screen. The same chord over a
     // web page is handled in the frame - see patches/0013 - because a page that
@@ -148,6 +151,10 @@ class FluxApp {
                 content, sub === 'skills' ? 'skills' : 'tasks'));
       case 'workflows':
         return settle(content, this.workflows.render(content));
+      case 'run':
+        // The sub-segment is the run id, so #run/<id> is a link anything can
+        // hand out - the sidebar's run list, a notification, the composer.
+        return settle(content, this.run.render(content, sub));
       case 'search':
         return settle(content, this.palette.render(content));
       case 'agent':
@@ -168,11 +175,20 @@ class FluxApp {
 
   // --- FluxPageHandlerObserver ---------------------------------------------
 
-  onRunProgress(_progress: RunProgress) {
-    // The run list lives in the shell's sidebar; nothing in the tab tracks it.
+  onRunProgress(progress: RunProgress) {
+    // The sidebar owns the run list; the tab owns the open run, if it is this
+    // one. Both listen to the same stream rather than one relaying to the
+    // other - they are separate documents.
+    this.run.onProgress(progress);
   }
 
-  onAction(_runId: string, _action: ActionRecord) {}
+  onAction(runId: string, action: ActionRecord) {
+    this.run.onAction(runId, action);
+  }
+
+  onArtifact(runId: string, artifact: RunArtifact) {
+    this.run.onArtifact(runId, artifact);
+  }
 
   onApprovalRequested(request: ApprovalRequest) {
     // Surfaced immediately and unconditionally: a run blocked on a human is
@@ -181,8 +197,9 @@ class FluxApp {
     this.approvals.enqueue(request);
   }
 
-  onRunFinished(runId: string, _state: RunState, _summary: string|null) {
+  onRunFinished(runId: string, state: RunState, summary: string|null) {
     this.approvals.dismissFor(runId);
+    this.run.onFinished(runId, state, summary);
   }
 
   onLearnedFact(_fact: string, _sourceRunId: string) {

@@ -71,6 +71,32 @@ export interface RunProgress {
   inputTokens: number;
   outputTokens: number;
   creditsSpent: bigint;
+  plan: TaskStep[];
+  thinkingMs: number;
+}
+
+export declare enum TaskStepState {
+  kPending,
+  kActive,
+  kDone,
+  kSkipped,
+}
+
+export interface TaskStep {
+  text: string;
+  state: TaskStepState;
+}
+
+export interface ArtifactFile {
+  name: string;
+  url: Url;
+}
+
+export interface RunArtifact {
+  title: string;
+  kind: string;
+  url: Url;
+  files: ArtifactFile[];
 }
 
 export interface ModelConfig {
@@ -158,6 +184,14 @@ export declare class FluxPageHandlerRemote {
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
   showScreen(screen: string): void;
+  getRun(runId: string): Promise<{
+    progress: RunProgress|null,
+    actions: ActionRecord[],
+    summary: string|null,
+    artifacts: RunArtifact[],
+  }>;
+  sendFollowUp(runId: string, text: string):
+      Promise<{accepted: boolean, error: string|null}>;
   listWorkflows(): Promise<{workflows: WorkflowSummary[]}>;
   saveWorkflow(draft: WorkflowDraft):
       Promise<{workflowId: string|null, error: string|null}>;
@@ -183,6 +217,7 @@ export interface FluxPageHandlerObserverInterface {
                 summary: string|null): void;
   onLearnedFact(fact: string, sourceRunId: string): void;
   onConnectorChanged(status: ConnectorStatus, error: string|null): void;
+  onArtifact(runId: string, artifact: RunArtifact): void;
 }
 
 export declare class FluxPageHandlerObserverReceiver {

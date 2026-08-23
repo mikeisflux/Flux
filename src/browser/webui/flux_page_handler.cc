@@ -563,6 +563,34 @@ mojom::WorkflowSummaryPtr ToSummary(const Workflow& workflow) {
 
 }  // namespace
 
+void FluxPageHandler::GetRun(const std::string& run_id,
+                             GetRunCallback callback) {
+  if (!service_) {
+    std::move(callback).Run(nullptr, {}, std::nullopt, {});
+    return;
+  }
+  mojom::RunProgressPtr progress = service_->GetProgress(run_id);
+  std::vector<mojom::ActionRecordPtr> actions = service_->GetActions(run_id);
+  const std::string summary = service_->GetSummary(run_id);
+  std::move(callback).Run(
+      std::move(progress), std::move(actions),
+      summary.empty() ? std::optional<std::string>() : summary,
+      service_->GetArtifacts(run_id));
+}
+
+void FluxPageHandler::SendFollowUp(const std::string& run_id,
+                                   const std::string& text,
+                                   SendFollowUpCallback callback) {
+  if (!service_) {
+    std::move(callback).Run(false, "Agent service unavailable.");
+    return;
+  }
+  std::string error;
+  const bool accepted = service_->SendFollowUp(run_id, text, &error);
+  std::move(callback).Run(
+      accepted, accepted ? std::optional<std::string>() : error);
+}
+
 void FluxPageHandler::ListWorkflows(ListWorkflowsCallback callback) {
   std::vector<mojom::WorkflowSummaryPtr> out;
   if (service_ && service_->scheduler()) {
@@ -688,16 +716,33 @@ void FluxPageHandler::ShowScreen(const std::string& screen) {
   // something that is not the console at all.
   static constexpr std::string_view kScreens[] = {
       "new-task", "templates", "workflows", "connectors", "customize",
-      "approvals", "settings", "agent", "search", "welcome"};
+      "approvals", "settings", "agent", "search", "welcome", "run"};
+
+  // "run/<id>" is the one screen that carries an argument. Split before
+  // matching, and hold the id to the characters a run id can contain - it
+  // arrives from a renderer, and everything after the slash ends up in a URL
+  // the browser process then navigates to.
+  std::string_view name = screen;
+  std::string_view argument;
+  if (const size_t slash = screen.find('/'); slash != std::string::npos) {
+    name = std::string_view(screen).substr(0, slash);
+    argument = std::string_view(screen).substr(slash + 1);
+  }
+
   bool known = false;
   for (std::string_view candidate : kScreens) {
-    if (candidate == screen) {
+    if (candidate == name) {
       known = true;
       break;
     }
   }
   if (!known) {
     return;
+  }
+  for (char c : argument) {
+    if (!base::IsAsciiAlphaNumeric(c) && c != '-' && c != '_') {
+      return;
+    }
   }
 
   const GURL url =
@@ -737,6 +782,11 @@ void FluxPageHandler::OnRunAction(const std::string& run_id,
 void FluxPageHandler::OnApprovalRequested(
     const mojom::ApprovalRequest& request) {
   observer_->OnApprovalRequested(request.Clone());
+}
+
+void FluxPageHandler::OnRunArtifact(const std::string& run_id,
+                                    const mojom::RunArtifact& artifact) {
+  observer_->OnArtifact(run_id, artifact.Clone());
 }
 
 void FluxPageHandler::OnRunFinished(const std::string& run_id,

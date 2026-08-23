@@ -88,6 +88,10 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void GetSidebarCollapsed(GetSidebarCollapsedCallback callback) override;
   void SetSidebarCollapsed(bool collapsed) override;
   void ShowScreen(const std::string& screen) override;
+  void GetRun(const std::string& run_id, GetRunCallback callback) override;
+  void SendFollowUp(const std::string& run_id,
+                    const std::string& text,
+                    SendFollowUpCallback callback) override;
   void ListWorkflows(ListWorkflowsCallback callback) override;
   void SaveWorkflow(mojom::WorkflowDraftPtr draft,
                     SaveWorkflowCallback callback) override;
@@ -115,6 +119,8 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void OnRunAction(const std::string& run_id,
                    const mojom::ActionRecord& action) override;
   void OnApprovalRequested(const mojom::ApprovalRequest& request) override;
+  void OnRunArtifact(const std::string& run_id,
+                     const mojom::RunArtifact& artifact) override;
   void OnRunFinished(const std::string& run_id,
                      mojom::RunState state,
                      const std::string& summary) override;
