@@ -46,6 +46,14 @@ reads correctly and parses as a drive-qualified variable reference, which is a
 hard parse failure - the script dies at line 1, having done nothing. Reading
 carefully does not catch this class of bug. A parser does.
 
+It also rejects an `@( )` array literal passed to `Invoke-Native`. Windows
+PowerShell 5.1 flattens an array literal bound to a
+`ValueFromRemainingArguments` parameter into ONE space-joined string, so
+`Invoke-Native $python @($script, $dir)` hands python a single filename made
+of two paths glued together. Splatting an array variable (`@vars`) and plain
+positional arguments both work; only the literal collapses. It reads
+correctly and parses correctly - that is the whole problem.
+
 It also compares parameter names against local assignments, because variable
 names are case-insensitive: a local `$jobs` and a parameter `[int]$Jobs` are
 one variable, and the parameter's type sticks. Assigning an array to the local

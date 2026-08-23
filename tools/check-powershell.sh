@@ -79,6 +79,30 @@ Get-ChildItem -Recurse -Filter *.ps1 -File | ForEach-Object {
       }
     }
   }
+  # An array LITERAL bound to a ValueFromRemainingArguments parameter is
+  # flattened by Windows PowerShell 5.1 into one space-joined string. So
+  #
+  #     Invoke-Native $python @($script, $dir)
+  #
+  # hands the process a single argument "...script.py C:\path", and the tool
+  # fails complaining about a filename that is two paths glued together. It
+  # parses perfectly and reads correctly; only the runtime knows. Splatting
+  # (@vars, no parentheses) and plain positional args are both fine - it is
+  # specifically the @( ... ) literal that collapses.
+  foreach ($c in $ast.FindAll({ $args[0] -is [CommandAst] }, $true)) {
+    $name = $c.GetCommandName()
+    if ($name -ne "Invoke-Native") { continue }
+    foreach ($e in $c.CommandElements) {
+      if ($e -is [ArrayExpressionAst]) {
+        $bad++
+        Write-Host "FAIL $($_.FullName)"
+        Write-Host ("     line {0}: Invoke-Native given an @( ) array literal." -f `
+                    $e.Extent.StartLineNumber)
+        Write-Host "     PowerShell 5.1 joins it into one argument. Pass them"
+        Write-Host "     separately, or splat an array variable with @name."
+      }
+    }
+  }
 }
 if ($bad -eq 0) { Write-Host "PowerShell syntax OK" }
 exit $bad'

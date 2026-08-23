@@ -156,7 +156,12 @@ if (Test-Path $rebrand) {
   if (-not $python) {
     throw "No python found for tools\rebrand-strings.py. Tried depot_tools' python3.bat, python3 and python."
   }
-  Invoke-Native $python @($rebrand, $Src)
+  # Separate positional arguments, NOT @($rebrand, $Src). Invoke-Native takes
+  # its tail through ValueFromRemainingArguments, and Windows PowerShell 5.1
+  # flattens an array literal bound to such a parameter into ONE space-joined
+  # string - so python was handed a single filename reading
+  # "...\rebrand-strings.py C:\flux-build\chromium\src" and died on it.
+  Invoke-Native $python $rebrand $Src
 }
 
 Log "Sync complete. Next: .\build\build.ps1 -CheckoutDrive $CheckoutDrive"
