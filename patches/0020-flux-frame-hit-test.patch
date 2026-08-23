@@ -1,23 +1,55 @@
 Subject: [flux] Make the console column and the avatar clickable
 
-The account avatar opened nothing when clicked, and the sidebar's search and
-collapse buttons did nothing either. Neither was a bug in their handlers -
-the click never reached them.
+Two things stopped a click reaching them, and fixing only one changed
+nothing visible.
 
-Both views are children of BrowserView placed in the band along the top and
-left that BrowserView::NonClientHitTest treats as titlebar. On Windows that
-band answers WM_NCHITTEST with HTCAPTION, at which point the system starts a
-window drag and never delivers a client mouse event at all. The button's
-PressedCallback is wired correctly and simply never runs.
+First, the frame. Both views are children of BrowserView placed in the band
+along the top and left that BrowserView::NonClientHitTest treats as titlebar.
+On Windows that band answers WM_NCHITTEST with HTCAPTION, at which point the
+system starts a window drag and never delivers a client mouse event at all.
+They now claim HTCLIENT before that logic, the same shape upstream uses for
+views living in the caption area. The whole of each view is client area
+deliberately: the sidebar is a WebView whose every pixel is interactive, and
+the avatar is a button. The tab strip beside them still drags the window.
 
-Claimed before the web-app toolbar check, following the same shape upstream
-uses for views that live in the caption area. The whole of each view is client
-area deliberately: the sidebar is a WebView whose every pixel is interactive,
-and the avatar is a button. The tab strip beside them still drags the window.
+Second, sibling order. The avatar is drawn inside the tab strip's band, and
+Chromium adds the tab strip after it on purpose - it "needs to paint on top of
+everything". Views hit-tests children in reverse order, so on top also means
+it receives the mouse, and the tab strip region took every press aimed at the
+avatar. With the frame fixed the window stopped dragging and the button still
+did nothing, which is what made the second cause visible at all. Lifting the
+avatar to the end of the child list puts it above the strip for targeting as
+well as painting.
+
+The reorder happens before horizontal_tab_strip_region_insertion_index_ is
+recorded, because moving a child shifts the strip's index down by one and a
+stale index is how it gets reinserted in the wrong place later.
 
 --- a/chrome/browser/ui/views/frame/browser_view.cc
 +++ b/chrome/browser/ui/views/frame/browser_view.cc
-@@ -4591,6 +4591,32 @@
+@@ -967,6 +967,21 @@
+   // focus order but also needs to paint on top of everything.
+   horizontal_tab_strip_region_view_ =
+       AddChildView(CreateHorizontalTabStripRegionView(this));
++
++  // The Flux avatar is drawn inside the tab strip's band, and the tab strip is
++  // added after it precisely because it "needs to paint on top of everything".
++  // Views hit-tests children in reverse order, so on top also means it gets
++  // the mouse: the avatar was painted, visible, and unclickable, because the
++  // tab strip region sitting over it took every press. Lifting the avatar to
++  // the end puts it above the strip for both painting and targeting.
++  //
++  // Before the insertion index is recorded, not after: reordering shifts the
++  // tab strip down one, and a stale index is how the strip ends up reinserted
++  // in the wrong place on the next immersive transition.
++  if (flux_avatar_) {
++    ReorderChildView(flux_avatar_, -1);
++  }
++
+   horizontal_tab_strip_region_insertion_index_ =
+       GetIndexOf(horizontal_tab_strip_region_view_.get());
+ 
+@@ -4591,6 +4606,32 @@
    views::View::ConvertPointToTarget(parent(), this,
                                      &point_in_browser_view_coords);
  

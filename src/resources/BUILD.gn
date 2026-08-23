@@ -29,6 +29,7 @@ build_webui("resources") {
     "catalog.ts",
     "resource.ts",
     "icons.ts",
+    "connector_icons.ts",
     "command_palette.ts",
     "connectors_view.ts",
     "customize_view.ts",

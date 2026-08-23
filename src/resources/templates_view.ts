@@ -1,10 +1,13 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {pathIcon, searchIcon} from './icons.js';
+import {connectorMark, pathIcon, searchIcon} from './icons.js';
 
 import {CATEGORIES, featured, loadTemplates, matches, transportLabel, trustLabel} from
     './catalog.js';
 import type {Template} from './catalog.js';
+
+import {loadSkills} from './skills.js';
+import type {Skill} from './skills.js';
 
 /**
  * Templates - the task library.
@@ -21,6 +24,15 @@ export class TemplatesView {
   private scheduledOnly = false;
   private seeAll: string|null = null;
   private grid!: HTMLElement;
+
+  // The Skills tab keeps its own query, category and drill-down. They are the
+  // same controls over a different catalogue, and carrying a task search into
+  // the skill list - or the reverse - reads as the filter having been ignored.
+  private skills: Skill[] = [];
+  private skillQuery = '';
+  private skillCategory = 'All';
+  private skillSeeAll: string|null = null;
+  private skillGrid!: HTMLElement;
 
   async render(root: HTMLElement, section: 'tasks'|'skills') {
     this.all = await loadTemplates();
@@ -51,21 +63,205 @@ export class TemplatesView {
     root.append(rail, main);
 
     if (section === 'skills') {
-      this.renderSkillsPlaceholder(main);
+      this.skills = await loadSkills();
+      this.renderSkills(main);
       return;
     }
     this.renderTasks(main);
   }
 
-  private renderSkillsPlaceholder(main: HTMLElement) {
+  private renderSkills(main: HTMLElement) {
     const h1 = document.createElement('h1');
     h1.textContent = 'Skills';
-    const p = document.createElement('p');
-    p.className = 'subtitle';
-    p.textContent =
+
+    const subtitle = document.createElement('p');
+    subtitle.className = 'subtitle';
+    subtitle.textContent =
         'Know-how the agent applies on its own when a task calls for it. ' +
-        'Manage yours under Customize.';
-    main.append(h1, p);
+        'Adopt one to make it yours, and manage what you have adopted under ' +
+        'Customize.';
+
+    const search = document.createElement('div');
+    search.className = 'search';
+    search.append(searchIcon());
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.placeholder = 'Search skills, sites, roles...';
+    input.value = this.skillQuery;
+    input.addEventListener('input', () => {
+      this.skillQuery = input.value;
+      this.skillSeeAll = null;
+      this.paintSkills();
+    });
+    search.append(input);
+
+    const pills = document.createElement('div');
+    pills.className = 'pill-row';
+    for (const name of ['All', ...CATEGORIES]) {
+      const b = document.createElement('button');
+      b.className = 'pill skill-pill';
+      b.textContent = name;
+      b.dataset['category'] = name;
+      b.addEventListener('click', () => {
+        this.skillCategory = name;
+        this.skillSeeAll = null;
+        this.paintSkills();
+      });
+      pills.append(b);
+    }
+
+    this.skillGrid = document.createElement('div');
+    this.skillGrid.className = 'sections';
+
+    main.append(h1, subtitle, search, pills, this.skillGrid);
+    this.paintSkills();
+  }
+
+  /**
+   * Title, description, category, role and connector id - the same fields the
+   * task search covers, because "find me the LinkedIn one" and "find me the
+   * recruiting one" are both things a person types into a box labelled
+   * skills, sites, roles.
+   */
+  private skillMatches(skill: Skill): boolean {
+    if (!this.skillQuery) {
+      return true;
+    }
+    const q = this.skillQuery.toLowerCase();
+    return skill.name.toLowerCase().includes(q) ||
+        skill.description.toLowerCase().includes(q) ||
+        skill.command.toLowerCase().includes(q) ||
+        skill.categories.some(c => c.toLowerCase().includes(q)) ||
+        skill.roles.some(r => r.toLowerCase().includes(q)) ||
+        skill.worksWith.some(c => c.id.toLowerCase().includes(q));
+  }
+
+  private filteredSkills(): Skill[] {
+    return this.skills.filter(
+        s => this.skillMatches(s) &&
+            (this.skillCategory === 'All' ||
+             s.categories.includes(this.skillCategory)));
+  }
+
+  private paintSkills() {
+    for (const pill of document.querySelectorAll<HTMLElement>('.skill-pill')) {
+      pill.toggleAttribute(
+          'data-active', pill.dataset['category'] === this.skillCategory);
+    }
+
+    const rows = this.filteredSkills();
+    this.skillGrid.replaceChildren();
+
+    if (rows.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'subtitle';
+      empty.textContent = 'Nothing matches that.';
+      this.skillGrid.append(empty);
+      return;
+    }
+
+    if (this.skillSeeAll || this.skillCategory !== 'All' || this.skillQuery) {
+      const name = this.skillSeeAll ?? this.skillCategory;
+      this.skillGrid.append(this.skillSection(
+          name === 'All' ? 'Results' : name, rows, /*truncate=*/false));
+      return;
+    }
+
+    // A skill can sit in more than one category, so it can appear under more
+    // than one heading. That is the point of the categories, not a bug: a
+    // person browsing Recruiting should see the skill that is also Ops.
+    for (const category of CATEGORIES) {
+      const inCategory = rows.filter(s => s.categories.includes(category));
+      if (inCategory.length > 0) {
+        this.skillGrid.append(
+            this.skillSection(category, inCategory, /*truncate=*/true));
+      }
+    }
+  }
+
+  private skillSection(name: string, rows: Skill[], truncate: boolean):
+      HTMLElement {
+    const section = document.createElement('section');
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    const title = document.createElement('h2');
+    title.textContent = name;
+    header.append(title);
+
+    const count = document.createElement('span');
+    count.className = 'muted';
+    count.textContent = String(rows.length);
+    header.append(count);
+
+    if (truncate && rows.length > 6) {
+      const all = document.createElement('button');
+      all.className = 'see-all';
+      all.textContent = 'See all \u2192';
+      all.addEventListener('click', () => {
+        this.skillSeeAll = name;
+        this.paintSkills();
+      });
+      header.append(all);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    for (const skill of (truncate ? rows.slice(0, 6) : rows)) {
+      grid.append(this.skillCard(skill));
+    }
+
+    section.append(header, grid);
+    return section;
+  }
+
+  private skillCard(skill: Skill): HTMLElement {
+    const card = document.createElement('article');
+    card.className = 'template-card';
+
+    const title = document.createElement('h3');
+    title.textContent = skill.name;
+
+    const description = document.createElement('p');
+    description.textContent = skill.description;
+
+    const footer = document.createElement('div');
+    footer.className = 'card-footer';
+
+    const marks = document.createElement('div');
+    marks.className = 'connector-marks';
+    for (const connector of skill.worksWith.slice(0, 3)) {
+      const mark = connectorMark(connector.id, 'connector-mark');
+      mark.dataset['transport'] = connector.transport;
+      mark.title = transportLabel(connector.id, connector.transport);
+      marks.append(mark);
+    }
+    if (skill.worksWith.length > 3) {
+      const more = document.createElement('span');
+      more.className = 'connector-more';
+      more.textContent = `+${skill.worksWith.length - 3}`;
+      marks.append(more);
+    }
+    footer.append(marks);
+
+    // Same as a task card: whether it can send is on the card, not buried in
+    // the body text.
+    const trust = document.createElement('span');
+    trust.className = 'trust';
+    trust.dataset['scope'] = skill.writeScope;
+    trust.textContent = trustLabel(skill.writeScope);
+    footer.append(trust);
+
+    // The command is how the skill is invoked by hand, and it is the only
+    // thing on the card that is not prose.
+    const command = document.createElement('span');
+    command.className = 'schedule-chip';
+    command.textContent = skill.command;
+    command.title = skill.whenToUse;
+    footer.append(command);
+
+    card.append(title, description, footer);
+    return card;
   }
 
   private renderTasks(main: HTMLElement) {
@@ -84,6 +280,11 @@ export class TemplatesView {
     const input = document.createElement('input');
     input.type = 'search';
     input.placeholder = 'Search tasks, sites, roles...';
+    // Restored from state, not left blank. This view outlives its DOM - the
+    // screen is rebuilt on every visit while the instance keeps the filters -
+    // so a fresh empty box over a surviving query is a screen that shows two
+    // of two hundred and fifty results and gives no reason why.
+    input.value = this.query;
     input.addEventListener('input', () => {
       this.query = input.value;
       // A query is a search across everything, so it clears the drill-down
@@ -226,16 +427,14 @@ export class TemplatesView {
     const footer = document.createElement('div');
     footer.className = 'card-footer';
 
-    // Connector marks. Brand icons are not shipped, so each is a lettered chip
-    // whose tooltip names the service and how it is reached - which the
-    // reference's identical icons never told you.
+    // Connector marks. The brand mark where there is one, a monogram where
+    // there is not - and a tooltip on both naming the service and how it is
+    // reached, which the reference's identical icons never told you.
     const marks = document.createElement('div');
     marks.className = 'connector-marks';
     for (const c of t.connectors.slice(0, 3)) {
-      const mark = document.createElement('span');
-      mark.className = 'connector-mark';
+      const mark = connectorMark(c.id, 'connector-mark');
       mark.dataset['transport'] = c.transport;
-      mark.textContent = c.id.slice(0, 1);
       mark.title = transportLabel(c.id, c.transport);
       marks.append(mark);
     }

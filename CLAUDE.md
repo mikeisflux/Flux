@@ -252,6 +252,14 @@ first run a matter of deleting the folder.
   the check regenerates and diffs so the two cannot drift. `When to use` is
   required in every body - it is the retrieval trigger the whole feature rests
   on, and the packer refuses a file without one.
+- `tools/connector-icons/` - generates `src/resources/connector_icons.ts`
+  from Simple Icons, whose path data is CC0. The marks are the only saturated
+  colour in the console, which is the whole reason the rest of the UI has no
+  accent. 27 of the 40 have one; the other 13 are not in a source this repo
+  can redistribute - several were pulled from Simple Icons at the trademark
+  holder's request - and render as a monogram rather than a traced imitation.
+  A mark you have the rights to goes in `branding/connectors/<id>.svg` and
+  wins over both. Output is committed, so a build machine needs no npm.
 - `data/connectors/*.json` - per-connector auth endpoints and operation maps.
   Names, descriptions and badges live in `src/resources/connectors.json` so
   the console and the browser process cannot disagree about them.

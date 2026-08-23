@@ -20,6 +20,8 @@
  * Chromium's own WebUIs do.
  */
 
+import {BRAND_MARKS} from './connector_icons.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /** An empty <svg> with the given viewBox, hidden from assistive tech. */
@@ -59,4 +61,40 @@ export function searchIcon(): SVGSVGElement {
   shape(root, 'circle', {cx: 9, cy: 9, r: 5.5});
   shape(root, 'path', {d: 'M13 13l4 4'});
   return root;
+}
+
+/**
+ * A connector's brand mark, or its monogram when there is no mark to show.
+ *
+ * The marks are the only saturated colour in the console. That is deliberate
+ * and it is why the rest of the UI has no accent: a person scanning a list of
+ * tasks is asking "what does this touch", and a row of identical grey chips
+ * cannot answer it.
+ *
+ * Thirteen of the forty have no mark, because theirs is not in a source this
+ * repo can redistribute - several were pulled from Simple Icons at the
+ * trademark holder's request, and tracing a replacement would be doing the
+ * thing they asked not to be done. Those get a monogram, which is honest
+ * about being a placeholder rather than an approximate logo.
+ */
+export function connectorMark(
+    id: string, className: string, monogram?: string): HTMLElement {
+  const mark = document.createElement('span');
+  mark.className = className;
+
+  const brand = BRAND_MARKS[id];
+  if (!brand) {
+    mark.textContent = (monogram ?? id).slice(0, 1).toUpperCase();
+    return mark;
+  }
+
+  mark.dataset['brand'] = '';
+  const root = svgRoot(brand.viewBox);
+  // Brand colour on the mark itself rather than the tile: a coloured tile
+  // behind a white glyph is a different logo, and several of these brands
+  // specify the mark on a neutral ground.
+  root.setAttribute('fill', `#${brand.hex}`);
+  shape(root, 'path', {d: brand.path});
+  mark.append(root);
+  return mark;
 }

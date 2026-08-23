@@ -1,6 +1,6 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
-import {pathIcon, searchIcon} from './icons.js';
+import {connectorMark, pathIcon, searchIcon} from './icons.js';
 
 import {loadPackedJson, once} from './resource.js';
 
@@ -154,9 +154,7 @@ export class ConnectorsView {
     const card = document.createElement('article');
     card.className = 'connector-card';
 
-    const mark = document.createElement('span');
-    mark.className = 'connector-avatar';
-    mark.textContent = c.name.slice(0, 1);
+    const mark = connectorMark(c.id, 'connector-avatar', c.name);
 
     const body = document.createElement('div');
     const head = document.createElement('div');

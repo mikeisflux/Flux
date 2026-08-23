@@ -1017,6 +1017,49 @@ body.tab {
   place-items: center;
 }
 
+/* A real brand mark needs no tile around it. The border exists to give a bare
+ * letter an edge; a logo has its own silhouette, and boxing it makes a row of
+ * connectors read as a row of buttons. */
+.connector-avatar[data-brand],
+.connector-mark[data-brand] {
+  border-color: transparent;
+}
+
+.connector-avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+.connector-mark svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* The transport border is the one thing the mark must not lose: it is how a
+ * stable API contract is told apart from a site Flux drives by clicking, and
+ * a brand logo says nothing about that. Kept as a dot under the mark so it
+ * survives the border going transparent above. */
+.connector-mark[data-brand][data-transport='browser'],
+.connector-mark[data-brand][data-transport='mcp'] {
+  position: relative;
+}
+
+.connector-mark[data-brand][data-transport='browser']::after,
+.connector-mark[data-brand][data-transport='mcp']::after {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg-muted);
+  content: '';
+}
+
+.connector-mark[data-brand][data-transport='mcp']::after {
+  background: var(--border-strong, var(--border));
+}
+
 .connector-head {
   display: flex;
   flex-wrap: wrap;

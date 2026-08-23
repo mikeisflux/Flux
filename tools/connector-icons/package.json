@@ -1,0 +1,9 @@
+{
+  "name": "flux-connector-icons",
+  "private": true,
+  "type": "module",
+  "description": "Generates src/resources/connector_icons.ts from Simple Icons. Output is committed; a build machine needs none of this.",
+  "dependencies": {
+    "simple-icons": "^13.0.0"
+  }
+}
