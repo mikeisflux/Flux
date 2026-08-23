@@ -5008,7 +5008,13 @@
         "display": "Every day at 7am"
       },
       "writeScope": "readonly",
-      "featured": 1
+      "featured": 1,
+      "prompt": "Every morning, read my Slack, Google Calendar and Gmail from the last 24 hours and give me one brief.\n\nOne brief, not three. The value is that it merges them — a Slack thread about a decision, the meeting where it will be made, and the email from the person who cannot attend are one item, and three separate digests hide that.\n\nStructure:\n\nNeeds me now — where someone is blocked on me, a decision is mine, or something has a deadline today. Each with who, what, where it came from, and how long it has been waiting. Be strict; a long list here means everything gets ignored equally.\n\nToday — each meeting with the time, who is attending, what it is about, and what I owe for it. Flag anything with no agenda and anything that conflicts.\n\nWorth knowing — decisions made without me, things shipped, anything that changes my week. One line each.\n\nWaiting on others — what I am owed and how long it has been outstanding. Nobody keeps this list and everybody needs it.\n\nUnder a page, in that order, ranked by cost of being slow. Say if it was a quiet night rather than padding the sections. Read only — nothing sends, nothing gets marked read.",
+      "roles": [
+        "everyone",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "monitoring-today-s-economic-data",
@@ -5025,7 +5031,12 @@
         "cron": "30 7 * * 1-5",
         "display": "Weekdays 7:30 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday at 7:30, brief me on today's economic data releases for [regions I care about].\n\nFor each release: what it is, the exact release time with the timezone, the consensus forecast, the previous reading, and any revision to the previous. Consensus and previous are what make a number readable — a print means nothing on its own and the market reaction is to the surprise, not the level.\n\nOrder by how much it matters rather than chronologically, and say in a line why the important ones matter today specifically.\n\nFor anything released before the brief goes out, include the actual number, the surprise against consensus, and any revision to prior months — a revision often matters more than the headline and is routinely ignored.\n\nAlso note: central bank speakers and their known leanings, auctions, and any release that has been delayed or rescheduled.\n\nFinish with a one-line takeaway: what today's calendar is actually about.\n\nIf the calendar is empty or trivial, say so in a sentence. A daily brief that manufactures significance on a quiet day is one I stop reading.\n\nCite the source for each figure, and distinguish a consensus estimate from an official forecast. This is a summary of published data, not market or investment advice.",
+      "roles": [
+        "everyone",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-weekly-pipeline-report-crm",
@@ -5046,7 +5057,13 @@
         "cron": "0 16 * * 5",
         "display": "Fridays 4:00 PM"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every Friday afternoon, pull my HubSpot pipeline and draft the weekly report for [Slack channel].\n\nWhat changed this week, which is the whole report: deals created, deals that moved stage, deals won with the amount, deals lost with the reason, and deals whose close date or amount changed. A report that restates the pipeline every Friday teaches nobody anything; the diff is the content.\n\nThen the current state: total pipeline by stage, weighted forecast for the quarter, and the gap to target.\n\nThen the problems, named specifically: deals with no activity in [14] days, deals whose close date has passed, deals in a late stage with only one contact engaged, and anything large that slipped.\n\nThen next week: the three deals that matter most and what has to happen in each.\n\nWrite it to be pasted into Slack — short lines, bold headings, numbers up front, no preamble. If it does not fit on a phone screen without scrolling twice, it is too long.\n\nBe honest about a bad week. A report that finds a positive framing for every number is one nobody trusts by the fourth one. Draft only; I will post it.",
+      "roles": [
+        "sales",
+        "founders",
+        "ops"
+      ]
     },
     {
       "id": "monitoring-x-linkedin-feeds-morning",
@@ -5067,7 +5084,13 @@
         "cron": "0 8 * * *",
         "display": "Daily 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, read my X and LinkedIn feeds and give me two things: what to read and what to post.\n\nWhat to read — five posts, maximum. Chosen for whether the idea in them is worth my time given that I work on [what I work on], not for engagement. For each: who wrote it, the idea in one line, why it matters to me, and the link. If it is a thread, summarise the argument rather than quoting the first post.\n\nWhat to post — two ideas, grounded in something real. Either a specific reaction to something in today's feed with an actual position in it, or a thought from my own work that connects to something being discussed. For each: the angle, the hook line, and why now.\n\nDo not suggest posting a take on something I know nothing about because it is trending. The whole value of posting is that it is mine, and a generic reaction to a topic of the day is the most forgettable thing on the platform.\n\nAlso flag anything from someone in my actual network worth a reply — a launch, a move, a post doing unusually well for them.\n\nUnder a page, and say if the feed was thin today rather than promoting the fifth-best post to fill a slot.",
+      "roles": [
+        "marketing",
+        "founders",
+        "everyone"
+      ]
     },
     {
       "id": "monitoring-funding-rounds-market-week",
@@ -5084,7 +5107,13 @@
         "cron": "0 8 * * 1",
         "display": "Mondays 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, digest the funding and M&A activity in [market] from the past week.\n\nFor each round: company, what they do, round and amount, valuation if disclosed, lead and participants, total raised to date, and how long since their last round.\n\nThen why it matters to me specifically, which is the part a funding database does not give you. A competitor raising means a better-funded competitor. A company adjacent to us raising may mean a partner or an acquirer. A round in a segment we considered and dropped is a signal about that segment. Say which of those each one is.\n\nFor acquisitions: buyer, target, price if known, and the read on why — consolidation, a capability purchase, an acqui-hire, or a distressed sale. Say which and on what evidence.\n\nFlag specifically: any round involving a direct competitor, any investor who has now funded several companies in our space (that pattern is a thesis and worth understanding), and any round that suggests a new entrant is coming for our segment.\n\nOne line per item with the source link, grouped by type, ordered by relevance to us rather than by size.\n\nFinish with a sentence on the week's pattern, or a sentence saying there was not one.",
+      "roles": [
+        "founders",
+        "analysts",
+        "sales"
+      ]
     },
     {
       "id": "monitoring-competitor-pricing-feature-pages",
@@ -5096,7 +5125,13 @@
         "cron": "0 9 * * 1",
         "display": "Mondays 9:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, check [competitor pricing and feature pages] and report only what changed since last week.\n\nKeep a record of each page so a real diff is possible. Report the difference, not the current state — a weekly report that reprints three pricing pages is one nobody reads past week two, and the whole point is that it is short when nothing happened.\n\nFor each change: the page, what it said before, what it says now, and one line on what it signals.\n\nWatch particularly for the quiet ones: a limit reduced inside a tier, a feature moved from a lower plan to a higher one, a plan renamed, a tier removed, a free trial shortened, a \"contact us\" replacing a published price, or a footnote added that changes what a number means. Those are the changes made deliberately without an announcement.\n\nAlso watch the feature pages for a new capability appearing before it is announced, and a claim being quietly softened or removed — a removed claim usually means someone complained or it stopped being true.\n\nIf nothing changed, one line per competitor saying so.\n\nAnd if you have no baseline for a page — first run, or the page moved — say that rather than reporting the entire page as new.",
+      "roles": [
+        "marketing",
+        "analysts",
+        "founders"
+      ]
     },
     {
       "id": "monitoring-recap-watchlist-after-market",
@@ -5108,7 +5143,12 @@
         "cron": "30 16 * * 1-5",
         "display": "Weekdays 4:30 PM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday after the close, recap my watchlist: [tickers].\n\nFor each: the close, the change in points and percent, the volume against its average, and where it sits against its recent range. Volume is what separates a move that means something from noise, so always include it.\n\nThen, for anything that moved materially, what happened. An earnings report, guidance, an analyst action, a filing, a sector-wide move, a news story, or nothing identifiable — and say \"no identifiable catalyst\" rather than reaching for an explanation, which is what most market commentary is.\n\nSeparate a stock-specific move from one where the whole sector or index moved the same way. A stock down 3% on a day the index fell 3% has not done anything.\n\nThen what is coming: earnings dates, ex-dividend dates, lock-up expiries, scheduled events, and any known catalyst in the next couple of weeks.\n\nKeep it to a screen. Lead with anything unusual — a large move, unusual volume, or a name that has moved several days running — and give the rest one line each.\n\nCite sources for anything factual. This is a summary of public information for my own reading, not investment advice, and it should say so.",
+      "roles": [
+        "everyone",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-reddit-hacker-news-brand",
@@ -5133,7 +5173,13 @@
         "cron": "0 17 * * *",
         "display": "Daily 5:00 PM"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every afternoon, check Reddit and Hacker News for mentions of [brand, product names, our domain, common misspellings] and report what you find.\n\nSearch for the plain name as well as links to our domain — most people discussing a product do not link it, and an unlinked mention in a busy thread is exactly the one nobody at the company sees.\n\nFor each mention: where (subreddit or HN thread), the link, the date, the author, the full quote with enough surrounding context to read it fairly, the sentiment, and how much traction the thread has.\n\nThen prioritise: something factually wrong about us in a thread with traction is a P1; an unanswered question about the product is a P2; praise is a P3; a passing reference is a P4.\n\nFor anything worth answering, draft a reply. It has to be genuinely useful and it has to disclose who I am — an undisclosed employee reply is the single fastest way to lose a community, and both of these communities are unforgiving about it. Where the right move is to say nothing, say so; that is often the answer for a thread that is just someone venting.\n\nEmail me the digest. Nothing posts. And do not report a mention of an unrelated thing with a similar name — check the context first.",
+      "roles": [
+        "marketing",
+        "founders",
+        "engineering"
+      ]
     },
     {
       "id": "monitoring-scan-job-boards-daily",
@@ -5150,7 +5196,11 @@
         "cron": "0 9 * * 1-5",
         "display": "Weekdays 9:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday morning, check LinkedIn and [other boards] for new postings matching my brief: [titles, seniority, location or remote, industry, comp floor, anything I will not take].\n\nOnly postings new since yesterday, and de-duplicated against everything already reported — the same job appears on four boards and reposts itself weekly, and a daily digest that repeats it stops being read.\n\nFor each: company, title, location and remote policy, posted date, comp if stated, the link, and a fit score out of 5 against my brief with a one-line reason.\n\nSpeed is most of the value here. A posting from this morning with fifteen applicants is a different opportunity from the same posting in a week with four hundred, so lead with anything posted in the last 24 hours and scoring 4 or 5.\n\nFor those, add what would make an application strong: which part of my background to lead with, and anything about the company worth knowing before applying.\n\nSkip agency reposts of a job already listed by the employer directly, and skip anything that fails a stated deal-breaker rather than including it at a low score.\n\nIf nothing new matched, say so in a line. Read only — do not apply to anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "monitoring-round-up-new-customer",
@@ -5171,7 +5221,13 @@
         "cron": "0 9 * * 1",
         "display": "Mondays 9:00 AM"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every Monday, collect the new reviews of [product] on G2 and Trustpilot from the past week.\n\nFor each: the platform, the rating, the date, the reviewer's role and company size where shown, the full text, and a link.\n\nThen the themes across the week's reviews, with counts, and — more usefully — how they compare to the previous few weeks. A single week of reviews is a small sample and reading it in isolation produces a panic or a celebration every Monday. The trend is the signal.\n\nReport: the average for the week against the running average, how many reviews, the themes in praise and in complaint, and anything mentioned this week that has not come up before. A brand-new complaint theme is the most important thing this job can find, because it usually means something changed.\n\nThen draft a reply for each review that warrants one. For a negative review: acknowledge the specific thing, no defensiveness, no boilerplate, and a real next step. For a positive one: short and specific, or nothing at all — a generic thank-you on every five-star review makes the whole profile look automated.\n\nFlag for a human rather than drafting: anything alleging a serious problem, anything mentioning legal or security, and anything that looks fake in either direction.\n\nDrafts only.",
+      "roles": [
+        "marketing",
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "monitoring-everyone-m-meeting-today",
@@ -5196,7 +5252,13 @@
         "cron": "0 7 * * 1-5",
         "display": "Weekdays 7:00 AM"
       },
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Every weekday at 7am, look at today's calendar and prepare me for the people in each meeting.\n\nFor each meeting, for each external attendee and anyone internal I do not work with regularly: name, title, company, how long in the role, what they did before, and — the useful part — anything recent. A move, a promotion, something their company announced, something they posted or said publicly.\n\nThen the relationship: have we met, what was the last interaction, and what was left open. Check my mail and any notes at [link]. Walking into a second meeting having forgotten what was agreed in the first is the thing this exists to prevent.\n\nThen for each meeting: what it is about, what I owe, and two or three things to say — specific to this person and this meeting, not generic openers.\n\nWrite it to a doc, one section per meeting, in the order they happen. Keep each to a few lines; a prep sheet longer than the meeting will not be read.\n\nSkip the research for internal recurring meetings with people I see constantly, and say you did rather than padding.\n\nProfessional and public information only. Say where you are inferring rather than stating, and flag when you could not confirm someone is the person you found.",
+      "roles": [
+        "everyone",
+        "sales",
+        "founders"
+      ]
     },
     {
       "id": "monitoring-list-blogs-new-posts",
@@ -5208,7 +5270,13 @@
         "cron": "0 8 * * 5",
         "display": "Fridays 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Friday, check [my blog list] for anything published in the last week.\n\nNew only, tracked against what has already been reported so a post does not reappear because it is still on the front page.\n\nFor each post: the blog, the title, the author, the date, the reading time, the link, and three or four sentences on what it actually says. Not the opening paragraph and not the meta description — the substance, including the conclusion. The point of a digest is that I can decide from it, and a teaser summary forces me to open everything.\n\nThen rank. What is worth reading in full, what is worth skimming, and what to skip. Be willing to say most of a week's output is skippable, because it usually is.\n\nFlag: anything that contradicts something else in the week's set, anything making a claim I should check before repeating, and anything that is really a product announcement in the shape of a blog post.\n\nIf several posts across different blogs are circling the same subject, group them and say what the discussion is — that is usually more interesting than any of them individually.\n\nIf a blog published nothing, do not list it. And if the week was thin overall, say so in a line.",
+      "roles": [
+        "everyone",
+        "engineering",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-new-releases-dependencies",
@@ -5225,7 +5293,11 @@
         "cron": "0 9 * * 3",
         "display": "Wednesdays 9:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Wednesday, check for new releases of the dependencies in [repo / manifest] and tell me what matters.\n\nFor each dependency with a release since last week: the package, our current version, the new version, the release date, and a link to the release notes.\n\nThen read the release notes rather than reporting the version bump. Sort each into:\n\nSecurity — a fix for a CVE or a disclosed vulnerability. These go first with the severity, whether the affected code path is one we use, and how urgent it actually is. A critical CVE in a code path we never call is not the same emergency as a moderate one in a path we do.\n\nBreaking — an API change, a dropped platform or runtime version, a changed default, a removed option. Say specifically what breaks and whether our code touches it.\n\nNotable — a fix for something we have hit, or a feature we wanted.\n\nRoutine — everything else, as a count and a list of names.\n\nRank by what we should do this week, not by version distance. Being twelve minor versions behind on something stable matters less than being one patch behind on something with an advisory.\n\nFlag a major version jump with no migration guide, and anything where the release notes are empty — an unexplained release is a reason to wait, not to upgrade.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "monitoring-regulator-moves-affect-us",
@@ -5237,7 +5309,13 @@
         "cron": "0 8 * * 2",
         "display": "Tuesdays 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Tuesday, check [regulator] for anything new that affects [our business — what we do, where, who our customers are].\n\nCover their publications: new and proposed rules, consultations, guidance, enforcement actions, speeches by senior officials, and anything on their news page. Enforcement actions and speeches are the leading indicators — they say what the regulator cares about long before a rule appears.\n\nFor each item that plausibly touches us: what it is, the date, the link, and then the part that makes this worth doing — what it means for us in plain English. Not a summary of the document; what we would have to do differently, and by when.\n\nSay clearly which of three categories each falls into: already in force, coming into force on a known date, or proposed and not yet certain. Those need completely different responses, and a digest that mixes them produces either panic or complacency.\n\nFor anything with a deadline — a compliance date, a consultation response window, a reporting obligation — put the date up front and count the weeks.\n\nIf nothing relevant appeared, say so in a line.\n\nBe careful not to overstate relevance. A rule aimed at a different sector is not our problem, and a weekly digest that finds an implication in everything is one that gets ignored when something real arrives. This is a summary, not legal advice.",
+      "roles": [
+        "ops",
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-pulse-check-our-feedback",
@@ -5254,7 +5332,13 @@
         "cron": "0 9 * * 1-5",
         "display": "Weekdays 9:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday morning, read [feedback Slack channel] from the last 24 hours and tell me what is in it.\n\nGroup into themes rather than listing messages. Five people reporting the same thing in different words is one issue with five reports, and that count is the most important number in the digest.\n\nFor each theme: what it is, how many reports, which customers or users if named, when it started appearing, and two or three representative quotes with links to the messages.\n\nThen prioritise:\n\nUrgent — anything blocking a customer, anything about data or billing, anything affecting several people at once. With who should own it.\nNew — a theme that has not appeared before. New themes are the signal that something changed, and they are easy to miss inside a busy channel.\nOngoing — themes that keep recurring. Say how long they have been running, because a complaint in its sixth week is a different conversation from one in its first.\nNoise — one-off comments, questions already answered.\n\nName an owner for each urgent and new item, based on what area it falls in.\n\nIf it was a quiet day, one line. Do not manufacture a theme from two unrelated messages, and say when a count is too small to be a pattern.",
+      "roles": [
+        "ops",
+        "founders",
+        "engineering"
+      ]
     },
     {
       "id": "monitoring-summarize-newsletters-piling-up",
@@ -5271,7 +5355,11 @@
         "cron": "0 9 * * 0",
         "display": "Sundays 9:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Sunday morning, go through the newsletters that arrived this week in my Gmail and distil them.\n\nRead them properly rather than summarising the subject lines. Most newsletter content is filler around two or three real items, and the job here is to find those.\n\nFor each newsletter with something worth knowing: the name, and the substantive items — what happened or what was argued, in a sentence or two each, with a link where there is one.\n\nThen the parts that make this better than reading them:\n\nCross-cutting themes — where several newsletters covered the same thing, merged into one entry with the different angles. This is the main reason to do it in a batch.\n\nThe reading list — the three or four pieces genuinely worth opening in full, ranked, with why.\n\nWhat was noise — which newsletters had nothing in them this week. Name them. That list, over a few weeks, is the answer to which subscriptions to drop, and it is the most valuable output here.\n\nDo not summarise sponsored sections as though they were content. Do not repeat a claim from a newsletter as fact without noting it came from that newsletter — several exist to promote a position.\n\nRead only. Do not archive or mark anything read.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "monitoring-up-topic-ve-ignored",
@@ -5289,7 +5377,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Catch me up on [topic]. I last paid attention [when], and I want to know what actually mattered since then, not everything that happened.\n\nSearch Hacker News and the relevant subreddits for the period, and follow the discussion to the primary sources rather than summarising the commentary.\n\nGive me:\n\nWhat changed — the handful of genuinely significant developments, each with what it is, when, why it mattered, and a link. If the honest answer is that two things happened and the rest was noise, say that.\n\nWhat the argument is now — where opinion has moved, what the current disagreement is, and who is on which side. This is the part that makes catching up hard, because the state of the debate is not recoverable from a list of events.\n\nWhat I would have believed then that is now wrong. This is the most useful section and the one a chronological summary never produces.\n\nWhat to read — three or four things, ranked, that would bring me properly up to speed.\n\nWhat has not changed, so I know which of my assumptions still hold.\n\nSeparate what is settled from what is contested, and be honest about hype. A topic that generated enormous discussion and no actual progress is a real finding, and saying so is more useful than a timeline of announcements.",
+      "roles": [
+        "everyone",
+        "engineering",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-vc-news-morning",
@@ -5310,7 +5404,12 @@
         "cron": "0 8 * * *",
         "display": "Daily 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, brief me on venture news from the last 24 hours, ranked by signal rather than by size.\n\nCover: funding rounds, new fund closes, LP commitments, partner moves and departures, firm launches and wind-downs, and notable exits.\n\nFor each: the facts — who, how much, from whom, at what valuation if disclosed — then one line on what it signals. A partner leaving a top firm to start their own is a bigger signal than a large round into a company nobody has heard of, and a chronological list of dollar amounts obscures that entirely.\n\nRank by signal. What I want at the top is: a fund closing in a sector I care about, an investor making a second or third bet on the same thesis, a firm losing several partners, or a round at a valuation that resets a market's expectations.\n\nFilter hard on relevance to [my sectors / stage]. A brief that reports every seed round globally is a database dump.\n\nFlag: rounds that were announced long after they closed (the date matters), rounds where the amount is \"up to\" rather than committed, and anything where the only source is the company's own announcement.\n\nSource-link everything. Keep it under a page, and say when it was a quiet night.",
+      "roles": [
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-ai-robotics-news-morning",
@@ -5331,7 +5430,13 @@
         "cron": "0 8 * * *",
         "display": "Daily 8:00 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, brief me on AI, deep tech and robotics from the last 24 hours — the things that actually matter, not everything published.\n\nSources: TechCrunch and similar, Hacker News (including the comments, which frequently contain the correction to the article), and primary sources — papers, model cards, release notes, company posts.\n\nWhat qualifies: a capability that did not exist before, a result with a reproducible benchmark, a real product shipping, a significant open-source release, a regulatory or legal development, or funding at a scale that changes a market.\n\nWhat does not: a demo video with no paper, a benchmark run by the vendor with no baseline, a partnership announcement, a model renamed, or an opinion piece about where things are heading.\n\nBe ruthless about that second list. It is most of the volume in this space and filtering it is the entire value of the brief.\n\nFor each item: what it is, why it matters, the primary source link, and — where the claim is a benchmark or a capability — what the evidence actually is and what the comparison was against. An improvement over an unnamed baseline is not a result.\n\nFlag where the Hacker News discussion materially disputes the article, which happens often and is usually right.\n\nUnder a page. Say when nothing significant happened.",
+      "roles": [
+        "engineering",
+        "founders",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-vendors-status-pages",
@@ -5352,7 +5457,12 @@
         "cron": "0 8 * * *",
         "display": "Every day 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check the status pages of the services we depend on — [list] — and tell me about anything wrong.\n\nFor each: current status, any open incident, and anything resolved in the last 24 hours. Check the actual status page rather than assuming green, and check scheduled maintenance too, which is the one that causes an unexpected outage during a working day.\n\nFor an open incident: what is affected, which components and regions, when it started, the latest update and its timestamp, and the vendor's current assessment. Then — the part that matters — what it means for us: which of our features or workflows depend on that component, and whether anyone here needs to do something.\n\nA status page saying \"degraded performance on the API\" is not actionable; \"our checkout calls their API, so payments may be slow\" is.\n\nFor anything resolved: what it was, how long, and whether the vendor published a cause. Keep a running record so a vendor with repeated incidents becomes visible — one outage is an event, five in a quarter is a procurement conversation.\n\nAlso flag: scheduled maintenance in the next week that falls in our working hours, and any status page you could not reach, which occasionally means the vendor is down badly enough to take it with them.\n\nIf everything is green, one line.",
+      "roles": [
+        "ops",
+        "engineering"
+      ]
     },
     {
       "id": "monitoring-grant-rfp-deadlines",
@@ -5373,7 +5483,12 @@
         "cron": "0 9 * * 1",
         "display": "Every Monday 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, search SAM.gov and [other sources] for new grants and RFPs matching [what we do, our size, our certifications, our geography] and add them to the roundup.\n\nFor each: title, issuing agency, the solicitation number, what they actually want, the award size or ceiling, the deadline, the submission method, and the link.\n\nThen eligibility, checked rather than assumed: the required certifications or set-asides, registration requirements, past-performance requirements, bonding or insurance, and any teaming restriction. Say plainly for each whether we qualify, do not, or would need something we could get in time. An RFP we cannot bid on is worse than no RFP, because someone spends a day discovering it.\n\nSort by deadline, closest first, and for each say how many working days remain and whether that is realistically enough to prepare a serious response. Most of these are lost to a start that came too late rather than to a weak bid.\n\nFlag: anything with a mandatory pre-bid meeting or a questions deadline earlier than the submission date, anything requiring a registration that takes weeks, and any amendment to a solicitation already on our list.\n\nDe-duplicate against previous weeks. If nothing new qualified, say so — and note anything close that we would qualify for with a specific change.",
+      "roles": [
+        "ops",
+        "founders"
+      ]
     },
     {
       "id": "monitoring-monthly-budget-vs-actual",
@@ -5390,7 +5505,13 @@
         "cron": "0 9 1 * *",
         "display": "1st of each month 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "On the first of each month, compare last month's actuals at [sheet link] against the budget and tell me where it went.\n\nBy category: budget, actual, variance in currency and percent, and the same for year to date. Year to date is what matters — a single month over budget on a lumpy category is noise, and a category running 15% over all year is the problem.\n\nOrder by the size of the variance in money, not in percent. A category 200% over on a small base is interesting; the one 8% over on the largest line is the one that costs.\n\nFor each material variance, say why rather than just reporting it: a one-off purchase, an annual payment landing in this month, a price increase, more of something, or a timing difference where the spend is real but the budget assumed a different month. Timing differences are the most common explanation and the least interesting, so separating them out is what makes the rest readable.\n\nFlag: anything new that has no budget line at all, anything budgeted with no spend at all (which is often a plan that quietly stopped), and any category on a trajectory to miss the annual number, with the projection.\n\nFinish with the two or three things worth doing something about, and say when a variance needs no action.",
+      "roles": [
+        "founders",
+        "ops",
+        "analysts"
+      ]
     },
     {
       "id": "monitoring-application-or-case-status",
@@ -5411,7 +5532,11 @@
         "cron": "0 9 * * *",
         "display": "Every day 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, check the status of [application / case] at [status page URL] with [reference number] and tell me if it changed.\n\nLog each check in [sheet link]: the date, the status shown, and any other detail on the page — a date, a stage, a name, a next step, a document request.\n\nOnly alert me when something actually changes. A daily message saying \"still pending\" is one I will start ignoring, and then I will miss the day it moves.\n\nWhen it does change, tell me immediately with: what it was, what it is now, anything else that changed on the page, and — most importantly — whether it requires anything from me and by when. A status change that opens a response window is the whole reason this job exists, and those windows are usually short.\n\nAlso alert me if: the page stops loading or the reference stops being found (which sometimes means the case moved rather than that something broke), the page asks for a re-login, or the expected processing time on the page changes.\n\nKeep the log complete, including the unchanged days, so the history shows how long each stage actually took.\n\nRead only. Do not submit anything, do not respond to a request through the portal, and do not upload a document.",
+      "roles": [
+        "everyone"
+      ]
     }
   ]
 }
