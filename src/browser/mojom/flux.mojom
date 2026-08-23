@@ -158,6 +158,13 @@ struct RunArtifact {
 
 struct RunProgress {
   string run_id;
+  // A stable name for the run, derived from the prompt when it starts. The
+  // sidebar used to show current_step, which is whatever the model last said -
+  // so the row's label changed every turn and a run was unfindable by name.
+  string title;
+  // When it started, so the list can group by day rather than presenting
+  // yesterday's runs and this morning's as one undifferentiated column.
+  mojo_base.mojom.Time started_at;
   RunState state;
   string? current_step;
   uint32 actions_taken;

@@ -2020,6 +2020,135 @@ body.shell.collapsed .badge { display: none; }
   color: var(--danger);
 }
 
+/* --- Rendered markdown ----------------------------------------------------
+   Tables, code blocks and quotes exist because agent output uses them. The
+   wrapper is the important part: a twelve-column comparison table is wider
+   than the run view, and without it the whole page scrolls sideways. */
+.table-scroll {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.table-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-scroll th,
+.table-scroll td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.table-scroll th {
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table-scroll tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.run-summary pre,
+.run-prose pre {
+  overflow-x: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 14px 0;
+  background: var(--bg-subtle, rgb(0 0 0 / 3%));
+}
+
+.run-summary pre code,
+.run-prose pre code {
+  padding: 0;
+  background: none;
+  font-size: 13px;
+}
+
+.run-summary blockquote,
+.run-prose blockquote {
+  padding-left: 14px;
+  border-left: 3px solid var(--border);
+  margin: 14px 0;
+  color: var(--fg-muted);
+}
+
+.run-summary blockquote p,
+.run-prose blockquote p {
+  margin: 6px 0;
+}
+
+.run-summary hr,
+.run-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* --- Transcript detail ---------------------------------------------------- */
+.run-thinking {
+  margin: 14px 0 6px;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.tool-took {
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tool-approved {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-text);
+  font-size: 12px;
+  gap: 4px;
+}
+
+.tool-approved svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+
+/* --- Run list ------------------------------------------------------------- */
+.run-day {
+  padding: 14px 10px 6px;
+  color: var(--fg-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.run-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Both lines clip rather than wrap: a two-line title pushes the next run out
+   of view, and the sidebar is scanned rather than read. */
+.run-step {
+  overflow: hidden;
+  color: var(--fg-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* --- Questions For You ----------------------------------------------------
    One question at a time with pagination, not a stack of six fields. A run
    from a template can easily need four answers, and four textareas at once

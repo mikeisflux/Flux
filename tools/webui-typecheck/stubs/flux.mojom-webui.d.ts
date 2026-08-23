@@ -86,6 +86,8 @@ export interface ApprovalRequest {
 
 export interface RunProgress {
   runId: string;
+  title: string;
+  startedAt: Time;
   state: RunState;
   currentStep: string|null;
   actionsTaken: number;

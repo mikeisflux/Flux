@@ -18,9 +18,38 @@ const STATE_NAME: Record<number, string> = {
   [RunState.kCancelled]: 'cancelled',
 };
 
+/**
+ * "Today", "Yesterday", or the date.
+ *
+ * mojo_base.mojom.Time arrives as microseconds since the WINDOWS epoch, which
+ * is 1601 - not the Unix epoch. Subtracting the offset is not optional; without
+ * it every run is dated in the seventeenth century.
+ */
+const WINDOWS_TO_UNIX_EPOCH_MS = 11644473600000;
+
+function dayLabel(time: {internalValue: bigint}): string {
+  const ms = Number(time.internalValue / 1000n) - WINDOWS_TO_UNIX_EPOCH_MS;
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return 'Earlier';
+  }
+  const when = new Date(ms);
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const dayMs = 24 * 60 * 60 * 1000;
+  if (when.getTime() >= midnight.getTime()) {
+    return 'Today';
+  }
+  if (when.getTime() >= midnight.getTime() - dayMs) {
+    return 'Yesterday';
+  }
+  return when.toLocaleDateString(
+      undefined, {month: 'short', day: 'numeric'});
+}
+
 /** The always-visible list of runs in the sidebar. */
 export class RunList {
   private rows = new Map<string, HTMLElement>();
+  private headings = new Map<string, HTMLElement>();
   private actions = new Map<string, ActionRecord[]>();
 
   constructor(
@@ -31,9 +60,37 @@ export class RunList {
   replaceAll(runs: RunProgress[]) {
     this.container.replaceChildren();
     this.rows.clear();
-    for (const run of runs) {
+    this.headings.clear();
+    // Newest first, so a run started this minute is at the top of Today rather
+    // than at the bottom of whatever order the browser's map produced.
+    const ordered = [...runs].sort(
+        (a, b) => Number(b.startedAt.internalValue - a.startedAt.internalValue));
+    for (const run of ordered) {
       this.update(run);
     }
+  }
+
+  /**
+   * Files a row under a day heading, creating it if this is the first run of
+   * that day.
+   *
+   * Grouped rather than one flat column, because a list that mixes this
+   * morning with last Tuesday reads as a single undifferentiated pile and the
+   * only thing anyone wants from it is "what did I run today".
+   */
+  private place(row: HTMLElement, progress: RunProgress) {
+    const label = dayLabel(progress.startedAt);
+    let heading = this.headings.get(label);
+    if (!heading) {
+      heading = document.createElement('div');
+      heading.className = 'run-day';
+      heading.textContent = label;
+      this.headings.set(label, heading);
+      this.container.append(heading);
+    }
+    // Directly after its heading: within a day the newest run belongs on top,
+    // and replaceAll feeds them newest first.
+    heading.after(row);
   }
 
   update(progress: RunProgress) {
@@ -54,16 +111,27 @@ export class RunList {
           open();
         }
       });
+      const body = document.createElement('span');
+      body.className = 'run-body';
+      body.append(
+          Object.assign(document.createElement('span'), {className: 'run-title'}),
+          Object.assign(document.createElement('span'), {className: 'run-step'}));
       row.append(
           Object.assign(document.createElement('span'), {className: 'run-dot'}),
-          Object.assign(document.createElement('span'), {className: 'run-title'}),
+          body,
           Object.assign(document.createElement('span'), {className: 'run-cost'}));
       this.rows.set(progress.runId, row);
-      this.container.append(row);
+      this.place(row, progress);
     }
 
     row.dataset['state'] = STATE_NAME[progress.state] ?? 'queued';
+    // The title is fixed for the life of the run; the step underneath is what
+    // moves. It used to be the other way round - the row's label was
+    // currentStep, so it changed every turn and a run could not be found by
+    // name in a list of six.
     row.querySelector('.run-title')!.textContent =
+        progress.title || 'Untitled task';
+    row.querySelector('.run-step')!.textContent =
         progress.currentStep || STATE_NAME[progress.state] || '';
 
     // Cost is shown live rather than discovered on a bill afterwards.
@@ -83,7 +151,7 @@ export class RunList {
 
     const row = this.rows.get(runId);
     if (row) {
-      row.querySelector('.run-title')!.textContent = action.summary;
+      row.querySelector('.run-step')!.textContent = action.summary;
     }
   }
 
@@ -94,7 +162,7 @@ export class RunList {
     }
     row.dataset['state'] = STATE_NAME[state] ?? 'succeeded';
     if (summary) {
-      row.querySelector('.run-title')!.textContent = summary;
+      row.querySelector('.run-step')!.textContent = summary;
     }
     void this.refreshConcurrency();
   }

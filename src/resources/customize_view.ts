@@ -142,7 +142,11 @@ export class CustomizeView {
 
       const provenance = document.createElement('span');
       provenance.className = 'muted';
-      provenance.textContent = `from run ${fact.sourceRunId.slice(0, 8)}`;
+      // When, as well as which run. A fact learned this morning and one from
+      // three months ago need different amounts of trust, and learnedAt was
+      // recorded from the start and shown nowhere.
+      provenance.textContent =
+          `${whenLearned(fact.learnedAt)} · run ${fact.sourceRunId.slice(0, 8)}`;
 
       const drop = document.createElement('button');
       drop.className = 'link-button';
@@ -448,4 +452,32 @@ function field(parent: HTMLElement, label: string, value: string):
   wrap.append(label, input);
   parent.append(wrap);
   return input;
+}
+
+/**
+ * "Today", "3 days ago", or a date.
+ *
+ * mojo_base.mojom.Time counts microseconds from the WINDOWS epoch of 1601, not
+ * the Unix epoch, so the offset is not optional - without it every fact was
+ * learned in the seventeenth century.
+ */
+const WINDOWS_TO_UNIX_EPOCH_MS = 11644473600000;
+
+function whenLearned(time: {internalValue: bigint}): string {
+  const ms = Number(time.internalValue / 1000n) - WINDOWS_TO_UNIX_EPOCH_MS;
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return 'at some point';
+  }
+  const days = Math.floor((Date.now() - ms) / (24 * 60 * 60 * 1000));
+  if (days <= 0) {
+    return 'today';
+  }
+  if (days === 1) {
+    return 'yesterday';
+  }
+  if (days < 30) {
+    return `${days} days ago`;
+  }
+  return new Date(ms).toLocaleDateString(
+      undefined, {month: 'short', year: 'numeric'});
 }

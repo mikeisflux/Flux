@@ -39,6 +39,8 @@ export class RunView {
   private questionHost!: HTMLElement;
   private headLabel!: HTMLElement;
   private headLink!: HTMLAnchorElement;
+  private pauseButton!: HTMLButtonElement;
+  private saveButton!: HTMLButtonElement;
   private artifactHost!: HTMLElement;
   private composer!: HTMLTextAreaElement;
   private sendButton!: HTMLButtonElement;
@@ -47,6 +49,7 @@ export class RunView {
   private progress: RunProgress|null = null;
   private artifacts: RunArtifact[] = [];
   private actionCount = 0;
+  private lastStep = '';
 
   constructor(handler: FluxPageHandlerRemote) {
     this.handler = handler;
@@ -112,7 +115,31 @@ export class RunView {
     this.headLink.className = 'run-head-link';
     this.headLink.href = '#workflows';
     this.headLink.textContent = 'View workflow →';
-    head.append(this.headLabel, this.headLink);
+    // Pause, and save-as-workflow. Both were fully implemented in the browser
+    // and unreachable from here: a long task could only be killed, losing
+    // everything it had done, and a run that turned out to be worth repeating
+    // could not be turned into the workflow the browser already knew how to
+    // compile from it.
+    this.pauseButton = document.createElement('button');
+    this.pauseButton.className = 'ghost';
+    this.pauseButton.addEventListener('click', () => {
+      if (this.progress?.state === RunState.kPaused) {
+        this.handler.resumeRun(this.runId);
+      } else {
+        this.handler.pauseRun(this.runId);
+      }
+    });
+
+    this.saveButton = document.createElement('button');
+    this.saveButton.className = 'ghost';
+    this.saveButton.textContent = 'Save as workflow';
+    this.saveButton.hidden = true;
+    this.saveButton.addEventListener('click', () => void this.saveAsWorkflow());
+
+    const actions = document.createElement('div');
+    actions.className = 'head-actions';
+    actions.append(this.pauseButton, this.saveButton, this.headLink);
+    head.append(this.headLabel, actions);
 
     this.stepCount = document.createElement('button');
     this.stepCount.className = 'step-count';
@@ -227,6 +254,25 @@ export class RunView {
     this.stream.append(bubble);
   }
 
+  /**
+   * "Thought for 8s", above the turn it belongs to.
+   *
+   * Only when it is long enough to have been a visible wait. Stamping "Thought
+   * for 0s" on every turn is noise, and the point of the line is to explain a
+   * gap the user already noticed.
+   */
+  private appendThinking(ms: number) {
+    if (ms < 1500) {
+      return;
+    }
+    const note = document.createElement('div');
+    note.className = 'run-thinking';
+    note.textContent = ms < 60000 ?
+        `Thought for ${Math.round(ms / 1000)}s` :
+        `Thought for ${Math.round(ms / 60000)}m`;
+    this.stream.append(note);
+  }
+
   private appendProse(text: string) {
     const p = document.createElement('p');
     p.className = 'run-prose';
@@ -267,6 +313,28 @@ export class RunView {
       const code = document.createElement('code');
       code.textContent = target;
       chip.append(code);
+    }
+
+    // How long it took. Set on every action since the runner started
+    // recording it, and rendered nowhere - so a step that took forty seconds
+    // and one that took forty milliseconds looked identical.
+    const took = durationOf(action);
+    if (took) {
+      const ms = document.createElement('span');
+      ms.className = 'tool-took';
+      ms.textContent = took;
+      chip.append(ms);
+    }
+
+    // An approved action is the one the user personally allowed past the write
+    // scope. That is the whole point of the approval, and the transcript had
+    // no trace of which step it was.
+    if (action.wasApproved) {
+      const mark = document.createElement('span');
+      mark.className = 'tool-approved';
+      mark.title = 'You approved this step';
+      mark.append(pathIcon('M4 10.5l4 4 8-9'), 'Approved');
+      chip.append(mark);
     }
 
     if (!action.succeeded && action.error) {
@@ -360,6 +428,19 @@ export class RunView {
    * back to the run that started it.
    */
   private paintHead() {
+    const state = this.progress?.state;
+    const live = state === RunState.kRunning || state === RunState.kQueued;
+    const paused = state === RunState.kPaused;
+    // Hidden rather than disabled once the run is over: a greyed Pause on a
+    // finished task is a control that will never do anything.
+    this.pauseButton.hidden = !live && !paused;
+    this.pauseButton.textContent = paused ? 'Resume' : 'Pause';
+
+    // Only once there is something to compile. CompileReplay works from the
+    // action trace, and a run that has not acted yet has nothing to replay.
+    this.saveButton.hidden =
+        !(state === RunState.kSucceeded && this.actionCount > 0);
+
     const parent = this.progress?.parentRunId;
     if (!parent) {
       return;
@@ -397,6 +478,24 @@ export class RunView {
     children.forEach((child, index) => {
       this.subagentPanel.append(subagentRow(child, index));
     });
+  }
+
+  /**
+   * Turns a finished run into a saved workflow.
+   *
+   * The browser compiles it from the action trace, so this asks for nothing:
+   * the run already contains the prompt, the scope and every step it took.
+   */
+  private async saveAsWorkflow() {
+    this.saveButton.disabled = true;
+    const {workflowId, error} = await this.handler.compileReplay(this.runId);
+    this.saveButton.disabled = false;
+    if (!workflowId) {
+      this.appendProse(error ?? 'This run could not be saved as a workflow.');
+      return;
+    }
+    this.saveButton.hidden = true;
+    this.appendProse('Saved as a workflow. It is on the Workflows screen.');
   }
 
   // --- Questions ------------------------------------------------------------
@@ -568,6 +667,13 @@ export class RunView {
     if (progress.runId !== this.runId || !this.root) {
       return;
     }
+    // One line per turn: the runner reports thinking_ms with every progress
+    // update, and stamping it on each one would print the same "Thought for
+    // 8s" repeatedly through a single turn.
+    if (progress.currentStep && progress.currentStep !== this.lastStep) {
+      this.lastStep = progress.currentStep;
+      this.appendThinking(progress.thinkingMs);
+    }
     this.progress = progress;
     this.paintHead();
     this.paintPlan();
@@ -696,6 +802,19 @@ const STATE_CLASS: Record<number, string> = {
   [TaskStepState.kDone]: 'done',
   [TaskStepState.kSkipped]: 'skipped',
 };
+
+/** How long an action took, as a label, or empty when it was instant. */
+function durationOf(action: ActionRecord): string {
+  const ms = Number(
+      (action.finishedAt.internalValue - action.startedAt.internalValue) /
+      1000n);
+  if (!Number.isFinite(ms) || ms < 250) {
+    return '';
+  }
+  return ms < 1000 ? `${ms}ms` :
+      ms < 60000  ? `${(ms / 1000).toFixed(1)}s` :
+                    `${Math.round(ms / 60000)}m`;
+}
 
 /**
  * The thing a tool acted on, for the chip. A URL is shortened to its path -

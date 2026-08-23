@@ -11,8 +11,10 @@
 #include "base/byte_size.h"
 #include "base/functional/bind.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "base/uuid.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
@@ -36,6 +38,29 @@ constexpr uint64_t kBytesPerRun = 600ull * 1024 * 1024;
 // is network and target-site rate limits, not local resources.
 constexpr uint32_t kMaxConcurrency = 12;
 constexpr uint32_t kMinConcurrency = 1;
+
+// A short, stable name for a run, from the first thing the prompt asks for.
+//
+// The prompt is the only thing available at StartRun - the model has not run
+// yet - and its first line is almost always the instruction. Templates begin
+// with an imperative ("Go to my open LinkedIn search results tab."), which
+// makes a serviceable title once it is cut to length on a word boundary.
+std::string TitleFor(const std::string& prompt) {
+  std::string line = prompt.substr(0, prompt.find('\n'));
+  base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
+  if (line.empty())
+    return "Untitled task";
+
+  constexpr size_t kMax = 48;
+  if (line.size() <= kMax)
+    return line;
+  // Cut on a space so the label does not end mid-word; fall back to a hard cut
+  // for a 48-character run with no spaces in it.
+  size_t cut = line.rfind(' ', kMax);
+  if (cut == std::string::npos || cut < kMax / 2)
+    cut = kMax;
+  return base::StrCat({line.substr(0, cut), "\u2026"});
+}
 
 }  // namespace
 
@@ -85,6 +110,8 @@ std::optional<std::string> FluxAgentService::StartRun(
 
   auto progress = mojom::RunProgress::New();
   progress->run_id = run_id;
+  progress->title = TitleFor(spec->prompt);
+  progress->started_at = base::Time::Now();
   progress->state = mojom::RunState::kQueued;
   progress->actions_taken = 0;
   if (!parent_run_id.empty())
@@ -448,6 +475,8 @@ void FluxAgentService::OnProgress(const mojom::RunProgress& progress) {
   auto existing = progress_.find(progress.run_id);
   mojom::RunProgressPtr next = progress.Clone();
   if (existing != progress_.end()) {
+    next->title = existing->second->title;
+    next->started_at = existing->second->started_at;
     next->plan = std::move(existing->second->plan);
     next->subagents = std::move(existing->second->subagents);
     next->parent_run_id = existing->second->parent_run_id;

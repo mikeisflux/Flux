@@ -4848,7 +4848,7 @@
     {
       "id": "personal-dispute-incorrect-charge",
       "title": "Dispute an incorrect charge",
-      "outcome": "A filed dispute with the evidence and a paper trail you can follow up on",
+      "outcome": "A dispute filled in with the evidence, staged for your final submit, plus the follow-up dates",
       "category": "Personal",
       "connectors": [
         {
