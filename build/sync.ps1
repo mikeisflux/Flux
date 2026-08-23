@@ -130,6 +130,35 @@ if (Test-Path $iconRoot) {
   Write-Host "    branded  chrome\app\theme\chromium" -ForegroundColor DarkGray
 }
 
+# Chromium keeps its own name as a literal in the unbranded string files -
+# 742 of them - so the browser introduces itself as Chromium in every notice
+# and bubble that patch 0009's IDS_PRODUCT_NAME does not reach. A script
+# rather than a patch: 742 hunks against a file Chromium edits constantly
+# would be the most expensive thing in the series to rebase, and this derives
+# its answer from whatever the tree currently says.
+$rebrand = Join-Path $FluxRoot 'tools\rebrand-strings.py'
+if (Test-Path $rebrand) {
+  # Resolved rather than assumed. depot_tools ships a python3 shim and
+  # Chromium's own build cannot run without one, so a python is always
+  # present - but which name answers depends on how the machine was set up,
+  # and a wrong guess here fails the sync with a CommandNotFoundException
+  # that says nothing about why.
+  $python = $null
+  $candidates = @(
+    (Join-Path "$CheckoutDrive\flux-build\depot_tools" 'python3.bat'),
+    'python3',
+    'python'
+  )
+  foreach ($candidate in $candidates) {
+    $found = Get-Command $candidate -ErrorAction SilentlyContinue
+    if ($found) { $python = $found.Source; break }
+  }
+  if (-not $python) {
+    throw "No python found for tools\rebrand-strings.py. Tried depot_tools' python3.bat, python3 and python."
+  }
+  Invoke-Native $python @($rebrand, $Src)
+}
+
 Log "Sync complete. Next: .\build\build.ps1 -CheckoutDrive $CheckoutDrive"
 } finally {
   Pop-Location

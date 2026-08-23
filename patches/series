@@ -21,3 +21,4 @@
 0016-flux-register-keyed-service.patch
 0017-flux-no-google-api-keys-infobar.patch
 0018-flux-hide-chromium-avatar-button.patch
+0019-flux-no-ai-mode-omnibox-button.patch

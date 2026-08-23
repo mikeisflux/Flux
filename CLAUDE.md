@@ -111,6 +111,34 @@ The deeper lesson each of these encodes: **match the surrounding code**. All
 three were already done correctly elsewhere in `src/browser`, and grepping for
 an existing use would have been faster than getting it wrong.
 
+### Chromium's own name is renamed at sync time, not by a patch
+
+Chromium hardcodes "Chromium" as a literal in `chrome/app/chromium_strings.grd`
+and `settings_chromium_strings.grdp` - 870 of them - rather than filling
+IDS_PRODUCT_NAME into a placeholder. Patch 0009 renames the two that define
+IDS_PRODUCT_NAME, which covers the window title and the about page. The rest
+are strings like "Continue where you left off: Chromium restores your tabs
+every time you restart", and each one is the browser telling the user it is
+Chromium.
+
+`tools/rebrand-strings.py` does the other 868, run by `build/sync` right after
+the icon copy. A script rather than a patch on purpose: 870 hunks against a
+file Chromium edits constantly would be the most expensive thing in the series
+to rebase, and this derives its answer from whatever the tree currently says,
+so an uprev costs nothing.
+
+Two things keep the name. "The Chromium Authors" is a copyright attribution,
+not a product name - renaming it would be a false claim in a string the about
+page shows. And anything inside a URL, because a renamed host is a dead
+support link. `ChromiumOS` and `ChromiumUpdater.exe` also survive, because the
+rename is word-boundary matched; neither is reachable on Windows.
+
+`tools/check-rebrand.sh` runs it against the real files at the pinned tag and
+asserts all of that. The URL guard is checked against a synthetic fixture,
+because no URL in those files contains "Chromium" today - so that assertion
+would otherwise pass with the guard deleted, which is how a check in this repo
+has already rotted once.
+
 ### The patch series is applied before it is handed over
 
 `tools/check-patches.sh` fetches only the files the series touches from the

@@ -1,0 +1,32 @@
+Subject: [flux] Do not show Google's AI Mode button in the omnibox
+
+The address bar shipped with an "AI Mode" button and a "Press tab then enter
+to ask AI Mode" hint. That is Google Search's assistant, offered from the
+address bar of a browser that has its own agent on Ctrl+K - two assistants
+competing for the same gesture, and the one being advertised cannot see a
+single thing the user has connected to Flux.
+
+The switch is a real Chromium pref rather than a feature flag, so this only
+changes its default. Someone who wants Google's AI mode can still turn it
+back on.
+
+--- a/components/omnibox/browser/omnibox_prefs.cc
++++ b/components/omnibox/browser/omnibox_prefs.cc
+@@ -26,8 +26,16 @@
+   registry->RegisterBooleanPref(
+       kShowGoogleLensShortcut, true,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
++  // Off in Flux. The button is Google Search's AI entry point, sitting in the
++  // address bar of a browser whose own agent is one keystroke away on Ctrl+K -
++  // two assistants competing for the same gesture, one of which is not ours
++  // and cannot see anything the user has connected.
++  //
++  // Left as a pref the user can turn back on rather than compiled out: it is
++  // a real Chromium setting, and someone who wants Google's AI mode should be
++  // able to have it.
+   registry->RegisterBooleanPref(
+-      kShowAiModeOmniboxButton, true,
++      kShowAiModeOmniboxButton, false,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+   registry->RegisterBooleanPref(
+       kShowSearchTools, true, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

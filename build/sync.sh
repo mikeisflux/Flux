@@ -48,4 +48,15 @@ if [ -d "$FLUX_ROOT/branding/icons" ]; then
   printf '    branded  chrome/app/theme/chromium\n'
 fi
 
+# Chromium keeps its own name as a literal in the unbranded string files - 742
+# of them - so the browser introduces itself as Chromium in every notice and
+# bubble that patch 0009's IDS_PRODUCT_NAME does not reach. A script rather
+# than a patch: 742 hunks against a file Chromium edits constantly would be
+# the most expensive thing in the series to rebase, and this derives its
+# answer from whatever the tree currently says.
+if [ -x "$FLUX_ROOT/tools/rebrand-strings.py" ]; then
+  python3 "$FLUX_ROOT/tools/rebrand-strings.py" "$SRC"
+fi
+
+
 log "Sync complete. Next: build/build.sh"
