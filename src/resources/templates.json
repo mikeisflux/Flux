@@ -3775,7 +3775,12 @@
       "connectors": [],
       "schedule": null,
       "writeScope": "readonly",
-      "featured": 11
+      "featured": 11,
+      "prompt": "Click through [app URL] as a user would and file everything that breaks.\n\nCover [the flows that matter — signup, the core action, settings, whatever I name]. Use the app rather than auditing it: fill forms with realistic values, then with empty ones, then with values at the edges. Click back mid-flow. Refresh on a page that holds state. Double-click a submit button. Open something in a new tab. Those are the paths users take and the ones nobody tests.\n\nFile each bug numbered, with: a one-line title, severity, the exact steps to reproduce numbered from a known starting state, what you expected, what happened, a screenshot, and any console error or failed network request with its status.\n\nSeverity means impact rather than annoyance: blocker if the flow cannot be completed, major if it can but with data loss or a wrong result, minor if it is cosmetic or has a workaround.\n\nRepro steps are the whole value of a bug report. \"Signup is broken\" costs an engineer an hour; six numbered steps from a fresh session costs five minutes.\n\nWhere you see something odd but cannot reproduce it, file it and say so explicitly rather than dropping it or presenting it as reliable.\n\nUse test data throughout. Do not enter real payment details and do not perform destructive actions on anything that looks like real data.",
+      "roles": [
+        "engineering",
+        "founders"
+      ]
     },
     {
       "id": "engineering-qa-checklist-mark-case",
@@ -3784,7 +3789,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Run the QA checklist at [link] against [environment URL] and mark every case.\n\nExecute each case exactly as written rather than testing what you think it means. Where a case is ambiguous, mark it Blocked with the ambiguity rather than picking an interpretation — an ambiguous case that passes is worse than one that is flagged, because it will be assumed covered forever after.\n\nFor each case record: the ID, pass, fail, blocked or not applicable, and for anything that is not a clean pass, what actually happened, a screenshot, and any console or network error.\n\nFor a fail, add the minimal repro from a known starting state, since a checklist failure with no repro just becomes a second investigation.\n\nDo not skip a case because a previous one failed. Note the dependency and run it anyway where the state allows, because one broken step often masks three more.\n\nReport at the end: totals per status, the failures ordered by severity, and — this is the part usually missing — anything you noticed that no case covers. A checklist is a record of what someone thought of last time, and the gaps are worth as much as the results.\n\nUse test data. Do not enter real payment details or run destructive operations against real records.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "engineering-bug-report-find-exactly",
@@ -3793,7 +3803,11 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Reproduce this bug report and find exactly where it fails: [paste the report].\n\nStart by getting to a known state, then follow the reported steps precisely. If it reproduces, do it a second time to confirm it is deterministic rather than incidental.\n\nIf it does not reproduce as written, do not stop there — that is where most bug reports die and most of them are real. Vary the things the reporter probably did not think to mention: a different starting state, a slower or faster pace, a different entry point into the flow, an existing session versus a fresh one, a different viewport, data that already exists versus data created just now.\n\nThen narrow it. Find the specific step where behaviour first diverges from expected, and say what happens at that step: the console errors with the full message, the network requests with method, URL, status and the response body where it is informative, and what the UI does. Screenshot the moment of failure.\n\nGive me: confirmed or not reproduced, the exact minimal steps if confirmed, the failing step and the evidence, and what conditions the bug does and does not appear under.\n\nIf you genuinely cannot reproduce it, say precisely what you tried and under what conditions. That list is what lets the reporter tell us what is different about their setup.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-diagnose-why-page-is",
@@ -3802,7 +3816,11 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Diagnose what is wrong with [page URL] and give me options.\n\nLoad it and gather evidence before forming a theory: every console error and warning with its full message and stack, every failed network request with its status and response, requests that succeed but return something unexpected, how long the page takes and what blocks it, and what actually renders versus what should.\n\nCheck the obvious environmental causes too — a mixed-content block, a CORS failure, a CSP violation, a 404 on a script or stylesheet, an expired certificate, a service worker serving something stale. Those account for most of these and they all look like application bugs from the outside.\n\nThen the diagnosis: what is failing, what the evidence for that is, and how confident you are. Where two explanations fit the evidence, say so and say what would distinguish them rather than picking the more interesting one.\n\nThen ranked fix options, each with what it would involve, what it would fix, what it would not, and the risk. Include the quick mitigation as well as the real fix where they differ, since those are different decisions.\n\nIf the evidence does not support a root cause, say that and say what you would need — a server log, a repro on another environment, a build to compare against. A confident wrong diagnosis costs more than an honest gap.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-open-prs-flag-risky",
@@ -3816,7 +3834,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Review the open PRs on [repo] and tell me which ones need attention.\n\nFor each: title, author, age, size in files and lines, CI status, review state, and what it actually does — read the diff rather than trusting the description.\n\nThen rank by risk. Risk here is not size:\n\nHigh — touches authentication, authorisation, payments, data migrations or deletion, changes a public API or a data format, alters security-relevant configuration, or removes a test.\nMedium — touches shared code many things depend on, changes behaviour without a test, has failing or skipped CI, or has been rebased since its last approval.\nLow — additive, well tested, narrow blast radius.\n\nFor each PR give a verdict: merge, ask a specific question, or block with the reason. The question matters more than the verdict — \"needs review\" tells the author nothing, and a specific question gets a specific answer.\n\nCall out separately: PRs open more than [14] days, PRs approved but never merged (these rot into conflicts), PRs whose CI has been red for days, and any PR that changes generated files by hand.\n\nBe direct about the ones you would not merge, and say what would change your mind.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-trace-production-issue-its",
@@ -3838,7 +3860,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Trace [issue — the symptom, the error, the alert] to its likely cause and write it up.\n\nStart with the timeline, since almost every production issue is answered by it: when the symptom first appeared according to Sentry, when the error rate changed, and what deployed in the window before that. Line up the Vercel deploys and the merged commits against the first occurrence.\n\nFrom Sentry: the full error with its stack, how many users and events, when it started, whether it is still happening, which release it is tagged to, and whether the same signature existed before.\n\nFrom GitHub: what changed in the deploy that lines up. Read the actual diff of the candidate commits rather than the PR titles, and check dependency changes too — a lockfile bump is a deploy like any other and is the cause more often than anyone expects.\n\nThen the analysis: the symptom, the timeline, the candidate cause with the specific commit or change, the mechanism by which it produces this symptom, and your confidence.\n\nThe mechanism is the part that separates a real diagnosis from a coincidence in time. If you cannot explain how the change produces the symptom, say the correlation is all you have.\n\nFinish with what would confirm it, and the fastest safe mitigation separately from the fix.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-site-s-accessibility-prioritize",
@@ -3847,7 +3873,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Audit [site URL] for accessibility across [key pages] and give me a prioritised fix list.\n\nCheck: images without meaningful alt text (and decorative images that should have empty alt rather than a description), colour contrast against WCAG AA for both normal and large text, form inputs without associated labels, headings that skip levels or are used for styling, links whose text does not say where they go, focus order and whether every interactive element is reachable and operable by keyboard, whether focus is visible, ARIA that is wrong or redundant, and whether anything traps focus.\n\nThen actually try it: tab through each page start to finish and use the primary flow with the keyboard alone. Automated checks catch roughly a third of real problems, and a form that is technically labelled but impossible to complete without a mouse passes every automated tool.\n\nFor each issue: the page, the element with a selector, what is wrong, which criterion it fails, and the specific fix.\n\nPrioritise by how much it blocks someone rather than by count. A keyboard trap on the checkout is a different order of problem from a hundred contrast warnings in a footer, and a list sorted by frequency puts them the wrong way round.\n\nSeparate what is confirmed from what needs a human with a screen reader to judge.",
+      "roles": [
+        "engineering",
+        "marketing"
+      ]
     },
     {
       "id": "engineering-broken-link-dead-image",
@@ -3856,7 +3887,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Crawl [site URL] and find every broken link and dead image.\n\nCover the whole site up to [depth / page limit], staying on the domain for crawling but checking external links too — an outbound link to a dead site is still a broken link on my page.\n\nFor each link: the page it is on, the link text, the target URL, and the actual status. Distinguish between a 404, a 403, a timeout, a DNS failure, a redirect chain that eventually works, and a redirect that lands somewhere unrelated. That last one is the worst kind, since it returns 200 and looks fine in every report that only checks status codes.\n\nFor images: the page, the src, and whether it loads. Include images that return 200 but are broken — a zero-byte file or an error page served as an image.\n\nAlso check: links to anchors that do not exist on the target page, mailto and tel links that are malformed, links to a staging or localhost URL that shipped by mistake, and any http:// link on an https:// page.\n\nGroup by page rather than by link, since fixing them happens page by page. Put the count at the top and list the pages with the most problems first.\n\nSay how many pages you crawled and whether you hit the limit before finishing.",
+      "roles": [
+        "engineering",
+        "marketing"
+      ]
     },
     {
       "id": "engineering-compare-what-we-built",
@@ -3865,7 +3901,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare what is built at [URL / environment] against the spec at [link] and list the gaps.\n\nGo through the spec requirement by requirement. For each, test it against the running thing and record: implemented as specified, implemented differently, not implemented, or cannot be tested — and for the last one, say why.\n\nWhere behaviour differs from the spec, describe both precisely. \"Doesn't match\" is not actionable; what the spec says and what the software does, side by side, is.\n\nThen the things a requirement-by-requirement pass misses:\n\nEdge cases the spec names that were not handled — empty states, maximum lengths, error paths, permission cases.\nEdge cases the spec does not name but that the implementation clearly hits, which are the gaps in the spec rather than in the build.\nBehaviour that exists but is not in the spec at all. Extra behaviour is a gap too, and nobody ever writes it down.\n\nGive me a table by requirement with the verdict and the evidence, then a summary of what is genuinely missing before this can ship.\n\nBe strict about \"implemented differently\" versus \"implemented\". A field that saves but does not validate, or a flow that works but skips a confirmation the spec required, is not done, and grading it done is how a spec stops meaning anything.",
+      "roles": [
+        "engineering",
+        "founders"
+      ]
     },
     {
       "id": "engineering-read-these-api-docs",
@@ -3874,7 +3915,11 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Read the API docs at [URL] and give me exactly what I need to integrate [what I am doing].\n\nWhat I need, precisely and from the docs rather than from convention:\n\nAuthentication — the scheme, the exact header name and value format, how to get a token, its lifetime, and how refresh works. Copy the header format literally; \"Bearer token\" versus \"Bearer: token\" is an hour of debugging.\n\nThe endpoints for my use case — full URL including the base and version, method, and whether there are regional or environment-specific hosts.\n\nRequest format — every parameter with its exact name, type, whether it is required, constraints, and defaults. Field names verbatim, including the casing convention, which is the other hour of debugging.\n\nResponse format — the shape, the fields I care about, and what an empty result looks like.\n\nErrors — the status codes, the error body shape, and which are retryable.\n\nRate limits — the actual numbers, the window, the headers that report remaining quota, and what happens when you exceed it.\n\nPagination — the mechanism, the parameter names, and how to know you are done.\n\nA complete working example request and response for each endpoint, taken from the docs where they provide one.\n\nCite the doc page for each section. Where the docs are silent or contradict themselves, say so rather than filling the gap with what the API probably does.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-set-up-github-webhook",
@@ -3888,7 +3933,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Set up a webhook on [repo] pointing at [payload URL] for [events], and prove it actually fires.\n\nConfigure it: the payload URL, content type [application/json], the secret from [where I keep it], the events, and active. Do not paste the secret into anything visible or log it anywhere.\n\nThen verify, which is the part that gets skipped. GitHub sends a ping on creation — find that delivery in the webhook's recent deliveries and report the response code and body. A 2xx there is the only evidence the endpoint exists and accepts what we are sending.\n\nThen trigger a real event of the configured type and find that delivery too. A ping succeeding while a real payload 500s is common, because the ping payload is trivial and the real one is not.\n\nGive me: the webhook ID, its configuration with the secret redacted, the ping delivery with its status and response, the real delivery with the same, and the request headers GitHub sent including the signature header name so the receiving end can verify it.\n\nIf a delivery fails, report the exact status and response body rather than retrying blindly. And if the endpoint is not reachable at all, say so plainly rather than leaving a configured webhook that has never successfully delivered anything — that is the state everyone assumes is working.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "engineering-verify-security-report-s",
@@ -3897,7 +3947,11 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Verify the claim in this security report without doing any damage: [paste the report].\n\nThis is authorised testing against our own [system / site]. Read the report first and state plainly what is being claimed, what class of issue it is, and what evidence would settle it.\n\nThen verify with the least invasive check that could distinguish true from false. For most classes that is observation rather than exploitation: check the response headers, check whether the endpoint is reachable without auth, check whether the parameter is reflected, check the version of the component named. Confirming a vulnerability exists does not require demonstrating its full impact.\n\nHard limits: no data exfiltration beyond what is needed to confirm, no writes, no deletion, no denial of service, no testing against another party's systems, no lateral movement, and nothing that would affect a real user. If confirming the claim would require crossing one of those, stop and say what the safe next step is — a staging environment, a controlled window, a specific person's sign-off.\n\nThen the verdict: confirmed, not reproducible, or cannot be safely verified. With the evidence, the exact request and response where relevant, and your assessment of real impact given our setup — reports routinely rate severity from a scanner rather than from context.\n\nDo not include working exploit code.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-test-signup-flow-at",
@@ -3906,7 +3960,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Test the signup flow at [URL] at phone, tablet and desktop widths — [375, 768, 1440] or the ones I name.\n\nAt each width, go through the whole flow to completion. Do not just look at the pages; use them. Tap the buttons, open the dropdowns, fill the fields, trigger a validation error, and see what the keyboard does to the layout on mobile — an on-screen keyboard covering the submit button is the single most common mobile signup failure and it is invisible in a screenshot of the page at rest.\n\nAt each step and each width record: does everything fit without horizontal scroll, is every control reachable and large enough to tap, is text legible, do modals and dropdowns position correctly, does an error message appear somewhere visible, and does the flow complete.\n\nScreenshot each step at each width, and screenshot every break.\n\nReport by width, with the breaks ordered by severity: anything that stops the flow completing first, then anything that makes it hard, then cosmetic.\n\nCall out separately anything that only breaks at one width, since those are usually a single missing breakpoint and cheap to fix.\n\nUse test data and a disposable email. Do not enter real payment details. Tell me if the flow requires a real payment method to complete and stop there.",
+      "roles": [
+        "engineering",
+        "marketing"
+      ]
     },
     {
       "id": "engineering-test-preview-deploy-against",
@@ -3924,7 +3983,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Test the Vercel preview deploy for PR [number] on [repo] against what the PR says it does.\n\nRead the PR first: the description, the linked issue, and the diff. Write down what it claims to change, in specifics, before opening the preview. A test written after looking at the running software tends to confirm whatever the software does.\n\nThen open the preview and check each claim. For each: does the described behaviour actually happen, in the described circumstances.\n\nThen the checks the PR does not mention:\n\nThe surrounding flow still works — the most common problem with a PR is not that the new thing fails but that the old thing next to it does.\nThe error paths for whatever it touches.\nThe empty and boundary states.\nThe console, for new errors or warnings that were not there before.\n\nCompare against production or the base preview where the difference matters.\n\nGive a verdict: accept, accept with the notes listed, or reject with the specific failing behaviour and a repro. Screenshot the evidence for anything that fails.\n\nIf the preview will not build or load, say so with the deployment error rather than reporting the PR as untested. And say which claims you could not test and why — an untestable claim in the description is worth flagging to the author.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-site-s-speed-tell",
@@ -3933,7 +3996,12 @@
       "category": "Engineering",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Measure [site URL] and tell me what to fix first.\n\nMeasure [key pages] and report the Core Web Vitals — LCP, CLS, INP — plus TTFB, total page weight, and the request count. Say which element is the LCP element on each page and what is shifting for CLS, since the metric alone tells nobody what to change.\n\nThen find where the time goes: what blocks rendering, which resources are largest, which scripts are third-party, what loads before anything is visible, whether images are the right format and size for how they are displayed, whether fonts block text, and what is downloaded but not used.\n\nThen rank the fixes by impact against effort, and be honest about both. A list of thirty recommendations sorted by severity is the output of a tool; what I need is the three things that would move the number.\n\nFor each: what to change, roughly what it would save, how hard it is, and any risk.\n\nBe specific about third-party scripts, which are usually the largest single cost and the one nobody controls. Name each, its weight, and what it is for — several are always for something nobody remembers enabling.\n\nSay whether the measurements are lab or field data and how variable the runs were. A single measurement of one page is a data point, not a diagnosis.",
+      "roles": [
+        "engineering",
+        "marketing"
+      ]
     },
     {
       "id": "engineering-bug-notes-clean-linear",
@@ -3947,7 +4015,12 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Turn my raw bug notes at [link or pasted below] into clean Linear issues in [team/project].\n\nFirst, de-duplicate. Notes taken over a week almost always contain the same bug described three ways, and filing three issues means three people investigate the same thing. Group them, and say what you merged.\n\nFor each issue, write it properly: a title that names the specific broken behaviour rather than the area (\"Checkout submit does nothing when the discount field is empty\", not \"checkout bug\"), a description with what happens and what should, numbered repro steps from a known starting state, environment where noted, and any evidence from my notes.\n\nWhere a note is too thin to reproduce from — and most raw notes are — do not invent the steps. File it with what there is and label it needs-repro. An issue with fabricated repro steps that do not work wastes more time than one that admits it is incomplete.\n\nSet severity from actual impact, and apply labels per [our conventions]. Leave assignee and priority alone unless I said otherwise; those are a triage decision.\n\nShow me the issues before creating them, with the merges marked, so I can check the grouping. Then create them and give me the list with links.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "engineering-dashboards-morning-flag-regressions",
@@ -3968,7 +4041,12 @@
         "cron": "0 9 * * 1-5",
         "display": "Weekdays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday at 9am, sweep the dashboards and tell me only what changed.\n\nFrom Sentry: new error signatures not seen before, existing errors whose rate has materially increased, errors affecting more users than yesterday, and anything newly tagged to the most recent release. For each: the error, the count, the trend, the affected release, and a link.\n\nFrom analytics: the key metrics against their recent baseline rather than against yesterday — a single day's comparison flags every Monday as a catastrophe. Traffic, conversion on the main flow, error rate, and [my key metrics].\n\nFlag a regression when it is outside normal variation, and say what normal is when you flag it. \"Signups down 12%\" means nothing without knowing that day-to-day swings 20%.\n\nOrder by severity: anything user-facing and getting worse first.\n\nIf nothing regressed, say so in one line and stop. A digest that finds something every morning is one people stop reading by the second week, and the all-clear is a real result.\n\nDo not report a metric moving within its normal range, do not report a known ongoing issue as if it were new, and do not attribute a change to a cause you have not checked.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "engineering-smoke-test-core-flows",
@@ -3980,7 +4058,12 @@
         "cron": "0 8 * * 1-5",
         "display": "Weekdays at 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday at 8am, run the critical flows on [environment URL] and report pass or fail before standup.\n\nThe flows: [list them — e.g. signup, login, the core action, checkout, logout].\n\nRun each to completion with test data. Record for each: pass or fail, how long it took end to end, and any console error or failed request even where the flow completed. A flow that passes while throwing a 500 on a background request is a warning worth having.\n\nFor a failure: the step it failed at, what happened, the error, and a screenshot. Then retry once — a single transient failure and a real breakage look identical in one run — and say whether it failed both times.\n\nDiff against yesterday's run: what newly fails, what newly passes, and any flow whose duration changed materially. That diff is the report. Whether login worked this morning matters much less than whether it stopped working since yesterday.\n\nLead with the headline: all green, or the number of failures.\n\nUse dedicated test accounts and test data. Do not run destructive operations, do not use real payment details, and clean up anything created where the flow allows. Say if a flow could not be run at all rather than recording it as a pass.",
+      "roles": [
+        "engineering",
+        "ops"
+      ]
     },
     {
       "id": "engineering-monday-repo-health-report",
@@ -3997,7 +4080,11 @@
         "cron": "0 9 * * 1",
         "display": "Mondays at 9am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every Monday, report on the health of [repo].\n\nOpen PRs: total, and then the ones that need something — open more than [7] days, approved but unmerged, red CI, merge conflicts, and drafts that have not moved in a fortnight. For each: title, author, age, and what is blocking it. Name an owner for each — the reviewer for something awaiting review, the author for something needing a rebase. A list with no owners is a list nobody acts on.\n\nIssues: opened and closed this week, anything with no response after [3] days, anything reopened, and the oldest still open. Unanswered issues from outside the team come first; those are the ones with a person waiting.\n\nCI: the failure rate on the main branch this week, any check that fails intermittently (which is worse than one that fails always, because everyone learns to re-run it), and the trend in build duration.\n\nDependencies and security: open Dependabot or security alerts by severity, and anything unaddressed for more than a week.\n\nCompare against last week for each section so the direction is visible.\n\nKeep it short and lead with the two or three things that actually need doing. A full inventory every Monday becomes wallpaper.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-stress-test-form-site",
@@ -4011,7 +4098,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find every form on [site URL] and test how each one handles input.\n\nFor each form, run through: valid input (does it actually submit and confirm), every field empty, only the required fields, values at and beyond any maximum length, wrong types in each field, whitespace-only values, leading and trailing whitespace, unicode and emoji, an email that is nearly valid, a very long string in a free-text field, and a value that looks like markup or a template expression.\n\nAlso the behaviours around submission: double-clicking submit, submitting with the enter key, submitting then hitting back, and what happens to the entered data on a validation failure — losing a user's typing on a validation error is the most common and most infuriating form bug there is.\n\nFor each case record the outcome, the validation message shown, whether the message is helpful, and any console or network error. Screenshot anything that goes wrong.\n\nSpecifically flag: a form that accepts obviously invalid input, one that silently drops a submission, one that shows a raw error or a stack trace, one with no feedback at all on success, and one that can be submitted twice to create two records.\n\nThis is authorised testing on our own site. Use test data only, do not submit anything that would reach a real customer or trigger a real charge, and do not attempt injection payloads beyond what is needed to check that input is escaped in the response.",
+      "roles": [
+        "engineering"
+      ]
     },
     {
       "id": "engineering-cookie-consent-banner",
@@ -4025,7 +4116,13 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Audit the cookie and consent behaviour of [site URL].\n\nLoad the site in a clean session with no prior consent and record everything that happens before any interaction: every cookie set with its name, domain, expiry and whether it is first or third party, every network request to a third-party domain, every tracking or analytics script that executes, and anything written to local storage.\n\nThat pre-consent list is the finding. Anything non-essential firing before a choice is made is the failure, and it is extremely common — a tag manager that loads before consent, an analytics script with a default-on setting, a pixel embedded directly in the page bypassing the consent tool.\n\nThen repeat for each path: reject all, accept all, and any granular options. Record what changes. Check specifically whether reject actually stops what accept starts, and whether an existing cookie is cleared on reject or just ignored.\n\nThen the banner itself: whether reject is as easy to reach as accept, whether it is pre-ticked, whether the categories describe what they actually control, whether the choice persists, and whether it can be changed later.\n\nReport what fires when, with evidence. Flag the gaps between what the policy says and what the site does.\n\nThis is a technical audit, not legal advice on [GDPR/CCPA] compliance — say so, and say which findings a lawyer should look at.",
+      "roles": [
+        "engineering",
+        "marketing",
+        "ops"
+      ]
     },
     {
       "id": "docs-explain-contract-plain-english",
