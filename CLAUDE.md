@@ -111,6 +111,19 @@ each broken a real build once, as greps over `src/browser`:
   under `ui/` are. A file that is in neither compiles nowhere, and the error is
   an undefined symbol at LINK, at the very end of the build.
 
+`tools/check-includes.sh` HEAD-requests every Chromium header `src/browser`
+includes against the pinned tag, because `base/containers/contains.h` does not
+exist in M152 and nothing here knew. The include reads correctly, no other
+check looks at include paths, and it failed 334 targets into the user's build.
+Headers this fork owns, grit output and mojom output are skipped; everything
+else has to resolve. Answers are cached per header, so the first run is ~25s
+and the rest are instant.
+
+The lesson underneath it is the one already written above: `base::Contains`
+was removed and I reached for it from memory. Chromium migrates its `base/`
+container algorithms to `std::ranges::` over time, so a `base/` helper that
+existed last year is not evidence it exists now - check the tag.
+
 A guard can also be written against a failure mode it cannot observe. The
 connector client checked `GURL::is_valid()` to catch an unsupplied path
 placeholder, and its own comment said so - but `url/url_canon_path.cc` marks

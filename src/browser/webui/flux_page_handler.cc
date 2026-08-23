@@ -2,11 +2,9 @@
 
 #include "chrome/browser/flux/webui/flux_page_handler.h"
 
-#include <array>
 #include <string_view>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -534,10 +532,17 @@ void FluxPageHandler::ShowScreen(const std::string& screen) {
   // a renderer is not trusted to name a URL the browser process will then
   // navigate to - Resolve() on an unvalidated string is how a "#" turns into
   // something that is not the console at all.
-  static constexpr auto kScreens = std::to_array<std::string_view>(
-      {"new-task", "templates", "workflows", "connectors", "customize",
-       "approvals", "settings", "agent", "search", "welcome"});
-  if (!base::Contains(kScreens, screen)) {
+  static constexpr std::string_view kScreens[] = {
+      "new-task", "templates", "workflows", "connectors", "customize",
+      "approvals", "settings", "agent", "search", "welcome"};
+  bool known = false;
+  for (std::string_view candidate : kScreens) {
+    if (candidate == screen) {
+      known = true;
+      break;
+    }
+  }
+  if (!known) {
     return;
   }
 
