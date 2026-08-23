@@ -221,5 +221,121 @@ for name in sorted(listed - on_disk):
 sys.exit(1 if bad else 0)
 GNPY
 
+# A switch over an enum that misses a case and has no default. Chromium builds
+# with -Wswitch as an error, so this is a build failure rather than a runtime
+# bug, and it fails in the middle of the build rather than at the end. It
+# happens whenever an enum gains a value: every switch over it has to grow a
+# case, and they are spread across the tree.
+python3 - <<'SWITCHPY' || status=1
+import pathlib
+import re
+
+enums = {}
+mojom = pathlib.Path('src/browser/mojom/flux.mojom').read_text(encoding='utf-8')
+for name, body in re.findall(r'^enum (\w+) \{(.*?)\n\};', mojom, re.S | re.M):
+    enums[name] = {v for v in re.findall(r'^\s+(k\w+)', body, re.M)}
+for h in pathlib.Path('src/browser').rglob('*.h'):
+    for name, body in re.findall(r'enum class (\w+)[^{]*\{(.*?)\};',
+                                 h.read_text(encoding='utf-8'), re.S):
+        enums[name] = {v for v in re.findall(r'^\s+(k\w+)', body, re.M)}
+
+bad = 0
+for p in sorted(pathlib.Path('src/browser').rglob('*.cc')):
+    text = p.read_text(encoding='utf-8')
+    for m in re.finditer(r'switch\s*\(([^)]*)\)\s*\{', text):
+        i, depth = m.end() - 1, 0
+        while i < len(text):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        body = text[m.end():i]
+        cases = re.findall(r'case\s+(?:[\w:]*::)?(\w+)::(k\w+)', body)
+        bare = re.findall(r'case\s+(k\w+)', body)
+        if not cases and not bare:
+            continue
+        if re.search(r'\bdefault\s*:', body):
+            continue
+        if cases:
+            enum_name = cases[0][0]
+            covered = {v for _, v in cases}
+        else:
+            covered = set(bare)
+            enum_name = next((n for n, vals in enums.items()
+                              if covered and covered <= vals), None)
+        if enum_name not in enums:
+            continue
+        missing = sorted(enums[enum_name] - covered)
+        if missing:
+            line = text.count('\n', 0, m.start()) + 1
+            print(f'{p}:{line}: switch over {enum_name} has no default and '
+                  f'misses {", ".join(missing)} - -Wswitch is an error in '
+                  f'Chromium, so this fails the build')
+            bad += 1
+
+raise SystemExit(1 if bad else 0)
+SWITCHPY
+
+# A method that shadows a base virtual without saying `override`. Chromium
+# builds -Winconsistent-missing-override as an error, so the tidy case is a
+# build break; the dangerous case is a signature that has drifted from the
+# base, where without `override` it becomes a brand new method nothing calls,
+# the base version runs instead, and the behaviour disappears with no
+# diagnostic anywhere. Covers this project's own base classes only.
+python3 - <<'OVERRIDEPY' || status=1
+import collections
+import pathlib
+import re
+
+ROOT = pathlib.Path('src/browser')
+virtuals = collections.defaultdict(set)
+bases = {}
+decls = collections.defaultdict(list)
+
+for h in sorted(set(ROOT.rglob('*.h'))):
+    cls = None
+    for i, raw in enumerate(h.read_text(encoding='utf-8').splitlines(), 1):
+        m = re.match(r'^(?:class|struct)\s+(?:\w+\s+)?(\w+)\s*'
+                     r'(?::\s*(.*?))?\s*\{?\s*$', raw)
+        if m and (m.group(2) or raw.rstrip().endswith('{')):
+            cls = m.group(1)
+            if m.group(2):
+                bases[cls] = re.findall(
+                    r'(?:public|protected|private)\s+([\w:]+)', m.group(2))
+            continue
+        if not cls:
+            continue
+        s = raw.strip()
+        if s.startswith('//'):
+            continue
+        mm = re.match(r'^(virtual\s+)?[\w:<>,\s&*]+?\s+(\w+)\(', s)
+        if not mm:
+            continue
+        name = mm.group(2)
+        if mm.group(1):
+            virtuals[cls].add(name)
+        # Searched, not captured by position: the parameter list is matched by
+        # a greedy class that swallows a trailing `override`, which reported
+        # every correctly-marked override in the tree as missing one.
+        decls[cls].append((name, i, str(h), bool(re.search(r'\boverride\b', s))))
+
+bad = 0
+for cls, entries in decls.items():
+    for base in bases.get(cls, []):
+        base = base.split('::')[-1]
+        if base not in virtuals:
+            continue
+        for name, line, path, has_override in entries:
+            if name in virtuals[base] and not has_override:
+                print(f'{path}:{line}: {cls}::{name}() matches a virtual in '
+                      f'{base} but is not marked override')
+                bad += 1
+
+raise SystemExit(1 if bad else 0)
+OVERRIDEPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

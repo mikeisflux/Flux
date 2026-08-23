@@ -141,6 +141,35 @@ it. Breaking a new rule on purpose is what caught that, and it is the third
 time a check in this repo has passed while the thing it was written for went
 through.
 
+### The build-breaking classes a grep list cannot see
+
+Three checks stand in for the compiler this container does not have. Each
+targets a failure that costs the user a whole build.
+
+`tools/check-undefined-symbols.py` finds a method declared in a header and
+defined nowhere. Every translation unit compiles and it dies at LINK, after
+the whole two-hour build has already happened - the same ending as a file
+missing from `BUILD.gn`, from the other cause.
+
+`check-cpp.sh` gained two rules. A switch over an enum that misses a case and
+has no `default` is a build failure, because Chromium builds `-Wswitch` as an
+error; this happens every time an enum gains a value. And a method that
+shadows a base virtual without saying `override` is one too
+(`-Winconsistent-missing-override`), with a nastier variant behind it: if the
+signature has drifted from the base, without `override` it becomes a brand new
+method nothing calls, the base version runs instead, and the behaviour
+disappears with no diagnostic at all.
+
+All three were wrong before they were right, and the pattern is the same every
+time: free functions invisible because the scan only matched `Class::name(`,
+inline accessors reported as undefined because a greedy `(.*)` let
+`scheduler() { return scheduler_.get(); }` end in a semicolon, macros parsed as
+methods, and every correctly-marked `override` in the tree reported as missing
+one because the parameter group swallowed the keyword. Sixteen false findings,
+then twelve, then ten, then zero. A check is not finished when it prints
+nothing - it is finished when it prints nothing AND fires on the bug removed
+on purpose.
+
 ### There is no compiler here, so arity is checked instead
 
 `tools/check-arity.py` catches a call to one of this project's own methods
