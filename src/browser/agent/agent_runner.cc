@@ -2,6 +2,8 @@
 
 #include "chrome/browser/flux/agent/agent_runner.h"
 
+#include "chrome/browser/profiles/profile.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -41,12 +43,14 @@ std::string DigestOf(const ToolCall& call) {
 }  // namespace
 
 AgentRunner::AgentRunner(std::string run_id,
+                         Profile* profile,
                          mojom::TaskSpecPtr spec,
                          std::unique_ptr<LLMProvider> provider,
                          std::unique_ptr<LLMProvider> failover,
                          ToolRegistry* tools,
                          Delegate* delegate)
     : run_id_(std::move(run_id)),
+      profile_(profile),
       spec_(std::move(spec)),
       provider_(std::move(provider)),
       failover_(std::move(failover)),
@@ -57,6 +61,21 @@ AgentRunner::~AgentRunner() = default;
 
 void AgentRunner::Start() {
   state_ = mojom::RunState::kRunning;
+
+  // Open the tab BEFORE the first model turn. Without this the runner had no
+  // browsing context at all - web_contents_ and page_ were declared and never
+  // assigned - so every browser tool received a null WebContents and the whole
+  // run was a conversation with nothing on the other end of it.
+  tab_ = std::make_unique<AgentTab>(
+      profile_, base::BindOnce(&AgentRunner::OnTabClosed,
+                               weak_factory_.GetWeakPtr()));
+  web_contents_ = tab_->Open();
+  if (!web_contents_) {
+    Finish(mojom::RunState::kFailed,
+           "Could not open a tab for this task to work in.");
+    return;
+  }
+  page_ = std::make_unique<PageContext>(web_contents_);
 
   Message task;
   task.role = Message::Role::kUser;
@@ -385,6 +404,19 @@ void AgentRunner::AddUserMessage(const std::string& text) {
   // it. A run that is mid-tool picks it up when that tool returns.
   if (state_ == mojom::RunState::kPaused) {
     Resume();
+  }
+}
+
+void AgentRunner::OnTabClosed() {
+  // The user closed the run's tab. That is a deliberate stop, not a failure of
+  // the task, and it has to be honoured immediately: the WebContents is gone
+  // and anything still queued would act through a freed pointer.
+  web_contents_ = nullptr;
+  page_.reset();
+  if (state_ == mojom::RunState::kRunning ||
+      state_ == mojom::RunState::kAwaitingApproval ||
+      state_ == mojom::RunState::kPaused) {
+    Finish(mojom::RunState::kCancelled, "You closed the task's tab.");
   }
 }
 

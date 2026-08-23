@@ -109,8 +109,8 @@ void FluxAgentService::PumpQueue() {
     }
 
     auto runner = std::make_unique<AgentRunner>(
-        run_id, std::move(spec), std::move(primary), std::move(failover),
-        &tools_, this);
+        run_id, profile_, std::move(spec), std::move(primary),
+        std::move(failover), &tools_, this);
     AgentRunner* raw = runner.get();
     runs_[run_id] = std::move(runner);
     raw->Start();

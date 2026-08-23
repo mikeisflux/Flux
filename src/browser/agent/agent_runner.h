@@ -8,10 +8,13 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/flux/agent/agent_tab.h"
 #include "chrome/browser/flux/agent/page_context.h"
 #include "chrome/browser/flux/agent/tool_registry.h"
 #include "chrome/browser/flux/mojom/flux.mojom.h"
 #include "chrome/browser/flux/providers/llm_provider.h"
+
+class Profile;
 
 namespace flux {
 
@@ -19,8 +22,17 @@ namespace flux {
 // against a real page, feeds results back, and repeats until the task is done
 // or a stop condition fires.
 //
-// Every run owns its own WebContents in its own profile, so ten concurrent
-// runs cannot collide over cookies, CSRF tokens or single-session services.
+// Every run gets its own tab, but NOT its own profile. Isolating the profile
+// was the original design and it was wrong for this product: the reason to put
+// an agent inside the browser at all is that the user is already signed in
+// everywhere, and a run in a fresh profile is signed in nowhere. It shares the
+// user's cookie jar, which is what makes "check my inbox" a task rather than a
+// login problem.
+//
+// The cost of that is real and is accepted: concurrent runs touching the same
+// service share its session, so they can collide over a CSRF token or a
+// single-session service. The concurrency cap and the write scopes are what
+// keep that survivable.
 class AgentRunner {
  public:
   class Delegate {
@@ -41,6 +53,7 @@ class AgentRunner {
   };
 
   AgentRunner(std::string run_id,
+              Profile* profile,
               mojom::TaskSpecPtr spec,
               std::unique_ptr<LLMProvider> provider,
               std::unique_ptr<LLMProvider> failover,  // may be null
@@ -83,6 +96,9 @@ class AgentRunner {
   void OnToolFinished(ToolResult result);
   void Finish(mojom::RunState state, const std::string& summary);
 
+  // The user closed the run's tab out from under it.
+  void OnTabClosed();
+
   // Returns true when `call` exceeds the task's declared WriteScope and must
   // be approved by a human first. This is the enforcement point that makes
   // WriteScope structural rather than advisory.
@@ -96,6 +112,7 @@ class AgentRunner {
   bool ShouldStop() const;
 
   const std::string run_id_;
+  raw_ptr<Profile> profile_;
   mojom::TaskSpecPtr spec_;
   std::unique_ptr<LLMProvider> provider_;
   std::unique_ptr<LLMProvider> failover_;
@@ -104,6 +121,10 @@ class AgentRunner {
 
   std::vector<Message> history_;
   std::vector<mojom::ActionRecordPtr> actions_;
+  // The run's own tab, in the user's profile. Opened on Start() - a run with
+  // no page to act on can do nothing, and every browser tool was previously
+  // handed a null WebContents because nothing ever created one.
+  std::unique_ptr<AgentTab> tab_;
   std::unique_ptr<PageContext> page_;
   raw_ptr<content::WebContents> web_contents_ = nullptr;
 

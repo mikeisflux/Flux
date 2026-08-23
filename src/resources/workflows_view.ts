@@ -40,6 +40,26 @@ export class WorkflowsView {
     await this.repaint();
   }
 
+  /**
+   * Puts a message at the top of the screen. Inserted into the live DOM rather
+   * than kept as state, so the next repaint clears it - an error about one
+   * click should not outlive everything the user does afterwards.
+   */
+  private reportError(message: string) {
+    const screen = this.root?.querySelector('.screen');
+    if (!screen) {
+      return;
+    }
+    let banner = screen.querySelector<HTMLElement>('.inline-error');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.className = 'inline-error';
+      banner.setAttribute('role', 'alert');
+      screen.insertBefore(banner, screen.children[1] ?? null);
+    }
+    banner.textContent = message;
+  }
+
   private async repaint() {
     const root = this.root;
     if (!root) {
@@ -191,7 +211,16 @@ export class WorkflowsView {
     };
 
     item('Run now', 'M6 4l10 6-10 6V4z', () => {
-      void this.handler.runWorkflowNow(workflow.id).then(() => this.repaint());
+      // The result was previously discarded, so a run that could not start
+      // looked exactly like one that did - which is to say, like nothing at
+      // all. On success the console follows the run; on failure it says why.
+      void this.handler.runWorkflowNow(workflow.id).then(({runId, error}) => {
+        if (runId) {
+          window.location.hash = `#run/${encodeURIComponent(runId)}`;
+          return;
+        }
+        this.reportError(error ?? 'The workflow could not be started.');
+      });
     });
     item(workflow.enabled ? 'Pause schedule' : 'Resume schedule',
          workflow.enabled ? 'M7 4v12M13 4v12' : 'M6 4l10 6-10 6V4z', () => {

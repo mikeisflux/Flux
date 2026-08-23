@@ -2009,6 +2009,17 @@ body.shell.collapsed .badge { display: none; }
   color: var(--fg-muted);
 }
 
+/* A failure the user caused by clicking something, said where they clicked.
+   Not a toast: a run that would not start is worth reading, and a message that
+   removes itself after four seconds is one they will miss. */
+.inline-error {
+  padding: 12px 14px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  margin: 0 0 20px;
+  color: var(--danger);
+}
+
 /* --- Subagents ------------------------------------------------------------ */
 /* Shares the plan panel's box, but not its stickiness: two sticky panels with
    the same offset land on top of each other. This one scrolls with the

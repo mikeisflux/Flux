@@ -39,6 +39,8 @@ source_set("flux") {
     "webui/flux_ui.h",
     "agent/agent_runner.cc",
     "agent/agent_runner.h",
+    "agent/agent_tab.cc",
+    "agent/agent_tab.h",
     "agent/page_context.cc",
     "agent/page_context.h",
     "agent/tool_registry.cc",
@@ -77,6 +79,9 @@ source_set("flux") {
     "//chrome/browser:browser_public_dependencies",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/resources/flux:resources",
+    # A narrow source_set exposing browser_navigator.h alone, not the whole
+    # //chrome/browser/ui target - depending on that from here is circular.
+    "//chrome/browser/ui/navigator",
     "//chrome/browser/ui/webui/top_chrome",
     "//chrome/common",
     "//components/input",
