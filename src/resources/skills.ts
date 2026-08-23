@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {loadPackedJson, once} from './resource.js';
+
 /**
  * The shipped skill library, packed from data/skills/*.md.
  *
@@ -27,16 +29,9 @@ export interface Skill {
   body: string;
 }
 
-let cached: Promise<Skill[]>|null = null;
-
-export function loadSkills(): Promise<Skill[]> {
-  if (!cached) {
-    cached = fetch('skills.json')
-                 .then(r => r.json())
-                 .then((d: {skills: Skill[]}) => d.skills);
-  }
-  return cached;
-}
+export const loadSkills = once(
+    () => loadPackedJson<{skills: Skill[]}>('skills.json')
+              .then(d => d.skills));
 
 /**
  * Siblings, computed rather than curated - the reference's Related list is the

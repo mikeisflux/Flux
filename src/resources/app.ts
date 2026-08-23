@@ -101,8 +101,18 @@ class FluxApp {
    * it is fixed.
    */
   private async renderDefault() {
-    const {statuses} = await this.handler.listProviderKeys();
-    this.render(statuses.some(s => s.configured) ? 'new-task' : 'welcome');
+    // Falls through to the welcome screen if the browser process cannot be
+    // reached, rather than leaving a blank tab: welcome is the screen that
+    // works with nothing configured, so it is the safe answer to "I could not
+    // find out what is configured".
+    let configured = false;
+    try {
+      const {statuses} = await this.handler.listProviderKeys();
+      configured = statuses.some(s => s.configured);
+    } catch (error) {
+      console.error('Could not read the configured providers.', error);
+    }
+    this.render(configured ? 'new-task' : 'welcome');
   }
 
   private render(view: string, sub?: string) {
@@ -110,32 +120,38 @@ class FluxApp {
     content.classList.remove('two-column', 'four-column');
     showSkeleton(content);
 
+    // Every screen goes through settle(), and none of them are allowed to be
+    // fired off with a bare `void`. A render that rejects used to leave the
+    // skeleton drawn above it on screen for good: no error, no empty state,
+    // just grey bars that look like a load which never finishes. One bad path
+    // - fetch() cannot read a chrome:// URL, so all three catalogues threw -
+    // made every screen in the console look identically broken with nothing
+    // on screen saying why. The skeleton is a promise that something is
+    // coming; if it is not, say so.
     switch (view) {
       case 'new-task':
-        void this.newTask.render(content);
-        return;
+        return settle(content, this.newTask.render(content));
       case 'welcome':
-        void this.welcome.render(content);
-        return;
+        return settle(content, this.welcome.render(content));
       case 'customize':
-        void this.customize.render(content, sub === 'skills' ? 'skills' : 'instructions');
-        return;
+        return settle(
+            content,
+            this.customize.render(
+                content, sub === 'skills' ? 'skills' : 'instructions'));
       case 'connectors':
-        void this.connectors.render(content);
-        return;
+        return settle(content, this.connectors.render(content));
       case 'templates':
-        void this.templates.render(content, sub === 'skills' ? 'skills' : 'tasks');
-        return;
+        return settle(
+            content,
+            this.templates.render(
+                content, sub === 'skills' ? 'skills' : 'tasks'));
       case 'workflows':
-        void this.workflows.render(content);
-        return;
+        return settle(content, this.workflows.render(content));
       case 'search':
-        void this.palette.render(content);
-        return;
+        return settle(content, this.palette.render(content));
       case 'agent':
       case 'settings':
-        void this.settings.render(content, sub);
-        return;
+        return settle(content, this.settings.render(content, sub));
       default:
         break;
     }
@@ -179,6 +195,43 @@ class FluxApp {
     // than as the answer to the click that started it.
     this.connectors.onConnectorChanged(status, error);
   }
+}
+
+/**
+ * Waits for a screen to finish drawing, and puts a readable failure on screen
+ * if it does not.
+ *
+ * The console has no server to fall back on: every screen is the browser
+ * process plus a packed catalogue, so when one of those is unreachable there
+ * is nothing to show but the reason. Rendering the reason is the point - the
+ * failure mode this replaces was a skeleton that stayed up forever, which
+ * reads as "slow" and is impossible to report.
+ */
+function settle(content: HTMLElement, drawn: Promise<void>) {
+  void drawn.catch((error: unknown) => {
+    console.error(error);
+    content.replaceChildren();
+
+    const screen = document.createElement('div');
+    screen.className = 'screen';
+
+    const h1 = document.createElement('h1');
+    h1.textContent = 'This screen could not load';
+
+    const detail = document.createElement('p');
+    detail.className = 'empty';
+    detail.textContent = error instanceof Error ?
+        error.message :
+        'Something went wrong reading this screen\u2019s data.';
+
+    const retry = document.createElement('button');
+    retry.className = 'button';
+    retry.textContent = 'Try again';
+    retry.addEventListener('click', () => window.location.reload());
+
+    screen.append(h1, detail, retry);
+    content.append(screen);
+  });
 }
 
 /**

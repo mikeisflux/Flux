@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {loadPackedJson, once} from './resource.js';
+
 /**
  * The template catalog, as packed with the console.
  *
@@ -48,16 +50,9 @@ export const CATEGORIES: string[] = [
   'Monitoring',
 ];
 
-let cached: Promise<Template[]>|null = null;
-
-export function loadTemplates(): Promise<Template[]> {
-  if (!cached) {
-    cached = fetch('templates.json')
-                 .then(r => r.json())
-                 .then((d: {templates: Template[]}) => d.templates);
-  }
-  return cached;
-}
+export const loadTemplates = once(
+    () => loadPackedJson<{templates: Template[]}>('templates.json')
+              .then(d => d.templates));
 
 export function featured(all: Template[]): Template[] {
   return all.filter(t => t.featured !== undefined)

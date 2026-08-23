@@ -1,0 +1,36 @@
+Subject: [flux] Do not warn about missing Google API keys
+
+The bar reads "Google API keys are missing. Some functionality of Chromium
+will be disabled." - on first run, on every profile, permanently. It is wrong
+three times over in this fork: the keys are missing on purpose, nothing it
+warns about is functionality Flux uses, and it names Chromium to a user who
+installed Flux.
+
+dev.gn already says outright that without the keys "sync, safe-browsing,
+geolocation and translate are inert". That is a description of the intended
+build, not a degraded one. An infobar that cannot be acted on and will never
+go away is worse than no infobar.
+
+--- a/chrome/browser/ui/startup/infobar_utils.cc
++++ b/chrome/browser/ui/startup/infobar_utils.cc
+@@ -185,9 +185,17 @@
+   infobars::ContentInfoBarManager* infobar_manager =
+       infobars::ContentInfoBarManager::FromWebContents(web_contents);
+ 
+-  if (!google_apis::HasAPIKeyConfigured()) {
+-    GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
+-  }
++  // Flux deliberately ships no Google API keys, so Chromium's warning about
++  // them is permanent, unactionable, and names a product the user did not
++  // install. Everything it refers to - sync, Safe Browsing lookups,
++  // geolocation, translate - is a Google service this browser does not use;
++  // its own account state lives in the connector store. Removed outright
++  // rather than made conditional, because there is no configuration of this
++  // fork in which showing it would be right.
++  //
++  // Upstream:
++  //   if (!google_apis::HasAPIKeyConfigured())
++  //     GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
+ 
+   if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
+     PrefService* local_state = g_browser_process->local_state();

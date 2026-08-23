@@ -187,6 +187,39 @@ for interface, block, kind in (
 sys.exit(1 if bad else 0)
 MOJOPY
 
+# fetch() cannot read a chrome:// URL, and the failure is invisible until the
+# browser is running: the renderer registers only chrome-untrusted:, devtools:
+# and isolated-app: as fetch-capable, so a fetch of a packed resource throws
+#
+#   Fetch API cannot load chrome://flux/skills.json.
+#   URL scheme "chrome" is not supported.
+#
+# Every catalogue in the console was loaded this way, so every screen threw
+# during render and sat on its loading skeleton forever. Use loadPackedJson()
+# in resource.ts, which is XHR and does reach the WebUIDataSource.
+# Comment lines are skipped - resource.ts explains the rule in prose, and the
+# check must not fire on its own documentation.
+fetch_calls=$(grep -rn '\bfetch(' "$RES"/*.ts 2>/dev/null \
+  | grep -v ':[0-9]*:[[:space:]]*\(//\|\*\|/\*\)' || true)
+if [ -n "$fetch_calls" ]; then
+  echo "FAIL: fetch() in the console - it cannot load chrome:// URLs." >&2
+  echo "$fetch_calls" >&2
+  echo "      Use loadPackedJson() from resource.ts (XMLHttpRequest)." >&2
+  status=1
+fi
+
+# A screen fired off with a bare `void ...render(...)` swallows its own
+# rejection, and the skeleton drawn before it stays on screen with no error -
+# which is how three broken catalogues looked like a browser that simply never
+# finished loading. Route renders through settle() so a failure is visible.
+if grep -n 'void this\.[A-Za-z]*\.render(' "$RES/app.ts" >/dev/null 2>&1; then
+  echo "FAIL: a screen render in app.ts is fired off with a bare void." >&2
+  grep -n 'void this\.[A-Za-z]*\.render(' "$RES/app.ts" >&2
+  echo "      Wrap it in settle() so a rejection draws an error, not a" >&2
+  echo "      skeleton that never resolves." >&2
+  status=1
+fi
+
 # Type-check the console under the same strict settings build_webui compiles
 # it with. This is the difference between a typo costing ten seconds and
 # costing a ninety-minute build, so it is worth the one-time npm install.

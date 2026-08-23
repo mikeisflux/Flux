@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+import {loadPackedJson, once} from './resource.js';
+
 import type {ConnectorStatus, FluxPageHandlerRemote} from './flux.mojom-webui.js';
 
 export interface Connector {
@@ -11,16 +13,9 @@ export interface Connector {
   definition: 'authored'|'pending';
 }
 
-let cached: Promise<Connector[]>|null = null;
-
-export function loadConnectors(): Promise<Connector[]> {
-  if (!cached) {
-    cached = fetch('connectors.json')
-                 .then(r => r.json())
-                 .then((d: {connectors: Connector[]}) => d.connectors);
-  }
-  return cached;
-}
+export const loadConnectors = once(
+    () => loadPackedJson<{connectors: Connector[]}>('connectors.json')
+              .then(d => d.connectors));
 
 /**
  * Connectors.

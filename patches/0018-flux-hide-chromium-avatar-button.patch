@@ -1,0 +1,40 @@
+Subject: [flux] Hide Chromium's avatar button
+
+The toolbar showed two account controls at once: Flux's own, in the tab strip
+(patch 0010), and Chromium's, offering "Sign in to Chromium?" next to it.
+
+The second one cannot work. Signing in needs the Google OAuth client id and
+secret the fork does not ship - the browser says so itself at startup,
+"Desktop Identity Consistency cannot be enabled as no OAuth client ID and
+client secret have been configured" - so the button is a dead offer that also
+names the wrong product.
+
+Hidden rather than removed. ToolbarView holds `avatar_` by pointer and reads
+it for flex order, margins and the overflow menu's insertion index; an
+invisible avatar button is a state upstream already produces whenever
+CanShowForProfile() is false, so this is the supported way to be rid of it.
+
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -574,9 +574,18 @@
+   if (!features::IsWebUIAvatarButtonEnabled()) {
+     avatar_ =
+         AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
+-    bool show_avatar_toolbar_button =
+-        AvatarToolbarButtonInterface::CanShowForProfile(browser_->GetProfile());
+-    avatar_->SetVisible(show_avatar_toolbar_button);
++    // Never shown in Flux. The browser has its own account control in the tab
++    // strip (patch 0010), and Chromium's is a second one offering "Sign in to
++    // Chromium?" - an offer this build cannot honour, because signing in needs
++    // the Google API keys the fork deliberately does not ship. Two avatars
++    // side by side, one of them dead and naming the wrong product.
++    //
++    // The button is still constructed rather than skipped: ToolbarView looks
++    // it up by pointer in half a dozen places (flex order, margins, the
++    // overflow menu's insertion index), and an invisible button is a state
++    // upstream already supports - it is what CanShowForProfile() returning
++    // false produces.
++    avatar_->SetVisible(false);
+   }
+ 
+   overflow_button_ = AddChildView(std::make_unique<OverflowButton>());
