@@ -63,11 +63,14 @@ python3 "$ROOT/tools/build-connectors-json.py" || status=1
 # Every resource has to be listed in BUILD.gn or it is simply not packed, and
 # the failure shows up as a missing module at runtime - after a two-hour build.
 # Adding a file and forgetting the build entry has already happened once.
-python3 - "$RES" <<'GNPY' || status=1
+python3 - "$RES" "$ROOT/src/browser" <<'GNPY' || status=1
 import os, re, sys
-res = sys.argv[1]
+res, browser = sys.argv[1], sys.argv[2]
 build = open(os.path.join(res, 'BUILD.gn'), encoding='utf-8').read()
 listed = set(re.findall(r'"([^"]+\.(?:ts|html|css|json|svg|png))"', build))
+# "$root_gen_dir/.../flux.mojom-webui.ts" is generated during the build and is
+# never on disk here, so it is listed but must not be looked for.
+on_disk_names = {n for n in listed if not n.startswith('$') and '/' not in n}
 bad = 0
 for name in sorted(os.listdir(res)):
     if not name.endswith(('.ts', '.html', '.css', '.json')):
@@ -79,6 +82,35 @@ for name in sorted(os.listdir(res)):
     if name not in listed:
         print(f'{res}/{name}: not listed in BUILD.gn - it will not be packed')
         bad += 1
+
+# The other direction. Deleting or renaming a resource and leaving the entry
+# behind fails the same way, just later: build_webui resolves its file list
+# before it compiles anything.
+for name in sorted(on_disk_names):
+    if not os.path.exists(os.path.join(res, name)):
+        print(f'{res}/BUILD.gn: lists "{name}", which is not on disk - '
+              f'build_webui will fail resolving it')
+        bad += 1
+
+# A resource the browser process looks up by path string rather than by a grit
+# IDR symbol - connector_defs.json does this deliberately, see
+# connector_registry.cc - is checked by no compiler on either side. A typo is
+# not an error: it is an empty catalogue and one line in the log, which reads
+# as "nothing is configured" rather than as a bug.
+for root, _, files in os.walk(browser):
+    for f in sorted(files):
+        if not f.endswith('.cc'):
+            continue
+        path = os.path.join(root, f)
+        body = open(path, encoding='utf-8').read()
+        for m in re.finditer(
+                r'constexpr char k\w*ResourcePath\[\]\s*=\s*"([^"]+)"', body):
+            if m.group(1) not in listed:
+                line = body[:m.start()].count('\n') + 1
+                print(f'{path}:{line}: looks up "{m.group(1)}" in '
+                      f'kFluxResources, but BUILD.gn does not pack it - the '
+                      f'lookup misses silently')
+                bad += 1
 sys.exit(1 if bad else 0)
 GNPY
 

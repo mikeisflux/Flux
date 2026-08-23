@@ -72,6 +72,15 @@ stylelint against `tools/stylelint.config.mjs` (a mirror of Chromium's config,
 keep it in sync on uprev), plus the mixed type/value import rule that
 `@webui-eslint` enforces and npm has no copy of. Both are on the same hook.
 
+`tools/check-webui.sh` also reconciles `src/resources/BUILD.gn` with reality in
+three directions. A file on disk that BUILD.gn does not list is not packed, and
+a file BUILD.gn lists that is not on disk fails to resolve - both surface deep
+inside the build. The third has no compiler on either side: a resource the
+browser process looks up by **path string** rather than by a grit IDR symbol,
+as `connector_registry.cc` does deliberately for `connector_defs.json`. A typo
+there is not an error at all. It is an empty registry and one line in the log,
+which reads as "no connectors are configured" rather than as a bug.
+
 `tools/check-webui.sh` also type-checks every `.ts` with the real `tsc` under
 the same strict settings `build_webui` uses. The mojom bindings only exist
 inside a Chromium build, so `tools/webui-typecheck/stubs/flux.mojom-webui.d.ts`
@@ -302,6 +311,39 @@ actually changes when the bug is present.
 Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
+
+### A check that cries wolf is worse than no check
+
+`tools/check-null-deref.py` catches a `base::Value::Find*` or `GetIf*` result
+dereferenced without a null check. Those accessors return null on an absent key
+or a wrong type, and what they read is never ours: a tool call written by a
+model, a JSON body from a provider or a connector's API, an OAuth token
+response. A null that reaches the dereference is not a failed call, it is the
+browser process going down - someone else's malformed reply crashing the user's
+machine.
+
+Its first version reported all 43 call sites in `src/browser`, and **every one
+was a false positive.** The tree writes them correctly, in two idioms the scan
+did not know:
+
+    if (const base::ListValue* c = root.FindList("content")) { ... *c ... }
+    const std::string* s = root.FindString("stop"); x = s && *s == "tool_use";
+
+The first declares inside the condition, so the body only runs non-null; the
+second short-circuits on the same line, which a scan starting at the *next*
+line cannot see. A report with a 100% false-positive rate is not a weak check,
+it is an anti-check: nobody reads the 44th line of it, so the first real
+finding is the one that gets skipped. Fixing the checker was the whole job -
+there was no bug to fix in the C++.
+
+The counterpart to "break it on purpose" is therefore **read the code before
+believing the report.** Both directions have now cost time here: a check that
+stayed silent through a real bug, and a check that shouted about 43 things that
+were already right.
+
+It is checked against four deliberate breaks, including guarding the *wrong*
+variable (`other && *stop_reason == ...`), which is the shape this bug actually
+takes in review - a guard that is present, reads fine, and covers nothing.
 
 The deeper lesson each of these encodes: **match the surrounding code**. All
 three were already done correctly elsewhere in `src/browser`, and grepping for

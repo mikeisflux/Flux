@@ -193,8 +193,12 @@ export class TemplatesView {
 
   private paintSkills() {
     for (const pill of document.querySelectorAll<HTMLElement>('.skill-pill')) {
-      pill.toggleAttribute(
-          'data-active', pill.dataset['category'] === this.skillCategory);
+      const active = pill.dataset['category'] === this.skillCategory;
+      // data-active is a CSS hook and announces nothing. Which filter is on is
+      // the only thing that distinguishes these buttons from each other, so it
+      // has to be set in both places or the two states disagree.
+      pill.toggleAttribute('data-active', active);
+      pill.setAttribute('aria-pressed', String(active));
     }
 
     const rows = this.filteredSkills();
@@ -365,6 +369,7 @@ export class TemplatesView {
     scheduled.append(
         pathIcon('M4 7h9V4l4 4-4 4V9H6v2H4V7zm12 6H7v3l-4-4 4-4v2h11v3h-2z'));
     scheduled.append('Scheduled');
+    scheduled.setAttribute('aria-pressed', 'false');
     scheduled.addEventListener('click', () => {
       this.scheduledOnly = !this.scheduledOnly;
       this.paint();
@@ -387,11 +392,13 @@ export class TemplatesView {
 
   private paint() {
     for (const pill of document.querySelectorAll<HTMLElement>('.pill')) {
-      pill.toggleAttribute(
-          'data-active', pill.dataset['category'] === this.category);
+      const active = pill.dataset['category'] === this.category;
+      pill.toggleAttribute('data-active', active);
+      pill.setAttribute('aria-pressed', String(active));
     }
     const scheduled = document.getElementById('facet-scheduled');
     scheduled?.toggleAttribute('data-active', this.scheduledOnly);
+    scheduled?.setAttribute('aria-pressed', String(this.scheduledOnly));
 
     const rows = this.filtered();
     this.grid.replaceChildren();

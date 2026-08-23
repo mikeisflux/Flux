@@ -103,6 +103,10 @@ class NavigateTool : public Tool {
     ctx.web_contents->GetController().LoadURL(
         url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
 
+    if (!ctx.page) {
+      std::move(callback).Run(Err("Navigated, but there is no page to read."));
+      return;
+    }
     ctx.page->CaptureWhenStable(base::BindOnce(
         [](ResultCallback cb, PageContext::Snapshot snapshot) {
           std::move(cb).Run(Ok(PageContext::Format(snapshot)));
@@ -222,6 +226,10 @@ class TypeTool : public Tool {
       std::move(callback).Run(Err("Requires 'node_id' and 'text'."));
       return;
     }
+    if (!ctx.page) {
+      std::move(callback).Run(Err("No page to type into."));
+      return;
+    }
     ctx.page->TypeIntoNode(*node_id, *text, base::BindOnce(
         [](ResultCallback cb, bool ok) {
           std::move(cb).Run(ok ? Ok("Text entered.")
@@ -260,6 +268,10 @@ class ExtractTool : public Tool {
   void Run(const ToolContext& ctx,
            base::DictValue input,
            ResultCallback callback) override {
+    if (!ctx.page) {
+      std::move(callback).Run(Err("No page to extract from."));
+      return;
+    }
     // Extraction runs against the accessibility snapshot rather than the DOM,
     // so it survives markup changes that would break a selector-based scraper.
     ctx.page->CaptureWhenStable(base::BindOnce(
@@ -299,6 +311,10 @@ class SubmitTool : public Tool {
       std::move(callback).Run(Err("Missing 'node_id'."));
       return;
     }
+    if (!ctx.page) {
+      std::move(callback).Run(Err("No page to submit on."));
+      return;
+    }
     ctx.page->SubmitForm(*node_id, base::BindOnce(
         [](ResultCallback cb, bool ok) {
           std::move(cb).Run(ok ? Ok("Form submitted.")
@@ -332,6 +348,17 @@ class WaitForTool : public Tool {
            base::DictValue input,
            ResultCallback callback) override {
     const std::string* text = input.FindString("text");
+    // Checked, not assumed. "text" is required in the schema, and a model that
+    // omits it anyway would otherwise dereference null and take the browser
+    // process down - a malformed tool call must fail the call, not the browser.
+    if (!text) {
+      std::move(callback).Run(Err("Requires 'text'."));
+      return;
+    }
+    if (!ctx.page) {
+      std::move(callback).Run(Err("No page to read."));
+      return;
+    }
     const int timeout = input.FindInt("timeout_seconds").value_or(30);
     ctx.page->WaitForText(*text, base::Seconds(timeout), base::BindOnce(
         [](ResultCallback cb, bool found) {

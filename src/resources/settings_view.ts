@@ -123,7 +123,7 @@ export class FluxSettingsView {
         'Parallel tasks',
         `Sized to this PC's memory and shared across running tasks. ` +
             `Currently ${limit} at once - ${active} running, ${queued} queued.`,
-        segmented(['Auto', 'Lower', 'Higher'], 'Auto'));
+        segmented(['Auto', 'Lower', 'Higher'], 'Auto', 'Parallel tasks'));
     screen.append(parallel);
 
     const notify = document.createElement('h2');
@@ -144,7 +144,7 @@ export class FluxSettingsView {
              ['Budget reached',
               'When a task hits the credit ceiling you set for it.', true],
     ] as Array<[string, string, boolean]>) {
-      screen.append(row(label, detail, toggle(on)));
+      screen.append(row(label, detail, toggle(on, label)));
     }
 
     const keys = document.createElement('h2');
@@ -188,30 +188,57 @@ function link(label: string, href: string): HTMLElement {
   return a;
 }
 
-function segmented(options: string[], current: string): HTMLElement {
+/**
+ * One choice out of several, as a radio group rather than three buttons.
+ *
+ * data-active is a CSS hook and nothing more, so without the ARIA the group
+ * announces as "Auto, button / Lower, button / Higher, button": no name saying
+ * what is being chosen, and no indication that one of them is already the
+ * answer. The visual state and the announced state have to be set together -
+ * that is the whole reason aria-checked is written on the same lines that add
+ * and remove the attribute.
+ */
+function segmented(
+    options: string[], current: string, label: string): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'segmented';
+  wrap.setAttribute('role', 'radiogroup');
+  wrap.setAttribute('aria-label', label);
   for (const option of options) {
     const b = document.createElement('button');
     b.textContent = option;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(option === current));
     if (option === current) {
       b.dataset['active'] = '';
     }
     b.addEventListener('click', () => {
       for (const other of wrap.children) {
         other.removeAttribute('data-active');
+        other.setAttribute('aria-checked', 'false');
       }
       b.dataset['active'] = '';
+      b.setAttribute('aria-checked', 'true');
     });
     wrap.append(b);
   }
   return wrap;
 }
 
-function toggle(on: boolean): HTMLElement {
+/**
+ * A switch, named after the row it sits in.
+ *
+ * The name is not decoration. The visible label lives in a sibling div, which
+ * associates them for anyone who can see the layout and for nobody else: four
+ * of these in the Notifications group announced as "switch, on" four times,
+ * with no way to tell "Task finished" from "Task failed". aria-label is what
+ * carries the row's text across to the control.
+ */
+function toggle(on: boolean, label: string): HTMLElement {
   const b = document.createElement('button');
   b.className = 'toggle';
   b.setAttribute('role', 'switch');
+  b.setAttribute('aria-label', label);
   b.setAttribute('aria-checked', String(on));
   b.addEventListener('click', () => {
     b.setAttribute(
