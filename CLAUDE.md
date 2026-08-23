@@ -126,6 +126,20 @@ each broken a real build once, as greps over `src/browser`:
   - or added to a Chromium target by the patch series, as the views subclasses
   under `ui/` are. A file that is in neither compiles nowhere, and the error is
   an undefined symbol at LINK, at the very end of the build.
+- `SimpleURLLoader::DownloadToString` DCHECKs `max_body_size <=
+  kMaxBoundedStringDownloadSize` (5 MiB). It is a ceiling, not a clamp. Both
+  providers passed 10 MiB, so the browser died on the first request it ever
+  made - which was the API-key probe, so entering a key killed the browser
+  from every entry point. Pass the constant, not a number.
+
+That last one only works because the checker stopped throwing the line away.
+A line beginning with a complete inline `/* ... */` - Chromium's
+`/*max_body_size=*/N` argument style - was being treated as a comment and
+skipped, so every annotated call site in the tree was invisible to every rule
+here. The rule was added, ran green, and the 10 MiB call walked straight past
+it. Breaking a new rule on purpose is what caught that, and it is the third
+time a check in this repo has passed while the thing it was written for went
+through.
 
 `tools/check-includes.sh` HEAD-requests every Chromium header `src/browser`
 includes against the pinned tag, because `base/containers/contains.h` does not

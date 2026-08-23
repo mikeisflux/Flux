@@ -188,7 +188,9 @@ void OpenAIProvider::Complete(CompletionRequest request,
       profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&OpenAIProvider::OnResponse, weak_factory_.GetWeakPtr(),
                      std::move(callback)),
-      /*max_body_size=*/10 * 1024 * 1024);
+      // See anthropic_provider.cc: over kMaxBoundedStringDownloadSize is a
+      // fatal DCHECK, not a clamp.
+      /*max_body_size=*/network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
 void OpenAIProvider::OnResponse(CompletionCallback callback,

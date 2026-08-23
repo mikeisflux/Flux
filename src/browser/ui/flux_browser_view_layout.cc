@@ -12,6 +12,7 @@
 // bounds up needs the definition.
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/view.h"
 
 namespace flux {
@@ -109,23 +110,48 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
     layout.AddChild(views().flux_sidebar, bounds, HasSidebar());
   }
 
-  // The avatar sits in the tab strip's band, between the last tab and the
-  // caption buttons, vertically centred on the strip. Its bounds come from the
-  // strip the base already placed rather than from a guess at the band height,
-  // which changes with the frame, the theme and fullscreen.
+  // The avatar sits in the slot DoPreLayoutComputations reserved for it, which
+  // is the AvatarSlot()-wide strip of the caption band immediately inboard of
+  // the window controls.
+  //
+  // Positioned from the tab strip's own right edge, not by subtracting the
+  // caption width from it. GetBoundsWithExclusion() gives the strip a width of
+  // `visual_client_area.width() - (leading + trailing)`, and `trailing` is the
+  // exclusion already widened by AvatarSlot() - so the strip's right edge IS
+  // the slot's left edge, and subtracting the caption again counted it twice
+  // and parked the avatar a caption's width out into the tab strip.
+  //
+  // Vertical placement comes from the strip the base already laid out rather
+  // than from a guess at the band height, which changes with the frame, the
+  // theme and fullscreen.
   if (views().flux_avatar) {
     gfx::Rect bounds;
     const bool visible = HasAvatar();
     if (visible) {
+      const int size = FluxAvatarButton::kSize;
       const ProposedLayout* strip =
           layout.GetLayoutFor(views().horizontal_tab_strip_region_view);
-      gfx::Rect band = strip ? strip->bounds : params.visual_client_area;
-      const int caption = base::ClampCeil(
-          params.trailing_exclusion.ContentWithPadding().width());
-      const int size = FluxAvatarButton::kSize;
-      bounds = gfx::Rect(
-          band.right() - caption - kAvatarGap - size,
-          band.y() + std::max(0, (band.height() - size) / 2), size, size);
+      int slot_left;
+      int band_top;
+      int band_height;
+      if (strip) {
+        slot_left = strip->bounds.right();
+        band_top = strip->bounds.y();
+        band_height = strip->bounds.height();
+      } else {
+        // No horizontal strip - a vertical tab strip, or a frame that has not
+        // placed one yet. The slot is still there, so measure it back from the
+        // window edge using the un-widened exclusion `params` still carries.
+        const gfx::SizeF caption =
+            params.trailing_exclusion.ContentWithPadding();
+        slot_left = params.visual_client_area.right() -
+                    base::ClampCeil(caption.width()) - AvatarSlot();
+        band_top = params.visual_client_area.y();
+        band_height = std::max(base::ClampCeil(caption.height()), size);
+      }
+      bounds = gfx::Rect(slot_left + kAvatarGap,
+                         band_top + std::max(0, (band_height - size) / 2),
+                         size, size);
     }
     layout.AddChild(views().flux_avatar, bounds, visible);
   }

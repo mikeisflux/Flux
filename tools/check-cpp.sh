@@ -36,18 +36,28 @@ for path in sorted(ROOT.rglob('*')):
     in_block_comment = False
 
     for i, line in enumerate(lines, start=1):
-        stripped = line.strip()
+        # Complete inline /* ... */ pairs are Chromium's argument-annotation
+        # style - /*max_body_size=*/N - and the line around one is code.
+        # Removing them BEFORE the comment test is the whole point: the test
+        # used to see a line starting with `/*`, find a `*/` on it, and skip
+        # the line entirely. Every annotated call site in the tree was
+        # therefore invisible to every rule below, and rule 4 shipped green
+        # while the exact 10 MiB call it was written for walked past it.
+        #
+        # The rules still match against `line`, not this - rule 4 needs the
+        # annotation text itself.
+        code = re.sub(r'/\*.*?\*/', '', line)
+        stripped = code.strip()
 
         # Skip comments so prose about a rule does not trip the rule.
         if in_block_comment:
-            if '*/' in stripped:
+            if '*/' in line:
                 in_block_comment = False
             continue
         if stripped.startswith('/*'):
-            if '*/' not in stripped:
-                in_block_comment = True
+            in_block_comment = True
             continue
-        if stripped.startswith('//'):
+        if stripped.startswith('//') or not stripped:
             continue
 
         # 1. base::JSONReader::Read / ReadDict / ReadList lost their
@@ -88,6 +98,30 @@ for path in sorted(ROOT.rglob('*')):
                 report(path, i, line,
                        'a raw pointer field is rejected by the raw-ptr '
                        'plugin - use raw_ptr<T>')
+
+        # 4. SimpleURLLoader::DownloadToString DCHECKs
+        #    `max_body_size <= kMaxBoundedStringDownloadSize` (5 MiB). It is a
+        #    hard ceiling, not a clamp, and dcheck_always_on makes it fatal:
+        #    10 MiB in both providers killed the browser process on the first
+        #    request it ever made, which was the API-key probe. Entering a key
+        #    took the whole browser down, from either entry point.
+        #
+        #    Only a literal is checked, which is the form every call here used.
+        #    Pass network::SimpleURLLoader::kMaxBoundedStringDownloadSize and
+        #    the number cannot drift from Chromium's.
+        m = re.search(r'max_body_size=\*/\s*([0-9*\s]+?)\s*\)', line)
+        if m:
+            try:
+                size = eval(m.group(1), {'__builtins__': {}})
+            except Exception:
+                size = None
+            if isinstance(size, int) and size > 5 * 1024 * 1024:
+                report(path, i, line,
+                       f'max_body_size {size} exceeds '
+                       'kMaxBoundedStringDownloadSize (5242880); '
+                       'DownloadToString DCHECKs on this and it is fatal - '
+                       'pass network::SimpleURLLoader::'
+                       'kMaxBoundedStringDownloadSize')
 
 sys.exit(1 if bad else 0)
 PY

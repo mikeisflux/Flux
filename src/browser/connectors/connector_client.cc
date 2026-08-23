@@ -319,7 +319,9 @@ void ConnectorClient::SendNow(std::unique_ptr<PendingRequest> pending) {
       profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&ConnectorClient::OnResponse, weak_factory_.GetWeakPtr(),
                      std::move(pending)),
-      /*max_body_size=*/8 * 1024 * 1024);
+      // DownloadToString DCHECKs above kMaxBoundedStringDownloadSize. 8 MiB
+      // was over it, and a connector response is nowhere near either.
+      /*max_body_size=*/network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
 void ConnectorClient::OnResponse(std::unique_ptr<PendingRequest> pending,

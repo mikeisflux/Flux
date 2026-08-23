@@ -184,7 +184,11 @@ void AnthropicProvider::Complete(CompletionRequest request,
       profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&AnthropicProvider::OnResponse, weak_factory_.GetWeakPtr(),
                      std::move(callback)),
-      /*max_body_size=*/10 * 1024 * 1024);
+      // Not a number of our own choosing: DownloadToString DCHECKs that
+      // max_body_size <= kMaxBoundedStringDownloadSize, and 10 MiB tripped it
+      // on the first request the browser ever made - which was the key probe,
+      // so entering an API key killed the browser process.
+      /*max_body_size=*/network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
 void AnthropicProvider::OnResponse(CompletionCallback callback,
