@@ -4,6 +4,8 @@ import {RunState, TaskStepState} from './flux.mojom-webui.js';
 import type {
   ActionRecord,
   FluxPageHandlerRemote,
+  QuestionAnswer,
+  QuestionRequest,
   RunArtifact,
   RunProgress,
   SubagentSummary,
@@ -34,6 +36,7 @@ export class RunView {
   private stream!: HTMLElement;
   private planPanel!: HTMLElement;
   private subagentPanel!: HTMLElement;
+  private questionHost!: HTMLElement;
   private headLabel!: HTMLElement;
   private headLink!: HTMLAnchorElement;
   private artifactHost!: HTMLElement;
@@ -131,6 +134,12 @@ export class RunView {
     this.planPanel.className = 'plan-panel';
     this.planPanel.hidden = true;
 
+    // Between the transcript and the composer: the questions are the newest
+    // thing the agent said and the next thing the user has to act on, so they
+    // sit where the eye already is rather than above the plan.
+    this.questionHost = document.createElement('div');
+    this.questionHost.className = 'question-host';
+
     // Sits above the plan, because when a run has children they are what is
     // happening and the plan is the frame around them.
     this.subagentPanel = document.createElement('div');
@@ -138,7 +147,8 @@ export class RunView {
     this.subagentPanel.hidden = true;
 
     screen.append(head, this.stepCount, this.stream, this.artifactHost,
-                  this.subagentPanel, this.planPanel, this.composerBox());
+                  this.subagentPanel, this.planPanel, this.questionHost,
+                  this.composerBox());
     return screen;
   }
 
@@ -177,8 +187,13 @@ export class RunView {
    * does nothing.
    */
   private paintComposer() {
+    // kAwaitingInput and kAwaitingApproval count as running: the task has not
+    // finished, and offering a Send button next to an open question panel
+    // invites the user to answer in the wrong place.
     const running = this.progress?.state === RunState.kRunning ||
-        this.progress?.state === RunState.kQueued;
+        this.progress?.state === RunState.kQueued ||
+        this.progress?.state === RunState.kAwaitingInput ||
+        this.progress?.state === RunState.kAwaitingApproval;
     this.sendButton.replaceChildren(
         running ? pathIcon('M6 6h8v8H6z') : pathIcon('M10 16V5m0 0l-4 4m4-4l4 4'));
     this.sendButton.dataset['mode'] = running ? 'stop' : 'send';
@@ -384,6 +399,169 @@ export class RunView {
     });
   }
 
+  // --- Questions ------------------------------------------------------------
+
+  /**
+   * The agent asking for something it cannot work out.
+   *
+   * One question on screen at a time with pagination, rather than a stack of
+   * six fields. Every template prompt in the catalogue carries several
+   * [placeholders], so a run can easily need four answers, and four textareas
+   * at once reads as a form to fill in rather than a conversation.
+   *
+   * Answers are held locally and submitted together: the run is blocked on the
+   * whole set, and sending them one at a time would wake it four times.
+   */
+  onQuestionsAsked(request: QuestionRequest) {
+    if (request.runId !== this.runId || !this.root) {
+      return;
+    }
+    const answers = new Map<string, string>();
+    const skipped = new Set<string>();
+    let index = 0;
+
+    const panel = document.createElement('div');
+    panel.className = 'question-panel';
+    panel.setAttribute('role', 'group');
+    panel.setAttribute('aria-label', 'Questions for you');
+
+    if (request.preamble) {
+      const why = document.createElement('div');
+      why.className = 'question-preamble';
+      why.append(renderMarkdown(request.preamble));
+      panel.append(why);
+    }
+
+    const head = document.createElement('div');
+    head.className = 'question-head';
+    const title = document.createElement('span');
+    title.className = 'question-title';
+    title.append(pathIcon('M4 4h12v8H8l-4 3V4z'), 'Questions For You');
+
+    const pager = document.createElement('div');
+    pager.className = 'question-pager';
+    const prev = document.createElement('button');
+    prev.className = 'ghost-icon';
+    prev.setAttribute('aria-label', 'Previous question');
+    prev.append(pathIcon('M12 4l-6 6 6 6'));
+    const count = document.createElement('span');
+    count.className = 'muted';
+    const next = document.createElement('button');
+    next.className = 'ghost-icon';
+    next.setAttribute('aria-label', 'Next question');
+    next.append(pathIcon('M8 4l6 6-6 6'));
+    pager.append(prev, count, next);
+    head.append(title, pager);
+
+    const body = document.createElement('div');
+    body.className = 'question-body';
+    const label = document.createElement('label');
+    label.className = 'question-text';
+    const field = document.createElement('textarea');
+    field.rows = 3;
+    label.append(field);
+
+    const foot = document.createElement('div');
+    foot.className = 'question-foot';
+    const skip = document.createElement('button');
+    skip.className = 'ghost';
+    skip.textContent = 'Skip';
+    const done = document.createElement('button');
+    done.className = 'primary';
+    foot.append(skip, done);
+
+    const paint = () => {
+      const q = request.questions[index]!;
+      label.replaceChildren();
+      const n = document.createElement('span');
+      n.className = 'question-number';
+      n.textContent = `${index + 1}.`;
+      const t = document.createElement('span');
+      t.textContent = q.text;
+      label.append(n, t, field);
+      field.placeholder = q.placeholder ?? 'Type or paste here...';
+      field.value = answers.get(q.id) ?? '';
+      count.textContent =
+          `${index + 1} of ${request.questions.length}`;
+      prev.disabled = index === 0;
+      next.disabled = index === request.questions.length - 1;
+      // The last question's button submits, so the user is never left hunting
+      // for how to finish.
+      done.textContent = index === request.questions.length - 1 ?
+          'Send answers' : 'Next';
+      field.focus();
+    };
+
+    const remember = () => {
+      const q = request.questions[index]!;
+      const text = field.value.trim();
+      if (text) {
+        answers.set(q.id, text);
+        skipped.delete(q.id);
+      } else {
+        answers.delete(q.id);
+      }
+    };
+
+    const submit = () => {
+      remember();
+      const payload: QuestionAnswer[] = request.questions.map(q => ({
+        id: q.id,
+        // Null is skipped; an empty string would read as "the answer is
+        // nothing", which is a different thing and leads somewhere else.
+        text: answers.has(q.id) ? answers.get(q.id)! : null,
+      }));
+      this.handler.answerQuestions(this.runId, payload);
+      panel.remove();
+      const echo = request.questions
+          .map(q => `${q.text}\n${answers.get(q.id) ?? '(skipped)'}`)
+          .join('\n\n');
+      this.appendUser(echo);
+    };
+
+    prev.addEventListener('click', () => {
+      remember();
+      index = Math.max(0, index - 1);
+      paint();
+    });
+    next.addEventListener('click', () => {
+      remember();
+      index = Math.min(request.questions.length - 1, index + 1);
+      paint();
+    });
+    skip.addEventListener('click', () => {
+      const q = request.questions[index]!;
+      answers.delete(q.id);
+      skipped.add(q.id);
+      if (index === request.questions.length - 1) {
+        submit();
+        return;
+      }
+      index += 1;
+      paint();
+    });
+    done.addEventListener('click', () => {
+      remember();
+      if (index === request.questions.length - 1) {
+        submit();
+        return;
+      }
+      index += 1;
+      paint();
+    });
+    field.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        submit();
+      }
+    });
+
+    panel.append(head, body, foot);
+    body.append(label);
+    this.questionHost.replaceChildren(panel);
+    paint();
+  }
+
   // --- Live events ----------------------------------------------------------
 
   onProgress(progress: RunProgress) {
@@ -492,6 +670,7 @@ const FINISHED: ReadonlySet<RunState> = new Set([
 
 const RUN_STATE_CLASS: Record<number, string> = {
   [RunState.kQueued]: 'queued',
+  [RunState.kAwaitingInput]: 'waiting',
   [RunState.kRunning]: 'running',
   [RunState.kAwaitingApproval]: 'waiting',
   [RunState.kPaused]: 'paused',
@@ -502,6 +681,7 @@ const RUN_STATE_CLASS: Record<number, string> = {
 
 const RUN_STATE_LABEL: Record<number, string> = {
   [RunState.kQueued]: 'Queued',
+  [RunState.kAwaitingInput]: 'Needs an answer',
   [RunState.kRunning]: 'Running',
   [RunState.kAwaitingApproval]: 'Needs you',
   [RunState.kPaused]: 'Paused',

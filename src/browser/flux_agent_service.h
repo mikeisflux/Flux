@@ -43,6 +43,7 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
     virtual void OnRunAction(const std::string& run_id,
                              const mojom::ActionRecord& action) {}
     virtual void OnApprovalRequested(const mojom::ApprovalRequest& request) {}
+    virtual void OnQuestionsAsked(const mojom::QuestionRequest& request) {}
     virtual void OnRunArtifact(const std::string& run_id,
                                const mojom::RunArtifact& artifact) {}
     virtual void OnRunFinished(const std::string& run_id,
@@ -103,6 +104,16 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   // inert and the list was always empty.
   void RememberFact(const std::string& run_id, const std::string& text);
 
+  using AnswersCallback =
+      base::OnceCallback<void(std::vector<mojom::QuestionAnswerPtr>)>;
+  // Poses questions on behalf of a running task and blocks it until answered.
+  void AskUser(const std::string& run_id,
+               std::vector<mojom::AgentQuestionPtr> questions,
+               const std::string& preamble,
+               AnswersCallback answered);
+  void AnswerQuestions(const std::string& run_id,
+                       std::vector<mojom::QuestionAnswerPtr> answers);
+
   void AddArtifact(const std::string& run_id, mojom::RunArtifactPtr artifact);
 
   // Splits work across parallel child runs.
@@ -157,6 +168,7 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   void OnAction(const std::string& run_id,
                 const mojom::ActionRecord& action) override;
   void OnApprovalRequired(const mojom::ApprovalRequest& request) override;
+  void OnQuestionsAsked(const mojom::QuestionRequest& request) override;
   void OnFinished(const std::string& run_id,
                   mojom::RunState state,
                   const std::string& summary) override;

@@ -2020,6 +2020,96 @@ body.shell.collapsed .badge { display: none; }
   color: var(--danger);
 }
 
+/* --- Questions For You ----------------------------------------------------
+   One question at a time with pagination, not a stack of six fields. A run
+   from a template can easily need four answers, and four textareas at once
+   reads as a form rather than the agent asking something. */
+.question-host:empty {
+  display: none;
+}
+
+.question-panel {
+  padding: 16px 18px;
+  border: 1px solid var(--accent-text);
+  border-radius: 12px;
+  margin: 20px 0;
+  background: var(--bg);
+}
+
+.question-preamble {
+  margin-bottom: 14px;
+  color: var(--fg-muted);
+}
+
+.question-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+}
+
+.question-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.question-title svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+}
+
+.question-pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.question-pager .muted {
+  font-variant-numeric: tabular-nums;
+}
+
+.question-text {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+}
+
+.question-number {
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.question-text textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 10px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  grid-column: 1 / -1;
+  resize: vertical;
+}
+
+.question-text textarea:focus-visible {
+  border-color: var(--accent-text);
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.question-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 14px;
+  gap: 10px;
+}
+
 /* --- Subagents ------------------------------------------------------------ */
 /* Shares the plan panel's box, but not its stickiness: two sticky panels with
    the same offset land on top of each other. This one scrolls with the

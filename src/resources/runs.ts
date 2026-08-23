@@ -11,6 +11,7 @@ const STATE_NAME: Record<number, string> = {
   [RunState.kQueued]: 'queued',
   [RunState.kRunning]: 'running',
   [RunState.kAwaitingApproval]: 'awaitingApproval',
+  [RunState.kAwaitingInput]: 'awaitingInput',
   [RunState.kPaused]: 'paused',
   [RunState.kSucceeded]: 'succeeded',
   [RunState.kFailed]: 'failed',

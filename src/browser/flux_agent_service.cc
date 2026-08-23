@@ -494,6 +494,41 @@ void FluxAgentService::OnApprovalRequired(const mojom::ApprovalRequest& request)
     o.OnApprovalRequested(request);
 }
 
+void FluxAgentService::OnQuestionsAsked(
+    const mojom::QuestionRequest& request) {
+  // The run's own state changed to kAwaitingInput before this fired, so the
+  // console's run list shows it as waiting on the user rather than as running
+  // with nothing happening.
+  if (auto it = progress_.find(request.run_id); it != progress_.end()) {
+    it->second->state = mojom::RunState::kAwaitingInput;
+    for (Observer& o : observers_)
+      o.OnRunProgress(*it->second);
+  }
+  for (Observer& o : observers_)
+    o.OnQuestionsAsked(request);
+}
+
+void FluxAgentService::AskUser(const std::string& run_id,
+                               std::vector<mojom::AgentQuestionPtr> questions,
+                               const std::string& preamble,
+                               AnswersCallback answered) {
+  auto it = runs_.find(run_id);
+  if (it == runs_.end() || !it->second) {
+    std::move(answered).Run({});
+    return;
+  }
+  it->second->AskUser(std::move(questions), preamble, std::move(answered));
+}
+
+void FluxAgentService::AnswerQuestions(
+    const std::string& run_id,
+    std::vector<mojom::QuestionAnswerPtr> answers) {
+  auto it = runs_.find(run_id);
+  if (it == runs_.end() || !it->second)
+    return;
+  it->second->ResolveQuestions(std::move(answers));
+}
+
 void FluxAgentService::OnFinished(const std::string& finished_id,
                                   mojom::RunState state,
                                   const std::string& summary) {

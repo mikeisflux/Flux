@@ -532,6 +532,164 @@ class RememberTool : public PlanToolBase {
   }
 };
 
+// The tool that makes a bracketed template prompt usable.
+//
+// Every template in the catalogue is written with [placeholders] the user is
+// meant to fill in, and most reach the agent still bracketed. The two
+// alternatives are both bad: invent a value, which sends a real email to a
+// guessed address, or stop with "I need more information", which makes the
+// user retype the whole task. Asking is the third option.
+class AskUserTool : public PlanToolBase {
+ public:
+  using PlanToolBase::PlanToolBase;
+
+  std::string name() const override { return "ask_user"; }
+
+  std::string description() const override {
+    return "Ask the user for something you need and cannot work out. Use it "
+           "the moment you hit an unfilled [placeholder], an ambiguous "
+           "reference, or a choice only they can make - before doing any work "
+           "that depends on the answer. Ask everything you need in ONE call, "
+           "as separate questions: three questions at once is one interruption "
+           "and three round trips is three. Do not use it for something you "
+           "could find by looking, and never guess a value instead of asking - "
+           "a guessed recipient or a guessed sheet is worse than a question.";
+  }
+
+  base::DictValue InputSchema() const override {
+    base::DictValue item;
+    item.Set("type", "object");
+    base::DictValue item_props;
+    item_props.Set("text", StringProperty(
+        "The question, in plain language. Say what you will do with the "
+        "answer - \"Which sheet should the results go in? Paste the link\" "
+        "rather than \"sheet?\"."));
+    item_props.Set("placeholder", StringProperty(
+        "Optional. Shown in the empty field: \"Paste the link\", not "
+        "\"Answer\"."));
+    item.Set("properties", std::move(item_props));
+    base::ListValue item_required;
+    item_required.Append("text");
+    item.Set("required", std::move(item_required));
+
+    base::DictValue questions;
+    questions.Set("type", "array");
+    questions.Set("description", "Everything you need, at most six.");
+    questions.Set("items", std::move(item));
+
+    base::DictValue properties;
+    properties.Set("questions", std::move(questions));
+    properties.Set("preamble", StringProperty(
+        "Optional. What you have worked out so far, shown above the "
+        "questions so the user can see why you are asking."));
+
+    base::ListValue required;
+    required.Append("questions");
+
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(properties));
+    schema.Set("required", std::move(required));
+    return schema;
+  }
+
+  std::string DescribeEffect(const base::DictValue& input) const override {
+    const base::ListValue* q = input.FindList("questions");
+    const size_t n = q ? q->size() : 0u;
+    return base::StrCat({"Ask the user ", base::NumberToString(n),
+                         n == 1 ? " question" : " questions"});
+  }
+
+  void Run(const ToolContext& context,
+           base::DictValue input,
+           ResultCallback callback) override {
+    const base::ListValue* raw = input.FindList("questions");
+    if (!raw || raw->empty()) {
+      std::move(callback).Run(Err("ask_user needs at least one question."));
+      return;
+    }
+    if (!service_) {
+      std::move(callback).Run(Err("Cannot reach the user from this run."));
+      return;
+    }
+
+    constexpr size_t kMaxQuestions = 6;
+    std::vector<mojom::AgentQuestionPtr> questions;
+    std::vector<std::string> texts;
+    for (const base::Value& entry : *raw) {
+      if (questions.size() >= kMaxQuestions)
+        break;
+      if (!entry.is_dict())
+        continue;
+      const std::string* text = entry.GetDict().FindString("text");
+      if (!text || text->empty())
+        continue;
+      auto q = mojom::AgentQuestion::New();
+      // Positional ids. The answers come back keyed by these, and generating a
+      // uuid per question would mean carrying a map across the callback for no
+      // gain - the list is at most six and never reordered.
+      q->id = base::NumberToString(questions.size());
+      q->text = *text;
+      if (const std::string* ph = entry.GetDict().FindString("placeholder")) {
+        if (!ph->empty())
+          q->placeholder = *ph;
+      }
+      texts.push_back(*text);
+      questions.push_back(std::move(q));
+    }
+    if (questions.empty()) {
+      std::move(callback).Run(Err("Every question was empty."));
+      return;
+    }
+
+    const std::string* preamble = input.FindString("preamble");
+    service_->AskUser(
+        context.run_id, std::move(questions), preamble ? *preamble : "",
+        base::BindOnce(&AskUserTool::OnAnswered, weak_factory_.GetWeakPtr(),
+                       std::move(texts), std::move(callback)));
+  }
+
+ private:
+  void OnAnswered(std::vector<std::string> texts,
+                  ResultCallback callback,
+                  std::vector<mojom::QuestionAnswerPtr> answers) {
+    if (answers.empty()) {
+      std::move(callback).Run(
+          Err("The user did not answer. Do not ask the same thing again - "
+              "either carry on without it and say what you assumed, or stop "
+              "and explain what you cannot do."));
+      return;
+    }
+
+    std::string report;
+    size_t answered = 0;
+    for (const mojom::QuestionAnswerPtr& a : answers) {
+      size_t index = 0;
+      if (!base::StringToSizeT(a->id, &index) || index >= texts.size())
+        continue;
+      base::StrAppend(&report, {"Q: ", texts[index], "\n"});
+      if (!a->text) {
+        // Skipped is not the same as answered with nothing, and the model is
+        // told which - "the user declined to say" and "there is no value" lead
+        // somewhere different.
+        base::StrAppend(&report, {"A: (skipped)\n\n"});
+      } else {
+        answered++;
+        base::StrAppend(&report, {"A: ", *a->text, "\n\n"});
+      }
+    }
+    if (answered == 0) {
+      base::StrAppend(&report,
+                      {"Everything was skipped. Carry on without it and say "
+                       "what you assumed, or stop and explain what you "
+                       "cannot do - do not ask again."});
+    }
+    std::move(callback).Run(Ok(std::move(report)));
+  }
+
+  base::WeakPtrFactory<AskUserTool> weak_factory_{this};
+};
+
 }  // namespace
 
 void RegisterPlanTools(ToolRegistry* registry, FluxAgentService* service) {
@@ -540,6 +698,7 @@ void RegisterPlanTools(ToolRegistry* registry, FluxAgentService* service) {
   registry->Register(std::make_unique<SaveArtifactTool>(service));
   registry->Register(std::make_unique<SpawnSubagentsTool>(service));
   registry->Register(std::make_unique<RememberTool>(service));
+  registry->Register(std::make_unique<AskUserTool>(service));
 }
 
 }  // namespace flux

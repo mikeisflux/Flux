@@ -48,6 +48,8 @@ source_set("flux") {
     "agent/tools/browser_tools.cc",
     "agent/tools/browser_tools.h",
     "agent/tools/connector_tools.cc",
+    "agent/tools/file_tools.cc",
+    "agent/tools/file_tools.h",
     "agent/tools/plan_tools.cc",
     "agent/tools/plan_tools.h",
     "agent/tools/connector_tools.h",

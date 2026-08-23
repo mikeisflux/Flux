@@ -120,9 +120,22 @@ void AgentRunner::Step() {
       "assuming it succeeded.\n"
       "If you cannot determine something, say so instead of inventing it.\n"
       "\n"
-      "When the task produces a file - a sheet, a report, a document - call "
-      "save_artifact with its title and URL. Describing a file in your closing "
-      "message without saving it leaves the user with nothing to open.\n"
+      "When the task produces something that lives somewhere - a sheet, a doc, "
+      "a page - call save_artifact with its title and URL. When it produces "
+      "something with nowhere to live - a CSV of the rows you gathered, a "
+      "report, an export - call write_file. Either way the user gets something "
+      "to open; describing a file in your closing message without doing one of "
+      "them leaves them with nothing, and pasting a thousand rows into your "
+      "reply instead is worse.\n"
+      "\n"
+      "If you hit an unfilled [placeholder], an ambiguous reference, or a "
+      "choice only the user can make, call ask_user - all of it in one call. "
+      "Never guess a recipient, a link or a search term: a task done against "
+      "an invented value is worse than one that paused to ask.\n"
+      "\n"
+      "Your replies are rendered as markdown. Tables, links, quotes, code "
+      "blocks and lists all work, so use a table when the answer is a table "
+      "and link anything the user will want to open.\n"
       "\n"
       "Stop when the task is done. Your final message is the answer the user "
       "asked for, so lead with the result and the numbers, then anything they "
@@ -447,6 +460,41 @@ void AgentRunner::AddUserMessage(const std::string& text) {
   if (state_ == mojom::RunState::kPaused) {
     Resume();
   }
+}
+
+void AgentRunner::AskUser(
+    std::vector<mojom::AgentQuestionPtr> questions,
+    const std::string& preamble,
+    base::OnceCallback<void(std::vector<mojom::QuestionAnswerPtr>)> answered) {
+  if (questions.empty()) {
+    std::move(answered).Run({});
+    return;
+  }
+  // A second ask while one is open would drop the first tool call's callback
+  // and hang that call forever. The model gets told to wait instead.
+  if (pending_answers_) {
+    std::move(answered).Run({});
+    return;
+  }
+
+  auto request = mojom::QuestionRequest::New();
+  request->run_id = run_id_;
+  request->questions = std::move(questions);
+  if (!preamble.empty())
+    request->preamble = preamble;
+
+  state_before_question_ = state_;
+  state_ = mojom::RunState::kAwaitingInput;
+  pending_answers_ = std::move(answered);
+  delegate_->OnQuestionsAsked(*request);
+}
+
+void AgentRunner::ResolveQuestions(
+    std::vector<mojom::QuestionAnswerPtr> answers) {
+  if (!pending_answers_)
+    return;
+  state_ = state_before_question_;
+  std::move(pending_answers_).Run(std::move(answers));
 }
 
 void AgentRunner::OnTabClosed() {

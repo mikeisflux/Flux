@@ -6,7 +6,14 @@ import {
   FluxPageHandlerRemote,
   RunState,
 } from './flux.mojom-webui.js';
-import type {ActionRecord, ApprovalRequest, ConnectorStatus, RunArtifact, RunProgress} from './flux.mojom-webui.js';
+import type {
+  ActionRecord,
+  ApprovalRequest,
+  ConnectorStatus,
+  QuestionRequest,
+  RunArtifact,
+  RunProgress,
+} from './flux.mojom-webui.js';
 
 import {ApprovalQueue} from './approvals.js';
 import {FluxSettingsView} from './settings_view.js';
@@ -189,6 +196,12 @@ class FluxApp {
 
   onArtifact(runId: string, artifact: RunArtifact) {
     this.run.onArtifact(runId, artifact);
+  }
+
+  onQuestionsAsked(request: QuestionRequest) {
+    // The tab owns this, not the sidebar: answering needs the question text
+    // and a field, which is not something a one-line run row can hold.
+    this.run.onQuestionsAsked(request);
   }
 
   onApprovalRequested(request: ApprovalRequest) {

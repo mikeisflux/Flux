@@ -6,6 +6,7 @@
 
 #include "chrome/browser/flux/agent/tools/browser_tools.h"
 #include "chrome/browser/flux/agent/tools/connector_tools.h"
+#include "chrome/browser/flux/agent/tools/file_tools.h"
 #include "chrome/browser/flux/agent/tools/plan_tools.h"
 
 namespace flux {
@@ -37,6 +38,7 @@ void ToolRegistry::RegisterBuiltins(FluxAgentService* service) {
   RegisterBrowserTools(this);
   RegisterConnectorTools(this);
   RegisterPlanTools(this, service);
+  RegisterFileTools(this, service);
 }
 
 Tool* ToolRegistry::Get(const std::string& name) const {

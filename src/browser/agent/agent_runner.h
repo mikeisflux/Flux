@@ -48,6 +48,8 @@ class AgentRunner {
                           const mojom::ActionRecord& action) = 0;
     // The runner blocks here until ResolveApproval() is called.
     virtual void OnApprovalRequired(const mojom::ApprovalRequest& request) = 0;
+    // The runner blocks here until ResolveQuestions() is called.
+    virtual void OnQuestionsAsked(const mojom::QuestionRequest& request) = 0;
     virtual void OnFinished(const std::string& run_id,
                             mojom::RunState state,
                             const std::string& summary) = 0;
@@ -70,6 +72,14 @@ class AgentRunner {
   void Pause();
   void Resume();
   void ResolveApproval(bool approved, const std::string& user_note);
+
+  // Poses questions to the user and blocks until they come back. `callback`
+  // is the tool call's own result callback, held until then.
+  void AskUser(std::vector<mojom::AgentQuestionPtr> questions,
+               const std::string& preamble,
+               base::OnceCallback<void(std::vector<mojom::QuestionAnswerPtr>)>
+                   answered);
+  void ResolveQuestions(std::vector<mojom::QuestionAnswerPtr> answers);
 
   // A message typed into the run's composer while it is going. Appended to the
   // history and picked up on the next turn rather than interrupting the one in
@@ -141,6 +151,13 @@ class AgentRunner {
   std::vector<ToolCall> pending_calls_;
   std::optional<ToolCall> pending_call_;
   bool approved_last_call_ = false;
+
+  // Held while the run is kAwaitingInput. The state before asking is restored
+  // on the way out: a question posed from inside a tool call has to return to
+  // the middle of that tool call, not to the top of the loop.
+  base::OnceCallback<void(std::vector<mojom::QuestionAnswerPtr>)>
+      pending_answers_;
+  mojom::RunState state_before_question_ = mojom::RunState::kRunning;
 
   mojom::RunState state_ = mojom::RunState::kQueued;
   uint32_t consecutive_failures_ = 0;

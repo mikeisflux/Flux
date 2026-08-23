@@ -141,6 +141,31 @@ it. Breaking a new rule on purpose is what caught that, and it is the third
 time a check in this repo has passed while the thing it was written for went
 through.
 
+### What the agent can hand back
+
+Four things, and the agent has to be told about all of them in the system
+prompt or it uses none:
+
+- `save_artifact` for output that lives somewhere - a Sheet, a Doc, a page.
+- `write_file` for output that has nowhere to live: a CSV of scraped rows, a
+  report, an export. It writes to Downloads on a worker thread, never
+  overwrites (`GetUniquePath`), sanitises the model's filename down to a bare
+  name, and records the result as an artifact so it appears with an Open
+  button. Without it the agent's only option was to paste a thousand rows into
+  the reply.
+- `ask_user` for an unfilled `[placeholder]` or a choice only the user can
+  make. Every template prompt in the catalogue is written with brackets, so
+  this is the difference between the catalogue working and not. The run blocks
+  in `kAwaitingInput` until answered - and note that without a blocking tool an
+  agent that asks a question in prose ENDS the run, because `OnCompletion`
+  reads "no tool calls" as "task finished".
+- Markdown. `renderMarkdown` began as the slice the skill bodies used and was
+  pointed at run output unchanged, so `[Prospects](https://...)` rendered as
+  literal brackets and a table rendered as pipes. It now does links
+  (scheme-checked - this is a privileged WebUI and a `javascript:` href from a
+  model would run with chrome://flux's authority), tables, fenced code,
+  blockquotes and rules.
+
 ### The build-breaking classes a grep list cannot see
 
 Three checks stand in for the compiler this container does not have. Each

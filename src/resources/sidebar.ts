@@ -10,6 +10,7 @@ import type {
   ActionRecord,
   ApprovalRequest,
   ConnectorStatus,
+  QuestionRequest,
   RunArtifact,
   RunProgress,
 } from './flux.mojom-webui.js';
@@ -157,6 +158,14 @@ class FluxSidebar {
   onArtifact(_runId: string, _artifact: RunArtifact) {
     // The tab's run view shows these. The sidebar's list is one line per run
     // and has nowhere to put a file.
+  }
+
+  onQuestionsAsked(request: QuestionRequest) {
+    // Same badge as an approval: both mean a run has stopped and is waiting on
+    // this person, and a run waiting behind another tab is invisible without
+    // it. The panel itself belongs to the tab.
+    this.pendingApprovals.add(request.runId);
+    this.syncApprovals();
   }
 
   onApprovalRequested(request: ApprovalRequest) {

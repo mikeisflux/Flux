@@ -78,6 +78,13 @@ void FluxPageHandler::ResumeRun(const std::string& run_id) {
     service_->ResumeRun(run_id);
 }
 
+void FluxPageHandler::AnswerQuestions(
+    const std::string& run_id,
+    std::vector<mojom::QuestionAnswerPtr> answers) {
+  if (service_)
+    service_->AnswerQuestions(run_id, std::move(answers));
+}
+
 void FluxPageHandler::ResolveApproval(
     const std::string& run_id,
     bool approved,
@@ -807,6 +814,12 @@ void FluxPageHandler::OnRunAction(const std::string& run_id,
 void FluxPageHandler::OnApprovalRequested(
     const mojom::ApprovalRequest& request) {
   observer_->OnApprovalRequested(request.Clone());
+}
+
+void FluxPageHandler::OnQuestionsAsked(
+    const mojom::QuestionRequest& request) {
+  if (observer_)
+    observer_->OnQuestionsAsked(request.Clone());
 }
 
 void FluxPageHandler::OnLearnedFact(const std::string& fact,

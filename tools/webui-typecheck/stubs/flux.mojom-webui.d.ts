@@ -17,6 +17,7 @@ export declare enum RunState {
   kQueued,
   kRunning,
   kAwaitingApproval,
+  kAwaitingInput,
   kPaused,
   kSucceeded,
   kFailed,
@@ -55,6 +56,23 @@ export interface ActionRecord {
   succeeded: boolean;
   error: string|null;
   wasApproved: boolean;
+}
+
+export interface AgentQuestion {
+  id: string;
+  text: string;
+  placeholder: string|null;
+}
+
+export interface QuestionRequest {
+  runId: string;
+  questions: AgentQuestion[];
+  preamble: string|null;
+}
+
+export interface QuestionAnswer {
+  id: string;
+  text: string|null;
 }
 
 export interface ApprovalRequest {
@@ -167,6 +185,7 @@ export declare class FluxPageHandlerRemote {
   cancelRun(runId: string): void;
   pauseRun(runId: string): void;
   resumeRun(runId: string): void;
+  answerQuestions(runId: string, answers: QuestionAnswer[]): void;
   resolveApproval(runId: string, approved: boolean, userNote: string|null):
       void;
   listRuns(): Promise<{runs: RunProgress[]}>;
@@ -231,6 +250,7 @@ export declare class FluxPageHandlerRemote {
 export interface FluxPageHandlerObserverInterface {
   onRunProgress(progress: RunProgress): void;
   onAction(runId: string, action: ActionRecord): void;
+  onQuestionsAsked(request: QuestionRequest): void;
   onApprovalRequested(request: ApprovalRequest): void;
   onRunFinished(runId: string, finalState: RunState,
                 summary: string|null): void;

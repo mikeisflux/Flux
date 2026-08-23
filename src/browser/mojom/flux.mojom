@@ -33,6 +33,10 @@ enum RunState {
   kQueued,          // waiting on the parallelism cap
   kRunning,
   kAwaitingApproval,
+  // Blocked on the user answering a question, which is not the same as
+  // blocked on them approving an action: nothing is pending, the agent simply
+  // does not know something it needs.
+  kAwaitingInput,
   kPaused,
   kSucceeded,
   kFailed,
@@ -76,6 +80,37 @@ struct ApprovalRequest {
   url.mojom.Url? page_url;
   // Rendered so the user can see exactly what will happen.
   string? payload_preview;
+};
+
+// One thing the agent needs to know before it can carry on.
+//
+// Every template prompt in the catalogue is written with [bracketed
+// placeholders] the user is meant to fill in, and most of them reach the agent
+// still bracketed. The alternatives are inventing a value - which sends a real
+// email to a guessed address - or stopping with "I need more information",
+// which makes the user retype the whole task. Asking is the third option and
+// the only good one.
+struct AgentQuestion {
+  string id;
+  string text;
+  // Shown in the empty field. "Paste the link", not "Answer".
+  string? placeholder;
+};
+
+struct QuestionRequest {
+  string run_id;
+  array<AgentQuestion> questions;
+  // What the agent has worked out so far, shown above the questions so the
+  // user can see why it is asking.
+  string? preamble;
+};
+
+struct QuestionAnswer {
+  string id;
+  // Null means skipped. Distinct from an empty string, which is an answer of
+  // "nothing" - the agent is told which happened, because "skip this" and
+  // "there is no value" lead somewhere different.
+  string? text;
 };
 
 // A child run the parent spawned to work on part of the task in parallel.
@@ -228,6 +263,7 @@ interface FluxPageHandlerObserver {
   OnRunProgress(RunProgress progress);
   OnAction(string run_id, ActionRecord action);
   OnApprovalRequested(ApprovalRequest request);
+  OnQuestionsAsked(QuestionRequest request);
   OnRunFinished(string run_id, RunState final_state, string? summary);
 
   // A run produced a file. Sent as it happens rather than only at the end: a
@@ -252,6 +288,11 @@ interface FluxPageHandler {
   ResumeRun(string run_id);
 
   ResolveApproval(string run_id, bool approved, string? user_note);
+
+  // Answers to a QuestionRequest. Answering none of them is a valid reply -
+  // the agent is told they were all skipped and decides what to do with that,
+  // rather than the run hanging on an unanswered panel.
+  AnswerQuestions(string run_id, array<QuestionAnswer> answers);
 
   ListRuns() => (array<RunProgress> runs);
   GetActions(string run_id) => (array<ActionRecord> actions);
