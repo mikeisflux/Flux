@@ -2,6 +2,8 @@
 
 #include "chrome/browser/flux/connectors/connector_client.h"
 
+#include <optional>
+#include <string>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -194,12 +196,27 @@ void ConnectorClient::Execute(Request request, ResponseCallback callback) {
                          : base::StrCat({ResolveTemplate(base, substitutions),
                                          path});
 
+  // Checked before is_valid(), because is_valid() cannot see this. A leftover
+  // {placeholder} does not make a URL invalid: url/url_canon_path.cc marks '{'
+  // and '}' ESCAPE rather than reject, so GURL percent-encodes them and the
+  // request goes out to /projects/%7Bproject_id%7D.json - a live call to a
+  // real service, answered with a 404 that reads like the provider's fault.
+  // Naming the parameter is the difference between a one-line fix and an
+  // afternoon spent doubting the connector definition.
+  if (std::optional<std::string> missing = FirstUnresolvedPlaceholder(full)) {
+    fail(ConnectorError::kHttpError,
+         base::StrCat({"Cannot call ", def->id, ".", op->name,
+                       ": no value was supplied for {", *missing,
+                       "}. The path is ", op->path,
+                       ", so that parameter has to be passed in."}));
+    return;
+  }
+
   GURL url(full);
   if (!url.is_valid()) {
     fail(ConnectorError::kHttpError,
          base::StrCat({"Built an invalid URL for ", def->id, ".", op->name,
-                       ": ", full,
-                       ". A path placeholder was probably not supplied."}));
+                       ": ", full, "."}));
     return;
   }
   for (const auto& [key, value] : request.query)

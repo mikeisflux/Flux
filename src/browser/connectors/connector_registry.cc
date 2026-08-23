@@ -2,6 +2,8 @@
 
 #include "chrome/browser/flux/connectors/connector_registry.h"
 
+#include <optional>
+#include <string>
 #include <string_view>
 
 #include "base/json/json_reader.h"
@@ -192,6 +194,16 @@ std::string ResolveTemplate(const std::string& url_template,
                                        value);
   }
   return out;
+}
+
+std::optional<std::string> FirstUnresolvedPlaceholder(std::string_view url) {
+  const size_t open = url.find('{');
+  if (open == std::string_view::npos)
+    return std::nullopt;
+  const size_t close = url.find('}', open + 1);
+  if (close == std::string_view::npos)
+    return std::nullopt;
+  return std::string(url.substr(open + 1, close - open - 1));
 }
 
 }  // namespace flux

@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "chrome/browser/flux/mojom/flux.mojom.h"
@@ -122,11 +123,23 @@ class ConnectorRegistry {
 };
 
 // Substitutes {placeholders} in `url_template` from `values`. A placeholder
-// with no value is left alone rather than replaced with an empty string: a URL
-// with a visible {account_id} in it fails loudly at the request, where a
-// silently collapsed one would hit a wrong-but-valid path.
+// with no value is left alone rather than replaced with an empty string,
+// which would silently produce a wrong-but-valid path.
+//
+// It does NOT fail on its own, and a caller must not assume GURL will catch
+// the leftover - see FirstUnresolvedPlaceholder.
 std::string ResolveTemplate(const std::string& url_template,
                             const std::map<std::string, std::string>& values);
+
+// The name inside the first {placeholder} still present in `url`, or nullopt.
+//
+// Necessary because an unresolved placeholder does not make a URL invalid.
+// url/url_canon_path.cc marks '{' and '}' ESCAPE, not reject, so GURL
+// percent-encodes them and reports the URL as perfectly valid - the request
+// goes out to /projects/%7Bproject_id%7D.json and comes back a 404 that reads
+// like the provider's fault. Checking is_valid() cannot detect this; only
+// looking for the brace can.
+std::optional<std::string> FirstUnresolvedPlaceholder(std::string_view url);
 
 }  // namespace flux
 

@@ -103,6 +103,15 @@ each broken a real build once, as greps over `src/browser`:
   under `ui/` are. A file that is in neither compiles nowhere, and the error is
   an undefined symbol at LINK, at the very end of the build.
 
+A guard can also be written against a failure mode it cannot observe. The
+connector client checked `GURL::is_valid()` to catch an unsupplied path
+placeholder, and its own comment said so - but `url/url_canon_path.cc` marks
+`{` and `}` ESCAPE, not reject, so GURL percent-encodes them and reports the
+URL valid. The check could never fire; a missing parameter would have sent
+`/projects/%7Bproject_id%7D.json` to a live API and come back a 404 that reads
+like the provider's fault. Before trusting a guard, confirm the thing it tests
+actually changes when the bug is present.
+
 Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
