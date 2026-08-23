@@ -4514,7 +4514,11 @@
         "display": "Every 3 hours"
       },
       "writeScope": "readonly",
-      "featured": 10
+      "featured": 10,
+      "prompt": "Watch [restaurant] on OpenTable and Resy for a table for [party size] on [dates] between [times], and tell me the moment one opens.\n\nCheck every few hours. Cancellations at a hard-to-book restaurant appear and vanish within minutes, so what matters is the alert reaching me fast with everything I need to book in one go.\n\nCheck both platforms — a restaurant often lists on more than one and inventory is not shared — plus the restaurant's own site if it takes direct bookings, which frequently holds tables the platforms do not see.\n\nWhen something opens, tell me: the exact date and time, the party size it will take, which platform, the direct link to that slot, and whether it is a normal table or something with a condition attached (a counter seat, a set menu, a 90-minute limit, a two-hour-early sitting). Those conditions matter and are easy to miss when booking in a hurry.\n\nWiden only if I said to: an adjacent time, a different date, a smaller party. Say clearly when a hit is a near-miss rather than what I asked for.\n\nDo not book anything and do not join a waitlist that takes a deposit or a card. Alert me and let me decide. And if the restaurant is not taking bookings for the date at all yet, say when the booking window opens rather than reporting nothing available.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-trip-live-hotel-prices",
@@ -4523,7 +4527,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find me somewhere to stay in [city] for [dates], [guests], budget [range], and I care about [what matters — location, quiet, a pool, walkable to X].\n\nCheck live prices for the actual dates rather than a nightly rate from a listing page. For each option: name, exact location and what it is near, the room type, the nightly rate, and the total including taxes, resort fees and anything else that appears at the last step. The total is the number to compare, and the fees are exactly what the ranking on a booking site is designed to hide.\n\nAlso: what the cancellation terms are, whether breakfast is included, what the check-in and check-out times are, and whether the rate requires prepayment.\n\nThen the reality check from reviews — not the score, the recurring complaints. Read enough recent ones to say what people consistently mention. A hotel rated 8.6 where every recent review mentions construction noise is not an 8.6 for these dates.\n\nRank by value for what I said I care about, not by price or by rating, and say why the top one wins.\n\nInclude a link to each. Do not book anything. And say if the dates coincide with an event that is inflating prices citywide — that is worth knowing before booking anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-best-flight-dates-constraints",
@@ -4541,7 +4549,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find flights for [route], [dates], [passengers], with these constraints: [nonstop only / no red-eyes / arrive before X / specific airline or alliance / carry-on only].\n\nSearch properly: the exact dates, plus a day either side if I said flexible, and nearby airports where that is genuinely reasonable for this trip.\n\nFor each option: airline and flight numbers, departure and arrival in local time, total journey time, connections with the airport and layover length, aircraft, cabin, what baggage is actually included, and the total price with taxes and fees.\n\nThen the details that decide it and never appear in a search result: whether a connection is uncomfortably tight for that airport, whether a fare is a basic economy that forbids seat selection and changes, whether the return is an overnight, whether a connection changes terminals or requires re-clearing security, and what a change or cancellation actually costs.\n\nGive me [4-5] options that represent real trade-offs — cheapest, fastest, best-timed, best value — rather than five near-identical itineraries.\n\nRank them for my stated constraints and say plainly which you would book and why.\n\nInclude a booking link for each. Do not book anything and do not enter payment details. Tell me if prices moved during the search, which on some routes they will.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-road-trip-timed-stops",
@@ -4550,7 +4562,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Plan a road trip from [start] to [end] over [days], leaving [date]. I want to see [interests] and I am willing to drive about [hours] a day.\n\nGive me a day-by-day plan: where I start and end each day, the route, the realistic driving time (not the mapping app's optimistic figure — add for stops, traffic and the fact that nobody drives for four hours without stopping), and total distance.\n\nFor each stop: what it is, why it is worth stopping for, how long to allow, opening hours and whether it is closed on the day I would arrive, whether it needs booking ahead, and the cost. Opening hours and seasonal closures are what ruin these plans, and they are the thing nobody checks until they are standing in the car park.\n\nFor each night: two or three accommodation options in the right place with current prices and links.\n\nThen the practical layer: where to fill up on the long empty stretches, where there is no phone signal, any road that is seasonal or requires a specific vehicle, tolls, and anything about the route that is genuinely different from what a map suggests.\n\nBuild in slack. A plan with every hour allocated fails on day two.\n\nSay which parts of the plan need booking now and which can wait.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-right-restaurant-occasion",
@@ -4572,7 +4588,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find me a restaurant in [area] for [occasion] — [party size], [date and time], budget [level], [any dietary needs or preferences].\n\nStart with what people actually say rather than the aggregate rating. Read the relevant local subreddit and recent reviews, and weight recency heavily: a restaurant that was excellent two years ago and changed chefs is a different restaurant, and the star rating lags that by a year.\n\nFor each of [5] candidates: name, cuisine, neighbourhood, price level with a realistic per-person figure including drinks, what it is actually good at, and what people consistently complain about.\n\nThen fit for the occasion specifically, which is the whole point. A brilliant restaurant that is too loud for a conversation is wrong for a business dinner and right for a birthday. Say how loud it is, how rushed the service is, whether the tables are close together, whether it suits a group of that size, and whether it can genuinely handle [dietary need] rather than just claiming to.\n\nThen availability: check OpenTable and Resy for the actual date and time, and say what is bookable, what has only awkward slots, and what is full.\n\nGive me the reservation link for each and a recommendation with the reason. Do not book anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-apartments-under-budget-target",
@@ -4586,7 +4606,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find apartments in [areas] under [budget], [bedrooms], [must-haves], available [when].\n\nFor each listing: address or block, rent, beds and baths, square footage, floor, what is included in the rent, what is not (parking, utilities, amenity fees, pet rent — these routinely add a few hundred to the real monthly cost), the lease term, the deposit and any fees, the availability date, and a link.\n\nThen the things a listing does not tell you: how the actual location compares to the neighbourhood the listing claims, what the walk to transit really is, and anything about the building from reviews or local discussion — management responsiveness, heating, noise, package theft.\n\nFlag likely scams and be strict about it. The signs: rent well under the area's range, photos that reverse-image to another listing, a landlord who cannot show it in person, a request for a deposit or an application fee before a viewing, and a listing that appears on several sites with different contact details. A scam listing at a great price is the one that wastes the most time.\n\nRank by value for my must-haves and say which three to tour first and in what order.\n\nDo not submit an application, pay a fee, or share my personal details with any landlord or agent.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-product-stock-ships-country",
@@ -4600,7 +4624,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find [product] in stock, shipping to [country], and rank by what it would actually cost me.\n\nCheck the retailers that stock it, the manufacturer's own store, and the marketplaces. For each source that has it: the price, the currency, shipping cost to my address, estimated delivery, and whether it is actually in stock now rather than backorderable.\n\nThen the landed cost, which is the only number worth comparing: item price converted at today's rate, plus shipping, plus import duty and VAT for [country] at the applicable rate, plus any customs handling fee the carrier charges. Say the rate and threshold you used. A cheaper item from abroad routinely lands more expensive than the local one, and the fee that does it is the carrier's handling charge, which appears nowhere until the parcel arrives.\n\nAlso: whether the warranty is valid in my country when bought from that source, whether the plug or voltage or regional variant is right, and whether returns are practical or would mean shipping it back internationally at my cost.\n\nRank by landed cost with the caveats, and say which you would buy and why — the cheapest is often not it.\n\nInclude a link to each. Do not buy anything, and flag any seller that looks unreliable rather than including it on price alone.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-compare-subscription-prices-across",
@@ -4609,7 +4637,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare what [service] costs in different regions and tell me the cheapest legitimate way to subscribe.\n\nCheck the official pricing page for each of [regions], in the local currency, and convert at today's rate. For each: the tiers, the price, what is included, and whether the content or feature set differs — a cheaper region frequently buys a smaller catalogue or fewer streams, which makes the comparison meaningless if you only look at the number.\n\nAlso capture: whether tax is included in the listed price, whether an annual plan exists and what it saves, student or family pricing, and any current promotion.\n\nThen the practical part. Say for each cheaper region what the provider's terms actually require — most require a payment method and a billing address in that country, and some verify. Say plainly which of those requirements I would meet legitimately, such as having a real address or card there, and which I would not.\n\nWhere the only way to get a price is to misrepresent where I live, say so and say it would breach their terms and could get the account closed. I want the honest comparison, not a workaround.\n\nFinish with the best legitimate option available to me, which is often an annual plan at home rather than anything foreign.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-flight",
@@ -4618,7 +4650,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Check me in for [flight — airline, flight number, date, confirmation code].\n\nOpen the airline's check-in, find the booking with my confirmation code and [surname], and complete check-in for [passengers].\n\nUse my saved details for anything required: passport number and expiry, nationality, date of birth, and the destination address if the route needs it. Take those from [where I keep them] rather than guessing, and never invent a document number.\n\nSeats: take [my seat preference] if it is available at no charge. Do not pay for a seat, do not accept a paid upgrade, and do not add bags, insurance or any extra — those upsells are placed exactly where the continue button usually is.\n\nWhen it is done, confirm: checked in, the seat numbers assigned, the boarding pass status and where to get it, the boarding time and gate if published, the bag drop deadline, and any warning shown about the flight.\n\nStop and tell me rather than proceeding if: check-in is not open yet (say when it opens), the booking asks for a document I do not have on file, there is a visa or travel-authorisation requirement flagged, the flight is delayed or changed, or anything requires a payment.\n\nDo not enter card details under any circumstances.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-packing-list-trip",
@@ -4627,7 +4663,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "draft"
+      "writeScope": "draft",
+      "prompt": "Build my packing list for [destination], [dates], [purpose of the trip], [accommodation type], [how I am travelling — carry-on only, checked bag].\n\nCheck the actual forecast and the seasonal norms for those dates, and say what they are. A packing list built on the season rather than the forecast is how people end up in the wrong coat.\n\nThen the list, grouped: clothing with quantities based on the trip length and whether laundry is available, toiletries, electronics with the right plug type and any voltage issue, documents, medication, and anything specific to what I will be doing there.\n\nQuantities matter. \"Shirts\" is not a packing list; five shirts for a six-day trip with a laundry on day four is.\n\nThen the destination-specific things people forget: an adapter of the right type, whether tap water is drinkable, whether cash is needed and in what denominations, a dress code for anywhere I am going, whether the accommodation provides towels, insect repellent, altitude or sun considerations, and anything customs restricts.\n\nThen a prep checklist with dates: what to book, what to notify (bank, phone), what to check (passport validity against the destination's rule, which is often six months), what to download offline, and when to do each.\n\nMark the items that would genuinely ruin the trip if forgotten.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-signup-ready-race-or",
@@ -4636,7 +4676,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Get me signup-ready for [event — race, tournament, competition] on [date].\n\nFind the official event site and work from it rather than from a listing aggregator, which is usually out of date about exactly the things that matter.\n\nTell me: whether registration is open, the deadline, the entry fee and how it changes with the date (most of these have escalating pricing and the difference is real money), what the fee includes, and whether entry is first-come or a ballot.\n\nThen every requirement, each as something I either have or need to get: qualifying times or results, age or category rules, a medical certificate or physical, proof of club membership or a governing-body licence, insurance, equipment specifications, and anything requiring a signature.\n\nThe medical certificate and the licence are the two that catch people out, because both take weeks and neither is mentioned until the final page of the entry form.\n\nThen the ordered plan with dates: what to do first, what has a lead time, and the last safe date for each. Work backwards from the deadline.\n\nAlso: the refund and transfer policy, what happens if I cannot start, accommodation if the event sells out the town, and the packet pickup requirements — plenty of events require in-person collection at a fixed time the day before.\n\nDo not register or pay.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-compare-gyms-studios-near",
@@ -4645,7 +4689,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Compare gyms and studios within [distance] of [location] for [what I want to do].\n\nFor each: name, exact address and how far it really is from me by the way I would travel, opening hours including weekends and holidays, and what equipment or classes it actually has for my purpose.\n\nPricing is the part these places obscure, so be thorough: the monthly rate, the joining fee, the minimum contract, the cancellation notice period and any cancellation fee, whether there is an off-peak rate, what a class costs on top of membership, and whether anything is charged annually. Give me the true first-year cost, since a low monthly rate with a joining fee and a twelve-month minimum is a different offer from a rolling one at a higher price.\n\nThen what people say — the recurring complaints in recent reviews rather than the score. For a gym, that means how crowded it is at the hours I would go, the state of the changing rooms, whether equipment stays broken, and how hard cancelling turns out to be. That last one is the most common complaint about every gym chain and the one worth knowing before signing.\n\nThen any trial: what is offered, how long, and whether it requires card details.\n\nRank for my purpose and say which two to try. Do not sign up for anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-negotiate-marketplace-listing",
@@ -4659,7 +4707,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Negotiate [Facebook Marketplace listing link] for me. My maximum is [amount], my target is [amount], and I can collect [when/where].\n\nBefore messaging, do the homework: what the item actually sells for locally right now (find comparable completed and active listings), how long this one has been listed and whether the price has already dropped, and anything in the photos or description that affects value — damage, a missing part, an older model than the title suggests, no original packaging.\n\nThen message the seller. Open by confirming it is available and asking a genuine question about its condition or history. Make the offer with a reason attached to it — a comparable listing, a specific flaw, collection today. An unexplained lowball gets ignored, and a reasoned offer at the same number often does not.\n\nNegotiate within my limits. Do not go above [maximum] under any circumstances, do not agree to a delivery arrangement or a deposit, and do not share my address, phone number or any payment details.\n\nStop and bring it to me when: we reach a deal, the seller will not go below a number, they ask for anything upfront, or anything about the exchange looks like a scam.\n\nBe straightforward and polite throughout. There is a real person on the other end and this is a small local transaction, not a procurement exercise.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-visa-entry-rules-trip",
@@ -4668,7 +4720,11 @@
       "category": "Personal",
       "connectors": [],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Check the visa and entry rules for me travelling to [destination] on [passport nationality], arriving [date] for [length] to [purpose — tourism, business, transit].\n\nUse the official sources: the destination country's immigration or foreign ministry site, and my own government's travel advice. Not a visa-agency page, not a travel blog, not an aggregator — those are frequently out of date on exactly the detail that gets someone turned around at the border.\n\nTell me: whether a visa is required, which type, whether it is on arrival, e-visa or in advance, the cost, the processing time and what that means for an apply-by date, what the application needs, and how long it is valid for.\n\nThen the passport rules: the validity required beyond my departure date (six months is common and catches people constantly), blank pages needed, and whether any prior stamp is a problem.\n\nThen the other entry requirements that are not a visa: an ETA or travel authorisation, proof of onward travel, proof of funds, an address for the stay, insurance, vaccination or health declarations, and any customs restriction worth knowing.\n\nIf I am transiting anywhere, check the transit rules separately — a transit visa requirement is the most commonly missed one of all.\n\nCite the official page and the date for everything. Say plainly that rules change and this should be confirmed with the embassy before travelling; this is not immigration advice.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-fares-trip-until-they",
@@ -4682,7 +4738,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Watch fares for [route], [dates or date range], [passengers], and tell me when it drops below [target price].\n\nCheck regularly and record the fare each time, so I can see the trend rather than only the alert. A price history is what tells me whether [target] is realistic or whether I set it below anything this route has ever been.\n\nWhen a fare hits the target, send the alert immediately with everything needed to act: the exact price, the airline and flight numbers, the times, the cabin and fare class, what baggage is included, the total for [passengers] with taxes and fees, and a direct booking link.\n\nThe fare class matters. A price that only clears the target because it is a basic economy fare with no bag and no changes is not the same trip, and the alert should say so rather than letting me find out at checkout.\n\nAlso alert me on a drop that is close to but not at the target if it is unusually low against the history — the best fare on a route often does not reach a round number, and holding out for one is how people miss it.\n\nInclude the trend in each alert: the current price against the range you have observed.\n\nDo not book and do not enter payment details. And say if the fare has vanished by the time you would report it, which on some routes it will.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-product-until-price-drops",
@@ -4699,7 +4759,11 @@
         "cron": "0 */6 * * *",
         "display": "Every 6 hours"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Watch [product link] and tell me when it is genuinely worth buying. My target is [price] or [percentage] off.\n\nCheck every few hours and log the price each time, so there is a real history rather than a single reading.\n\nThe history is what makes this useful, because a headline discount is usually against an inflated list price. Before alerting me, compare against the actual range you have observed and against what the item has sold for at other retailers. A \"40% off\" on a price that was quietly raised last month is not a deal, and saying so is the whole job.\n\nWhen it drops, alert me with: the current price, what it was, the percentage off against the real recent price rather than the list price, how it compares to the lowest you have seen, the seller (a marketplace listing from an unknown seller is not the same offer as the retailer's own), whether it is in stock, and a link.\n\nAlso alert me on: the item going out of stock while I am waiting, a cheaper source appearing elsewhere, and a new model being announced — which is often the reason a price finally drops and is worth knowing before buying the old one.\n\nDo not buy anything and do not add anything to a cart with a saved payment method.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-queue-usual-lunch-order",
@@ -4716,7 +4780,11 @@
         "cron": "30 11 * * 1-5",
         "display": "Weekdays 11:30 AM"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every weekday at 11:30, put my usual lunch order in the cart on DoorDash and hold it at checkout for me.\n\nMy usual is [order — restaurant, items, options, quantities]. My delivery address and instructions are [saved / here].\n\nBuild the cart with exactly those items and options. Check before finishing: the restaurant is open and accepting orders, every item is available, the options are the ones I asked for, and the estimated delivery time is reasonable for lunch. Then stop at the checkout page.\n\nTell me: the item total, delivery fee, service fee, taxes, the suggested tip and what the total would be, and the estimated arrival. Fees vary by day and by demand, and the total is what I want to see before confirming rather than after.\n\nStop and tell me instead of substituting when: the restaurant is closed or paused, an item is unavailable, the price has changed materially, the delivery estimate is far longer than usual, or a fee has appeared that is not normally there. Never swap an item for something similar — a lunch I did not order is worse than no lunch.\n\nDo not place the order. Do not confirm payment. The last click is mine, and if I have not confirmed by [time], drop it rather than leaving a stale cart.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-enter-ticket-lottery-day",
@@ -4733,7 +4801,11 @@
         "cron": "0 10 * * *",
         "display": "Daily 10:00 AM"
       },
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Enter the TodayTix lottery for [show] every day at 10am for [number of tickets], for [dates or: any date I am free].\n\nLog in, find the lottery for the show, and submit the entry with [number] tickets. Use my saved details.\n\nThen verify it actually went in. A submitted form is not an entry — check for the confirmation and, where the app shows an entries list, confirm it appears there. An entry that silently failed is indistinguishable from a loss, and this runs every day.\n\nLog each day: the date, the performance entered for, the number of tickets, and confirmed or failed with the reason.\n\nIf I win, tell me immediately with the performance date and time, the seats if stated, the price, and — most importantly — the deadline to claim, which is usually a few hours and is how most wins get lost. Do not claim or pay for the tickets; that is my decision and my card.\n\nStop and tell me if: the lottery is not open for the dates I asked for, entry now requires something new, the account needs re-authentication, or entries fail two days running.\n\nDo not enter for dates I said I am not free — winning a ticket I cannot use and forfeiting it can affect future entries.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-grab-sold-out-campsite",
@@ -4745,7 +4817,11 @@
         "cron": "0 */2 * * *",
         "display": "Every 2 hours"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Watch [campground] on [booking site] for [site type] on [dates] and alert me the moment something opens.\n\nCheck every couple of hours. Campsite cancellations at a popular ground go within minutes, and there is a large secondary market of people watching for exactly this, so speed is the entire value here.\n\nCheck the whole date range and each individual night, not just the full stay — a two-night gap often opens before a four-night one does, and partial availability is worth knowing about.\n\nWhen something opens, alert me with: the exact site number and type, the dates available, the nightly rate and total with fees, any restriction (a maximum vehicle length, no generators, a walk-in site, accessibility), whether it is next to the toilet block or the road, and a direct booking link to that specific site.\n\nThe site-specific detail matters — not every site at a campground is equivalent and some of the ones that open up are the ones nobody wants for a reason.\n\nAlso tell me when the ground's booking window rolls open for further-out dates, since for many the reliable route is being there at the moment the window opens rather than waiting for a cancellation.\n\nDo not book and do not enter payment details.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-recurring-charges-should-cancel",
@@ -4763,7 +4839,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Go through my statements at [sheet or file link] and find every recurring charge.\n\nIdentify recurring by pattern rather than by name — the same amount to the same merchant at a regular interval, including annual ones, which are the easiest to miss and often the largest. Cover at least [12] months so annual renewals appear.\n\nFor each: merchant, what it actually is (the descriptor on a statement is frequently a payment processor rather than the service), amount, frequency, annual cost, when it started, when it last charged, and when it next will.\n\nThen rank by whether it is worth keeping. Group into: clearly keeping, questionable, and probably forgotten. For the questionable ones, say what would settle it — usually whether I have used it, which I would know.\n\nCall out specifically: anything charging more than it used to, anything that looks like a trial that converted, duplicates (two tools doing the same job, or the same service billed on two cards), and anything you cannot identify at all. That last group is where the real waste hides.\n\nGive me the total annual cost of all of it, and the total for the probably-forgotten group — that number is usually the thing that prompts action.\n\nFor each cancellation candidate, note how to cancel and any notice period. Do not cancel anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-dispute-incorrect-charge",
@@ -4781,7 +4861,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Help me dispute [charge — merchant, amount, date, card or account] which is wrong because [reason].\n\nFirst assemble the evidence, since a dispute filed without it usually fails: the transaction as it appears on the statement, the original order or agreement, any receipt or confirmation, the merchant's own terms on the point at issue, and the record of any attempt I have made to resolve it directly with the merchant. Most issuers expect that attempt to have happened first, so if it has not, say so and tell me what to send them.\n\nThen check the deadline. Card dispute windows run from the transaction or statement date and are shorter than people expect. Tell me the date I have to file by.\n\nThen open the dispute flow on [Chase / PayPal], select the correct dispute reason — the categories matter and picking the wrong one is a common reason for rejection — and fill it in with the facts, dates and amounts, plainly and without argument. Attach the evidence.\n\nStop before the final submission and show me exactly what will be filed.\n\nAfter I confirm, save the case reference, the date, and what happens next including when I should hear back. Set out the follow-up dates.\n\nDo not overstate anything in the filing. A dispute is a factual account, and an exaggeration in it is the thing the merchant will answer.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-file-warranty-or-return",
@@ -4795,7 +4879,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "File a [warranty claim / return] for [item], bought [when, from where, order number if known].\n\nFirst find the proof of purchase — the order in my account, the confirmation email, or the receipt — and check eligibility before starting: whether it is inside the return window or the warranty period, whether the reason is covered, and whether anything voids it. Tell me all of that before filing, because a claim outside the window wastes the time and a claim filed under the wrong category gets rejected and often cannot be refiled.\n\nThen open the claim: select the correct reason, describe the problem factually and specifically (what it does, when it started, what I have already tried), attach the proof of purchase and photos if the form takes them, and choose [refund / replacement / repair].\n\nSubmit it, then capture everything: the claim or RMA number, the date, what was promised and by when, the return shipping arrangement including who pays and whether a label was provided, and the deadline for me to ship anything back.\n\nThat last one is where these fail — a return authorised and then not shipped inside the window is a refund lost.\n\nStop and ask me rather than proceeding if the form requires a payment, offers store credit instead of a refund, or asks me to accept terms that waive something. And describe the fault accurately; an overstated claim is a rejected one.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-book-doctor-takes-insurance",
@@ -4813,7 +4901,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "send"
+      "writeScope": "send",
+      "prompt": "Find and book a [specialty] near [location] who takes [insurance plan — carrier and exact plan name], for [reason], available [when].\n\nVerify in-network status carefully. A directory listing the carrier is not the same as accepting my specific plan, and this is the single most expensive mistake in the process — an out-of-network visit booked on a directory error can cost hundreds. Check the provider's listing, and where possible confirm against the carrier's own directory. Say for each provider how you verified it and how confident you are.\n\nFor each candidate: name, credentials, the practice and its address, distance, whether they are accepting new patients, the earliest availability that fits my window, and what patients say in recent reviews — particularly about wait times, whether appointments run late, and how the office handles billing.\n\nThen book the best fit that genuinely matches on insurance and availability. Use my saved details, and add it to my Google Calendar with the address, the phone number, and any pre-appointment instructions.\n\nStop and ask me instead of booking if: the in-network status cannot be confirmed, the appointment requires a referral I do not have, there is a booking or cancellation fee, or the form asks for anything beyond standard registration.\n\nTell me the cancellation policy, what to bring, and how early to arrive.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-best-ticket-deal-event",
@@ -4835,7 +4927,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Find me the best deal on [number] tickets to [event, date, venue].\n\nCheck StubHub, SeatGeek and Vivid Seats, plus the primary seller in case anything is still available at face value — which people forget to check and which is frequently cheaper than resale.\n\nCompare on the all-in price, not the listed one. Every one of these sites shows a price that becomes 25-35% higher at checkout, and the fee percentage differs between them, so the cheapest listing is regularly not the cheapest ticket. Take each candidate through to the final price and report that.\n\nFor each option: section, row, quantity, the listed price, the total with all fees, the effective per-ticket cost, whether the seats are together, the delivery method and when tickets arrive, and a link.\n\nThen the seat quality: what the view is actually like from that section at that venue, whether it is obstructed or side-on, whether it is under an overhang, and how far it really is. A cheap seat behind a pillar is not a deal.\n\nRank by value rather than by price, and say which you would buy.\n\nAlso say what the price has been doing if you can tell, and whether it typically falls closer to the date for this kind of event — though say plainly when that is a guess.\n\nDo not buy anything.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-comb-facebook-marketplace-across",
@@ -4853,7 +4949,11 @@
         }
       ],
       "schedule": null,
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Search Facebook Marketplace for [item] across [regions or radius] and put everything in a sheet.\n\nSearch each area separately with the search terms people actually use, including the misspellings and the alternative names — the best-priced listings are usually the badly titled ones nobody else finds.\n\nFor each listing: title, price, condition as stated, location and distance from me, how long it has been listed, whether the price has dropped, the seller's profile age and rating if visible, a summary of the description, and the link. Note whether the seller offers shipping or is collection only.\n\nDe-duplicate — the same item is often posted in several areas and by dealers under multiple listings.\n\nFlag the likely problems: a price far below the going rate, stock photos rather than photos of the actual item, a description copied from a retail listing, a seller account created recently, a listing that appears in many cities at once, and anything where the seller wants payment before viewing.\n\nSort by value: price against condition and distance, rather than by price alone. A cheap item three hours away is not cheap.\n\nInclude a summary at the top: how many listings, the price range, and what the item genuinely seems to go for locally.\n\nDo not message any seller.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "personal-keep-travel-plans-organized",
@@ -4878,7 +4978,11 @@
         "cron": "0 8 * * *",
         "display": "Every day 8am"
       },
-      "writeScope": "readonly"
+      "writeScope": "readonly",
+      "prompt": "Every morning, scan my Gmail for travel confirmations and keep my itinerary at [doc/sheet link] current.\n\nFind flight, hotel, car, rail and activity confirmations, including changes and cancellations to things already booked. Change emails are the important ones and they look nothing like the original confirmation, so match on the booking reference rather than the subject line.\n\nFor each trip, maintain a single chronological itinerary in local time at each location: what, when, where, the confirmation number, and a link to the email. Local time with the timezone stated is not optional — an itinerary in one timezone is how people miss a connection.\n\nThen the checks, which is why this is worth doing daily:\n\nGaps — a night with no accommodation, an arrival with no way to get to the hotel.\nConflicts — two bookings overlapping, or a checkout before a flight that leaves no time.\nTight connections — a layover or a transfer that does not allow for a realistic airport.\nMissing pieces — a return flight with no outbound, a car booked with no matching dates.\nDeadlines — free-cancellation dates about to pass, check-in windows opening, a visa or authorisation still outstanding.\n\nFlag anything found and say what is missing rather than presenting an itinerary with a silent hole in it.",
+      "roles": [
+        "everyone"
+      ]
     },
     {
       "id": "monitoring-morning-briefing-slack-calendar",
