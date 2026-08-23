@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/flux/agent/agent_tab.h"
 #include "chrome/browser/flux/agent/page_context.h"
 #include "chrome/browser/flux/agent/tool_registry.h"
@@ -92,7 +93,14 @@ class AgentRunner {
   // the scope requires it. Remaining calls are held in `pending_calls_`.
   void ExecuteToolCalls(std::vector<ToolCall> calls);
   void DispatchTool(ToolCall call);
-  void RecordAction(const std::string& tool_name, const ToolResult& result);
+  // `effect` is the tool's own DescribeEffect() for this call, captured before
+  // the input was moved into Run(). Without it the transcript reads "click ok"
+  // for every step, which is a list of tool names rather than a record of what
+  // happened.
+  void RecordAction(const std::string& tool_name,
+                    const std::string& effect,
+                    base::TimeTicks started_at,
+                    const ToolResult& result);
   void OnToolFinished(ToolResult result);
   void Finish(mojom::RunState state, const std::string& summary);
 
@@ -137,6 +145,9 @@ class AgentRunner {
   mojom::RunState state_ = mojom::RunState::kQueued;
   uint32_t consecutive_failures_ = 0;
   uint64_t credits_spent_ = 0;
+  // When the current model call went out, so the transcript can say "Thought
+  // for 8s" rather than showing an unexplained gap.
+  base::TimeTicks turn_started_at_;
 
   // Detects the agent repeating an action that is not making progress — the
   // most common failure mode in long-running browser agents.

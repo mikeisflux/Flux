@@ -2,8 +2,6 @@
 
 #include "chrome/browser/flux/agent/agent_runner.h"
 
-#include "chrome/browser/profiles/profile.h"
-
 #include <algorithm>
 #include <utility>
 
@@ -12,6 +10,10 @@
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_contents.h"
+#include "url/gurl.h"
 
 namespace flux {
 namespace {
@@ -127,6 +129,7 @@ void AgentRunner::Step() {
       "need to know about how you got there or what you could not do. Markdown "
       "is rendered.";
 
+  turn_started_at_ = base::TimeTicks::Now();
   provider_->Complete(
       std::move(request),
       base::BindOnce(&AgentRunner::OnCompletion, weak_factory_.GetWeakPtr()));
@@ -170,6 +173,8 @@ void AgentRunner::OnCompletion(CompletionResponse response) {
   progress->input_tokens = response.input_tokens;
   progress->output_tokens = response.output_tokens;
   progress->credits_spent = credits_spent_;
+  progress->thinking_ms = static_cast<uint32_t>(
+      (base::TimeTicks::Now() - turn_started_at_).InMilliseconds());
   if (!response.text.empty())
     progress->current_step = response.text;
   delegate_->OnProgress(*progress);
@@ -199,6 +204,11 @@ void AgentRunner::ExecuteToolCalls(std::vector<ToolCall> calls) {
     result.tool_call_id = call.id;
     result.content = base::StrCat({"No such tool: ", call.name});
     result.is_error = true;
+    // Recorded, not just returned to the model. A run that spends its budget
+    // calling a tool that does not exist looked, in the transcript, like a run
+    // that did nothing at all.
+    RecordAction(call.name, base::StrCat({"Called unknown tool ", call.name}),
+                 base::TimeTicks::Now(), result);
     OnToolFinished(std::move(result));
     return;
   }
@@ -239,31 +249,55 @@ void AgentRunner::DispatchTool(ToolCall call) {
   context.scope = spec_->write_scope;
 
   const std::string call_id = call.id;
+  // Described BEFORE the input is moved into Run(). DescribeEffect is the only
+  // thing that knows what this particular call does - "Clicked 'Next page'"
+  // rather than "click" - and after the move there is nothing left to ask.
+  const std::string effect = tool->DescribeEffect(call.input);
+  const base::TimeTicks started_at = base::TimeTicks::Now();
   tool->Run(context, std::move(call.input),
             base::BindOnce(
                 [](base::WeakPtr<AgentRunner> self, std::string id,
-                   std::string name, ToolResult result) {
+                   std::string name, std::string effect,
+                   base::TimeTicks started_at, ToolResult result) {
                   if (!self)
                     return;
                   result.tool_call_id = id;
-                  self->RecordAction(name, result);
+                  self->RecordAction(name, effect, started_at, result);
                   self->OnToolFinished(std::move(result));
                 },
-                weak_factory_.GetWeakPtr(), call_id, call.name));
+                weak_factory_.GetWeakPtr(), call_id, call.name, effect,
+                started_at));
 }
 
 void AgentRunner::RecordAction(const std::string& tool_name,
+                               const std::string& effect,
+                               base::TimeTicks started_at,
                                const ToolResult& result) {
   auto action = mojom::ActionRecord::New();
   action->tool_name = tool_name;
-  action->summary = result.is_error
-                        ? base::StrCat({tool_name, " failed"})
-                        : base::StrCat({tool_name, " ok"});
+  // The tool's own description of this call, not its name. The transcript used
+  // to read "click ok / read_page ok / click ok", which tells the user the
+  // agent did six things and nothing about what any of them were.
+  action->summary = effect.empty() ? tool_name : effect;
   action->succeeded = !result.is_error;
   if (result.is_error)
     action->error = result.content;
   action->was_approved = approved_last_call_;
   approved_last_call_ = false;
+
+  // The page the action happened on. The console renders this beside the verb
+  // and had nothing to render, because nothing ever set it.
+  if (web_contents_) {
+    const GURL& url = web_contents_->GetLastCommittedURL();
+    if (url.is_valid())
+      action->page_url = url;
+  }
+
+  // Both times are non-nullable in the mojom, so leaving them unset does not
+  // read as "unknown" - it reads as the Windows epoch.
+  const base::Time now = base::Time::Now();
+  action->finished_at = now;
+  action->started_at = now - (base::TimeTicks::Now() - started_at);
 
   actions_.push_back(action->Clone());
   delegate_->OnAction(run_id_, *action);

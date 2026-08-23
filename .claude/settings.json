@@ -43,6 +43,14 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/tools/check-includes.sh"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-never-assigned.py"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-mojo-surface.py"
           }
         ]
       }

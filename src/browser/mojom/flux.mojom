@@ -195,8 +195,21 @@ struct WorkflowDraft {
 // What the connectors screen renders per row. Deliberately not the whole
 // definition: the console already has names, descriptions and badges packed in
 // connectors.json, and this is only the part that changes at runtime.
+// How a connector is authorized, reported from the definition the browser
+// actually uses rather than duplicated into the console's catalogue. The
+// console needs it to know which form to show: an OAuth connector wants a
+// client id and secret, an api_key one wants a pasted token, and offering the
+// first to the second is why twelve connectors could not be connected at all.
+enum ConnectorAuth {
+  kOAuth2,
+  kApiKey,
+  // Local, MCP or unsupported - there is nothing for the user to enter.
+  kNone,
+};
+
 struct ConnectorStatus {
   string id;
+  ConnectorAuth auth;
   // False for the connectors there is no auth path for - a local one with
   // nothing to authorize, an MCP one configured elsewhere, or one catalogued
   // only so the console can say why it is not offered.

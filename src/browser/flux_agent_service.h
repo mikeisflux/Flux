@@ -48,6 +48,8 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
     virtual void OnRunFinished(const std::string& run_id,
                                mojom::RunState state,
                                const std::string& summary) {}
+    virtual void OnLearnedFact(const std::string& fact,
+                               const std::string& source_run_id) {}
   };
 
   explicit FluxAgentService(Profile* profile);
@@ -95,6 +97,12 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   void AdvancePlan(const std::string& run_id,
                    uint32_t index,
                    mojom::TaskStepState state);
+  // Records something durable the agent learned about the user's setup, so a
+  // later run does not have to rediscover it. The pref, the console's list and
+  // the dismiss control all existed; nothing ever wrote one, so the feature was
+  // inert and the list was always empty.
+  void RememberFact(const std::string& run_id, const std::string& text);
+
   void AddArtifact(const std::string& run_id, mojom::RunArtifactPtr artifact);
 
   // Splits work across parallel child runs.

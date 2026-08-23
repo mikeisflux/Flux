@@ -24,6 +24,10 @@ namespace flux {
 // What the console shows for one connector.
 struct ConnectorStatus {
   std::string id;
+  // What the user has to supply, so the console can show the right form.
+  // Without this it could not tell an OAuth connector from an api_key one and
+  // offered the client-id-and-secret form to both.
+  AuthType auth = AuthType::kUnsupported;
   bool connectable = false;   // there is an auth path Flux can drive
   bool has_client = false;    // the user registered an OAuth app
   bool connected = false;

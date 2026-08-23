@@ -9,6 +9,7 @@
 // header does not exist at this revision.
 
 #include "base/functional/bind.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/uuid.h"
@@ -319,11 +320,17 @@ void WorkflowScheduler::OnTimerFired() {
     // record that the rest were missed. Firing the backlog would produce a
     // burst of duplicate work, which is worse than skipping it.
     workflow.last_fire_missed = (now - workflow.next_run) > base::Minutes(5);
-    workflow.last_run = now;
 
+    // last_run is set only if a run actually started. It used to be stamped
+    // unconditionally, so a workflow that could not start - no API key, no
+    // budget - showed "Last run: 2 minutes ago" in the table with no run
+    // anywhere to show for it, which is the most misleading state the row has.
     if (service_ && workflow.spec) {
       std::string error;
-      service_->StartRun(workflow.spec->Clone(), &error);
+      if (service_->StartRun(workflow.spec->Clone(), &error))
+        workflow.last_run = now;
+      else
+        LOG(WARNING) << "Flux workflow " << id << " did not start: " << error;
     }
 
     std::optional<base::Time> next = NextFireTime(workflow.cron, now);

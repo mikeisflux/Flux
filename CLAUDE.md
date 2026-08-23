@@ -141,6 +141,36 @@ it. Breaking a new rule on purpose is what caught that, and it is the third
 time a check in this repo has passed while the thing it was written for went
 through.
 
+### Two checks for code that compiles and does nothing
+
+`tools/check-never-assigned.py` looks for a `raw_ptr`, `unique_ptr`,
+`optional` or `WeakPtr` field that nothing ever assigns. `AgentRunner`
+declared `page_` and `web_contents_`, handed both to every tool on every
+call, and assigned neither, anywhere - so the agent had no browsing context
+at all. A run started, talked to the model, and the first `read_page` had
+nothing to read. It compiles, links and runs; the feature simply is not
+there, and the declaration sitting in the header reads like proof that it is.
+
+The first version of that check counted `= nullptr` as an assignment, so it
+missed `web_contents_` - the very field it was written for. The declaration's
+own initializer is now excluded, and the check is validated against the
+pre-fix tree rather than against the fixed one.
+
+`tools/check-mojo-surface.py` cross-checks `flux.mojom` against the handler,
+the TS stub and the console. It fails on a method with no implementation, a
+method missing from the stub, and an observer callback the browser never
+fires - that last one was `OnLearnedFact`, which meant the Customize screen's
+learned-facts list was permanently empty by construction. It reports, without
+failing, a method nothing in the console calls: dead surface is a decision,
+though it is usually a feature nobody finished wiring up.
+
+That one also had to be broken three ways before it was trusted, and the
+observer case did not fire the first time: the pattern matched
+`FluxAgentService`'s own C++ `Observer::OnLearnedFact` and reported the
+callback as fired while the mojo forward to the console was missing. It now
+looks only for `observer_->X(` in the page handler, which is the only call
+that actually reaches the renderer.
+
 `tools/check-includes.sh` HEAD-requests every Chromium header `src/browser`
 includes against the pinned tag, because `base/containers/contains.h` does not
 exist in M152 and nothing here knew. The include reads correctly, no other

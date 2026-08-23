@@ -4,6 +4,7 @@ import {connectorMark, pathIcon, searchIcon} from './icons.js';
 
 import {loadPackedJson, once} from './resource.js';
 
+import {ConnectorAuth} from './flux.mojom-webui.js';
 import type {ConnectorStatus, FluxPageHandlerRemote} from './flux.mojom-webui.js';
 
 export interface Connector {
@@ -224,6 +225,15 @@ export class ConnectorsView {
           state.detail :
           `Connect ${c.name}`;
       add.addEventListener('click', async () => {
+        // An api_key connector has no OAuth app to register - it wants a
+        // token pasted. It used to fall through to the client form below,
+        // which asks for a client id, a secret and a redirect URI that this
+        // kind of connector does not have, so all twelve of them were
+        // impossible to connect.
+        if (state?.auth === ConnectorAuth.kApiKey) {
+          this.showTokenForm(card, c);
+          return;
+        }
         // No registered app means there is nothing to connect with, so the
         // click opens the form instead of failing. Flux ships no client
         // secrets, so this step is unavoidable rather than an oversight.
@@ -240,6 +250,72 @@ export class ConnectorsView {
 
     card.append(mark, body, add);
     return card;
+  }
+
+  /**
+   * The pasted-token form, for connectors authorized with an API key rather
+   * than OAuth.
+   *
+   * One field, because that is genuinely all these need. The token goes
+   * straight to the browser process and into the OS-encrypted store; it is
+   * never held in the console beyond this submit, and a stored one is never
+   * sent back.
+   */
+  private showTokenForm(card: HTMLElement, c: Connector) {
+    const existing = card.parentElement?.querySelector('.connector-form');
+    if (existing) {
+      existing.remove();
+    }
+
+    const form = document.createElement('form');
+    form.className = 'connector-form';
+
+    const intro = document.createElement('p');
+    intro.textContent =
+        `${c.name} authorizes with an API key rather than OAuth. Create one ` +
+        'in its own settings and paste it here.';
+
+    const tokenInput = field(form, 'API key', '', 'password');
+    tokenInput.required = true;
+
+    const hint = document.createElement('p');
+    hint.className = 'connector-form-hint';
+    hint.textContent =
+        'Stored encrypted by the operating system, in this profile only. It ' +
+        'is never sent anywhere except to ' + c.name + '.';
+
+    const save = document.createElement('button');
+    save.type = 'submit';
+    save.textContent = 'Save and connect';
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'outlined';
+    cancel.textContent = 'Cancel';
+    cancel.addEventListener('click', () => form.remove());
+
+    const row = document.createElement('div');
+    row.className = 'connector-form-actions';
+    row.append(save, cancel);
+
+    form.prepend(intro);
+    form.append(hint, row);
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const {stored, error} =
+          await this.handler.setPersonalToken(c.id, tokenInput.value.trim());
+      if (!stored) {
+        this.notice(error ?? 'The key could not be saved.');
+        return;
+      }
+      form.remove();
+      await this.refreshStatus();
+      this.paint();
+    });
+
+    card.after(form);
+    tokenInput.focus();
   }
 
   /**

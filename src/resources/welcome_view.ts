@@ -92,6 +92,22 @@ export class WelcomeView {
     this.root.append(h1, p);
   }
 
+  /**
+   * A message above the step's controls. Inserted rather than kept as state so
+   * the next repaint clears it - first run moves forward, and a warning about
+   * the previous step should not follow the user into the next one.
+   */
+  private notice(message: string) {
+    let banner = this.root.querySelector<HTMLElement>('.inline-error');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.className = 'inline-error';
+      banner.setAttribute('role', 'alert');
+      this.root.append(banner);
+    }
+    banner.textContent = message;
+  }
+
   private nav(nextLabel: string, next: () => void, skip = true) {
     const nav = document.createElement('div');
     nav.className = 'welcome-nav';
@@ -215,12 +231,28 @@ export class WelcomeView {
     this.root.append(grid);
 
     this.nav('Add these', async () => {
+      // The result was discarded, so a skill that failed to adopt advanced the
+      // user to "done" having added nothing. First run is exactly where that
+      // is least recoverable: they have no reason to suspect anything failed.
+      const failed: string[] = [];
       for (const command of this.chosen) {
         const skill = this.skills.find(s => s.command === command);
-        if (skill) {
-          await this.handler.adoptSkill(
-              skill.command, skill.name, skill.description, skill.body);
+        if (!skill) {
+          continue;
         }
+        const {adopted} = await this.handler.adoptSkill(
+            skill.command, skill.name, skill.description, skill.body);
+        if (!adopted) {
+          failed.push(skill.name);
+        }
+      }
+      if (failed.length > 0) {
+        // Named rather than counted, and the flow still advances: these are
+        // recoverable from Customize, and blocking first run over them would
+        // be worse than telling the user which ones to add later.
+        this.notice(
+            `Could not add ${failed.join(', ')}. You can add ${
+                failed.length === 1 ? 'it' : 'them'} from Customize.`);
       }
       this.step += 1;
       void this.paint();

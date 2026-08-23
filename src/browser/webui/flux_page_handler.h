@@ -119,6 +119,8 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void OnRunAction(const std::string& run_id,
                    const mojom::ActionRecord& action) override;
   void OnApprovalRequested(const mojom::ApprovalRequest& request) override;
+  void OnLearnedFact(const std::string& fact,
+                     const std::string& source_run_id) override;
   void OnRunArtifact(const std::string& run_id,
                      const mojom::RunArtifact& artifact) override;
   void OnRunFinished(const std::string& run_id,

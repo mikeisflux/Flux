@@ -124,7 +124,7 @@ export class TemplateDialog {
       this.onSaveWorkflow(template, prompt.value);
     });
     const use = document.createElement('button');
-    use.className = 'button';
+    use.className = 'ghost';
     use.textContent = 'Use this template';
     use.addEventListener('click', () => {
       this.dialog.close();

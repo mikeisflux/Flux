@@ -18,7 +18,10 @@
 #include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/scheduler/workflow_scheduler.h"
 #include "chrome/browser/flux/skills/skill_registry.h"
+#include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace flux {
 namespace {
@@ -314,6 +317,40 @@ void FluxAgentService::StartSubagents(
   }
 }
 
+void FluxAgentService::RememberFact(const std::string& run_id,
+                                    const std::string& text) {
+  if (text.empty() || !profile_)
+    return;
+
+  // Same shape the console reads back in GetInstructions: {id, text, run_id,
+  // learned_at}. Written here rather than in the page handler because a run
+  // can outlive the console tab that started it, and a fact learned after the
+  // user closed the console must still be kept.
+  base::DictValue fact;
+  fact.Set("id", base::Uuid::GenerateRandomV4().AsLowercaseString());
+  fact.Set("text", text);
+  fact.Set("run_id", run_id);
+  fact.Set("learned_at", static_cast<double>(
+                             base::Time::Now()
+                                 .ToDeltaSinceWindowsEpoch()
+                                 .InMicroseconds()));
+
+  ScopedListPrefUpdate update(profile_->GetPrefs(), prefs::kLearnedFacts);
+  // Deduplicated on the text: an agent that relearns the same thing on every
+  // run would otherwise fill the list with one fact repeated fifty times.
+  for (const base::Value& entry : *update) {
+    if (entry.is_dict()) {
+      const std::string* existing = entry.GetDict().FindString("text");
+      if (existing && *existing == text)
+        return;
+    }
+  }
+  update->Append(std::move(fact));
+
+  for (Observer& o : observers_)
+    o.OnLearnedFact(text, run_id);
+}
+
 void FluxAgentService::AddArtifact(const std::string& run_id,
                                    mojom::RunArtifactPtr artifact) {
   if (!artifact)
@@ -391,12 +428,17 @@ FluxAgentService::Concurrency FluxAgentService::GetConcurrency() const {
 }
 
 void FluxAgentService::OnProgress(const mojom::RunProgress& progress) {
-  // The runner builds its progress from scratch each turn and knows nothing
-  // about the tree, so the two fields the service owns are carried over rather
-  // than reset to empty on every update.
+  // The runner builds its progress from scratch every turn and knows nothing
+  // about the fields the service owns, so they are carried over rather than
+  // reset to empty on every update.
+  //
+  // The plan is one of them, and it mattered most: set_plan wrote it here, the
+  // very next model turn overwrote it with an empty one, and the panel the
+  // whole feature exists for appeared for a fraction of a second and vanished.
   auto existing = progress_.find(progress.run_id);
   mojom::RunProgressPtr next = progress.Clone();
   if (existing != progress_.end()) {
+    next->plan = std::move(existing->second->plan);
     next->subagents = std::move(existing->second->subagents);
     next->parent_run_id = existing->second->parent_run_id;
   }

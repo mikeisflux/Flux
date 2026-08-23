@@ -85,7 +85,7 @@ export class WorkflowsView {
       // Only once there is a table to put it beside. On the empty screen the
       // examples are already the whole page.
       const examples = document.createElement('a');
-      examples.className = 'button';
+      examples.className = 'ghost';
       examples.href = '#templates/tasks';
       examples.textContent = 'View examples';
       buttons.append(examples);

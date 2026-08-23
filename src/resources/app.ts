@@ -238,13 +238,13 @@ function settle(content: HTMLElement, drawn: Promise<void>) {
     h1.textContent = 'This screen could not load';
 
     const detail = document.createElement('p');
-    detail.className = 'empty';
+    detail.className = 'subtitle';
     detail.textContent = error instanceof Error ?
         error.message :
         'Something went wrong reading this screen\u2019s data.';
 
     const retry = document.createElement('button');
-    retry.className = 'button';
+    retry.className = 'ghost';
     retry.textContent = 'Try again';
     retry.addEventListener('click', () => window.location.reload());
 

@@ -134,8 +134,15 @@ export interface LearnedFact {
   learnedAt: Time;
 }
 
+export declare enum ConnectorAuth {
+  kOAuth2,
+  kApiKey,
+  kNone,
+}
+
 export interface ConnectorStatus {
   id: string;
+  auth: ConnectorAuth;
   connectable: boolean;
   hasClient: boolean;
   connected: boolean;

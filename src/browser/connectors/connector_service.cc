@@ -73,6 +73,7 @@ ConnectorStatus ConnectorService::GetStatus(
     return status;
   }
 
+  status.auth = def->auth.type;
   switch (def->auth.type) {
     case AuthType::kOAuth2:
     case AuthType::kApiKey:

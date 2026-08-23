@@ -370,6 +370,19 @@ mojom::ConnectorStatusPtr FluxPageHandler::ToMojom(
     const ConnectorStatus& status) const {
   auto out = mojom::ConnectorStatus::New();
   out->id = status.id;
+  switch (status.auth) {
+    case AuthType::kOAuth2:
+      out->auth = mojom::ConnectorAuth::kOAuth2;
+      break;
+    case AuthType::kApiKey:
+      out->auth = mojom::ConnectorAuth::kApiKey;
+      break;
+    case AuthType::kLocal:
+    case AuthType::kMcp:
+    case AuthType::kUnsupported:
+      out->auth = mojom::ConnectorAuth::kNone;
+      break;
+  }
   out->connectable = status.connectable;
   out->has_client = status.has_client;
   out->connected = status.connected;
@@ -782,6 +795,12 @@ void FluxPageHandler::OnRunAction(const std::string& run_id,
 void FluxPageHandler::OnApprovalRequested(
     const mojom::ApprovalRequest& request) {
   observer_->OnApprovalRequested(request.Clone());
+}
+
+void FluxPageHandler::OnLearnedFact(const std::string& fact,
+                                    const std::string& source_run_id) {
+  if (observer_)
+    observer_->OnLearnedFact(fact, source_run_id);
 }
 
 void FluxPageHandler::OnRunArtifact(const std::string& run_id,

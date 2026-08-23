@@ -35,6 +35,32 @@ ToolResult Err(std::string content) {
   return r;
 }
 
+// A remembered fact lands in prefs as plaintext. The model cannot reliably
+// tell a credential from a note, so this refuses the prefixes that are only
+// ever credentials.
+//
+// Prefixes only, deliberately. The first version also rejected any unbroken
+// 32-character run of key-shaped characters, which reads like a sensible
+// entropy check and rejects "their tracker is at
+// docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+// - a Google Sheet id is 44 characters of exactly that alphabet, and a link to
+// the user's own sheet is the single most useful thing this tool can hold. It
+// also matched "password" and "secret" as substrings, which rejects "they use
+// 1Password". A guard that blocks the feature it is protecting is worse than
+// no guard.
+bool LooksLikeASecret(const std::string& text) {
+  static constexpr const char* kMarkers[] = {
+      "sk-", "xoxb-", "xoxp-", "xapp-", "ghp_",     "gho_",
+      "github_pat_", "AKIA", "ASIA", "Bearer ", "api_key=", "apikey=",
+      "-----BEGIN",
+  };
+  for (const char* marker : kMarkers) {
+    if (text.find(marker) != std::string::npos)
+      return true;
+  }
+  return false;
+}
+
 base::DictValue StringProperty(const std::string& description) {
   base::DictValue property;
   property.Set("type", "string");
@@ -443,6 +469,69 @@ class SpawnSubagentsTool : public PlanToolBase {
   base::WeakPtrFactory<SpawnSubagentsTool> weak_factory_{this};
 };
 
+// The only tool here that writes something the user keeps. It is still
+// kReadOnly: a note in Flux's own prefs is not an effect on the world, and
+// gating it would mean a read-only task could not remember what it found out.
+class RememberTool : public PlanToolBase {
+ public:
+  using PlanToolBase::PlanToolBase;
+
+  std::string name() const override { return "remember"; }
+
+  std::string description() const override {
+    return "Record something durable you learned about how the user works, so "
+           "a later task does not have to work it out again. Good: which CRM "
+           "they use, the sheet a tracker lives in, that their team channel is "
+           "#growth, the name their invoices go out under. Not for anything "
+           "specific to this one task, anything that will be stale next week, "
+           "or anything they told you in the prompt - they already know that. "
+           "The user sees every fact and can delete any of them.";
+  }
+
+  base::DictValue InputSchema() const override {
+    base::DictValue properties;
+    properties.Set(
+        "fact", StringProperty(
+                    "One sentence, in plain language, written so it still "
+                    "makes sense read on its own in three months."));
+
+    base::ListValue required;
+    required.Append("fact");
+
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(properties));
+    schema.Set("required", std::move(required));
+    return schema;
+  }
+
+  std::string DescribeEffect(const base::DictValue& input) const override {
+    const std::string* fact = input.FindString("fact");
+    return base::StrCat({"Remember: ", fact ? *fact : ""});
+  }
+
+  void Run(const ToolContext& context,
+           base::DictValue input,
+           ResultCallback callback) override {
+    const std::string* fact = input.FindString("fact");
+    if (!fact || fact->empty()) {
+      std::move(callback).Run(Err("remember needs a fact."));
+      return;
+    }
+    // Nothing sensitive. A credential in the prefs file is a credential in
+    // plaintext, and the model has no way to know what it is holding.
+    if (LooksLikeASecret(*fact)) {
+      std::move(callback).Run(
+          Err("That looks like a credential. Those belong in Connectors, "
+              "where they are stored encrypted - not in a remembered note."));
+      return;
+    }
+    if (service_)
+      service_->RememberFact(context.run_id, *fact);
+    std::move(callback).Run(Ok("Noted. The user can see and delete this."));
+  }
+};
+
 }  // namespace
 
 void RegisterPlanTools(ToolRegistry* registry, FluxAgentService* service) {
@@ -450,6 +539,7 @@ void RegisterPlanTools(ToolRegistry* registry, FluxAgentService* service) {
   registry->Register(std::make_unique<CompleteStepTool>(service));
   registry->Register(std::make_unique<SaveArtifactTool>(service));
   registry->Register(std::make_unique<SpawnSubagentsTool>(service));
+  registry->Register(std::make_unique<RememberTool>(service));
 }
 
 }  // namespace flux

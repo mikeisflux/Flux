@@ -143,7 +143,7 @@ export class WorkflowDialog {
     const actions = document.createElement('div');
     actions.className = 'dialog-actions';
     const cancel = document.createElement('button');
-    cancel.className = 'button';
+    cancel.className = 'ghost';
     cancel.textContent = 'Cancel';
     cancel.addEventListener('click', () => this.dialog.close());
     const save = document.createElement('button');
