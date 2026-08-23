@@ -17,9 +17,12 @@ related: [social-post-linkedin, social-schedule-week, marketing-brief-feeds]
 
 ## When to use
 
-Publishing a post you have already written to Facebook — either a Page you
-manage or your own profile — without opening the site yourself. Also used as
-the final step of a scheduled workflow that drafts content earlier in the run.
+Publishing a post you have already written to your own Facebook profile,
+without opening the site yourself. Also used as the final step of a scheduled
+workflow that drafts content earlier in the run.
+
+This skill posts to the personal profile. Not a Page - that is settled, and
+there is no Page branch here to fall into by accident.
 
 Not for: bulk posting across many accounts, engagement automation (likes,
 follows, comments at scale), or posting as anyone other than the signed-in
@@ -42,19 +45,18 @@ run.
    credentials.
 
 2. **Confirm the identity.** Read the account name from the page and state it
-   back: *"Posting as Mike Wheeler."* Posting to the wrong profile or Page is
-   the single worst failure mode here and it is silent. If the user asked for a
-   Page, switch to it explicitly and re-confirm.
+   back: *"Posting as Mike Wheeler."* Posting as the wrong identity is the
+   single worst failure mode here and it is silent. If the session is on
+   anything other than the user's own profile, stop and say so.
 
 3. **Open the composer.** Find the element whose accessible name matches
-   `What's on your mind` (profile) or `Create post` (Page) and click it. Use
+   `What's on your mind` and click it. Use
    the node id from the snapshot — never a CSS selector; Facebook's class names
    are obfuscated and rotate.
 
 4. **Enter the text.** Type into the composer's `textbox` role. Facebook's
    composer is a `contenteditable`, not an `<input>`, so a value assignment
-   does nothing — the text must be typed. Pace it like a human; instant fill of
-   a long post is a strong bot signal.
+   does nothing — the text must be typed.
 
 5. **Attach the image.** Click `Photo/video`, then hand the file path to the
    file chooser. **Wait for the thumbnail to finish rendering before doing
@@ -96,11 +98,11 @@ run.
 - **A closed composer is not a published post.** Always read back the feed.
 - **Never retry a submit blindly.** If the outcome is unclear, read the feed
   first — a blind retry is how you get duplicate posts.
-- **Stop on any interstitial.** If a checkpoint, "confirm it's you", or CAPTCHA
-  screen appears, abort the run and tell the user. Do not attempt to work
-  through it.
-- **One post per run.** Batching posts in a single session is the pattern
-  detection is tuned for.
+- **Stop on any interstitial.** If the site puts up a verification screen of
+  any kind, abort the run and hand it back to the user. Working through one on
+  their behalf is not this skill's job.
+- **One post per run**, three a day, 90 minutes apart. Those are the limits in
+  `limits:` above and they are the product's, not a guess.
 
 ## Gotchas
 
@@ -110,8 +112,9 @@ run.
   the user wanted a plain text post, remove it before submitting.
 - **Audience is sticky.** The composer remembers the last audience used, which
   may not be what this post should be. Read it, don't assume it.
-- **Scheduled posts are a different flow** — the Page composer's schedule
-  option, not the normal Post button. Do not conflate them.
+- **Scheduling is a workflow, not a composer setting.** A post that should go
+  out later is a scheduled Flux workflow that runs this skill at the time, not
+  a draft parked in Facebook's own scheduler.
 - **The DOM changes constantly.** This skill is deliberately written against
   accessible names and roles rather than structure, which is why it survives
   redesigns that break selector-based scrapers. When a step fails, re-read the

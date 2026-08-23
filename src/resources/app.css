@@ -1023,6 +1023,10 @@ body.tab {
 .connector-avatar[data-brand],
 .connector-mark[data-brand] {
   border-color: transparent;
+  /* A mark whose source carries no brand colour draws in currentColor - the
+   * console's own ink. Honest: the real silhouette in a neutral, rather than
+   * a colour invented for it. */
+  color: var(--fg);
 }
 
 .connector-avatar svg {

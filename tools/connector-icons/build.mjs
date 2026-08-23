@@ -21,6 +21,8 @@
 //   node tools/build-connector-icons.mjs
 
 import * as si from 'simple-icons';
+import logosSet from '@iconify-json/logos/icons.json' with {type: 'json'};
+import mdiSet from '@iconify-json/mdi/icons.json' with {type: 'json'};
 import {readFileSync, writeFileSync, existsSync, readdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
@@ -59,6 +61,55 @@ const SLUGS = {
   basecamp: 'basecamp',
 };
 
+// Marks Simple Icons does not have, from sets that are also redistributable:
+// Gil Barbara's SVG Logos (CC0-1.0) and Material Design Icons (Apache-2.0).
+//
+// Nothing is mapped on a name match alone. logos:apollostack is Apollo GRAPHQL
+// and this connector is Apollo.io, a sales tool; mdi:grain is a sheaf of
+// wheat, not Grain the meeting recorder. A confidently wrong logo is worse
+// than an honest monogram, so those stay monograms.
+const ICONIFY = {
+  outlook: {set: 'mdi', name: 'microsoft-outlook', license: 'Apache-2.0'},
+  monday: {set: 'logos', name: 'monday-icon', license: 'CC0-1.0'},
+};
+
+const ICONIFY_SETS = {logos: logosSet, mdi: mdiSet};
+
+/**
+ * Iconify stores an icon as a fragment of SVG markup. It is turned into a list
+ * of shapes here rather than shipped as a string, because the console cannot
+ * assign markup - Trusted Types blocks innerHTML - and builds every node with
+ * createElementNS instead.
+ */
+function shapesFromIconifyBody(body) {
+  const shapes = [];
+  // A single wrapping <g> carries a transform that its children need. Lift it
+  // onto each child rather than modelling groups.
+  let inherited = {};
+  const group = body.match(/^\s*<g\s([^>]*)>([\s\S]*)<\/g>\s*$/);
+  let markup = body;
+  if (group) {
+    inherited = attributesOf(group[1]);
+    markup = group[2];
+  }
+  for (const match of markup.matchAll(
+           /<(path|circle|rect|ellipse|polygon|polyline)\s([^>]*?)\/?>/g)) {
+    shapes.push({
+      tag: match[1],
+      attrs: {...inherited, ...attributesOf(match[2])},
+    });
+  }
+  return shapes;
+}
+
+function attributesOf(text) {
+  const attrs = {};
+  for (const m of text.matchAll(/([a-zA-Z-]+)="([^"]*)"/g)) {
+    attrs[m[1]] = m[2];
+  }
+  return attrs;
+}
+
 const bySlug = new Map();
 for (const key of Object.keys(si)) {
   const icon = si[key];
@@ -84,9 +135,8 @@ if (existsSync(OVERRIDE_DIR)) {
     const viewBox = (svg.match(/viewBox="([^"]+)"/) || [, '0 0 24 24'])[1];
     const hex = (svg.match(/fill="#([0-9a-fA-F]{6})"/) || [, '000000'])[1];
     overrides.set(file.replace(/\.svg$/, ''), {
-      path: paths.join(' '),
-      hex: hex.toUpperCase(),
       viewBox,
+      shapes: paths.map(d => ({tag: 'path', attrs: {fill: `#${hex}`, d}})),
     });
   }
 }
@@ -101,23 +151,51 @@ for (const connector of connectors) {
   }
   const slug = SLUGS[connector.id];
   const icon = slug ? bySlug.get(slug) : undefined;
-  if (!icon) {
-    missing.push(connector.id);
+  if (icon) {
+    entries.push([
+      connector.id,
+      {
+        viewBox: '0 0 24 24',
+        shapes: [{tag: 'path', attrs: {fill: `#${icon.hex}`, d: icon.path}}],
+      },
+      `simple-icons:${slug} (CC0-1.0)`,
+    ]);
     continue;
   }
-  entries.push([
-    connector.id,
-    {path: icon.path, hex: icon.hex, viewBox: '0 0 24 24'},
-    `simple-icons:${slug}`,
-  ]);
+
+  const extra = ICONIFY[connector.id];
+  if (extra) {
+    const set = ICONIFY_SETS[extra.set];
+    const found = set.icons[extra.name];
+    if (!found) {
+      throw new Error(`${extra.set}:${extra.name} is not in that set any more`);
+    }
+    const width = found.width ?? set.width ?? 24;
+    const height = found.height ?? set.height ?? 24;
+    entries.push([
+      connector.id,
+      {
+        viewBox: `0 0 ${width} ${height}`,
+        shapes: shapesFromIconifyBody(found.body),
+      },
+      `${extra.set}:${extra.name} (${extra.license})`,
+    ]);
+    continue;
+  }
+
+  missing.push(connector.id);
 }
 
 const body = entries
-    .map(([id, icon, source]) =>
-             `  // ${source}\n  ${JSON.stringify(id)}: {\n` +
-             `    path: ${JSON.stringify(icon.path)},\n` +
-             `    hex: ${JSON.stringify(icon.hex)},\n` +
-             `    viewBox: ${JSON.stringify(icon.viewBox)},\n  },`)
+    .map(([id, icon, source]) => {
+      const shapes = icon.shapes
+          .map(s => `      {tag: ${JSON.stringify(s.tag)}, attrs: ${
+                        JSON.stringify(s.attrs)}},`)
+          .join('\n');
+      return `  // ${source}\n  ${JSON.stringify(id)}: {\n` +
+          `    viewBox: ${JSON.stringify(icon.viewBox)},\n` +
+          `    shapes: [\n${shapes}\n    ],\n  },`;
+    })
     .join('\n');
 
 const out = `// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
@@ -135,10 +213,14 @@ const out = `// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium A
 //
 // Missing: ${missing.length ? missing.join(', ') : 'none'}
 
+export interface BrandShape {
+  tag: string;
+  attrs: Record<string, string>;
+}
+
 export interface BrandMark {
-  path: string;
-  hex: string;
   viewBox: string;
+  shapes: BrandShape[];
 }
 
 export const BRAND_MARKS: Record<string, BrandMark> = {

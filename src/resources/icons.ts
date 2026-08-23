@@ -71,11 +71,17 @@ export function searchIcon(): SVGSVGElement {
  * tasks is asking "what does this touch", and a row of identical grey chips
  * cannot answer it.
  *
- * Thirteen of the forty have no mark, because theirs is not in a source this
- * repo can redistribute - several were pulled from Simple Icons at the
- * trademark holder's request, and tracing a replacement would be doing the
- * thing they asked not to be done. Those get a monogram, which is honest
- * about being a placeholder rather than an approximate logo.
+ * Eleven of the forty have no mark, because theirs is in no source this repo
+ * can redistribute - several were pulled from Simple Icons at the trademark
+ * holder's request, and tracing a replacement would be doing the thing they
+ * asked not to be done. Those get a monogram, which is honest about being a
+ * placeholder rather than an approximate logo. Nothing is matched on name
+ * alone either: Apollo GraphQL's mark is not Apollo.io's, and a confidently
+ * wrong logo is worse than a letter.
+ *
+ * A mark can be one path or several, in one colour or several - monday's is
+ * three - so each is a list of shapes, built as nodes rather than markup
+ * because Trusted Types blocks innerHTML on a WebUI page.
  */
 export function connectorMark(
     id: string, className: string, monogram?: string): HTMLElement {
@@ -90,11 +96,13 @@ export function connectorMark(
 
   mark.dataset['brand'] = '';
   const root = svgRoot(brand.viewBox);
-  // Brand colour on the mark itself rather than the tile: a coloured tile
-  // behind a white glyph is a different logo, and several of these brands
-  // specify the mark on a neutral ground.
-  root.setAttribute('fill', `#${brand.hex}`);
-  shape(root, 'path', {d: brand.path});
+  for (const {tag, attrs} of brand.shapes) {
+    const node = document.createElementNS(SVG_NS, tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      node.setAttribute(key, value);
+    }
+    root.append(node);
+  }
   mark.append(root);
   return mark;
 }
