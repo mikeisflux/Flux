@@ -281,7 +281,7 @@ export class RunView {
     kind.textContent = artifact.kind || 'File';
     const open = document.createElement('a');
     open.className = 'artifact-open';
-    open.href = artifact.url.url;
+    open.href = artifact.url;
     open.target = '_blank';
     open.rel = 'noopener';
     open.textContent = 'Open ↗';
@@ -297,7 +297,7 @@ export class RunView {
       for (const file of artifact.files) {
         const link = document.createElement('a');
         link.className = 'artifact-file';
-        link.href = file.url.url;
+        link.href = file.url;
         link.target = '_blank';
         link.rel = 'noopener';
         link.textContent = file.name;
@@ -527,9 +527,9 @@ function targetOf(action: ActionRecord): string {
     return '';
   }
   try {
-    const url = new URL(action.pageUrl.url);
+    const url = new URL(action.pageUrl);
     return url.pathname === '/' ? url.host : url.host + url.pathname;
   } catch {
-    return action.pageUrl.url;
+    return action.pageUrl;
   }
 }

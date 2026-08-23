@@ -80,6 +80,22 @@ stands in for them; it is transcribed by hand and **must be updated whenever
 rather than wrong: anything the console calls that the stub does not declare
 fails the check, which is the signal to add it.
 
+The stub is the one input `tsc` cannot check, because it compiles the console
+*against* the stub - a wrong stub is a self-consistent world where every line
+that agrees with the fiction passes. `url.mojom.Url` is not `{url: string}`;
+`url/mojom/BUILD.gn` declares `ts_typemaps` mapping it to a plain `string`, so
+`action.pageUrl.url` type-checked here and died at target 114 of 1532 with
+`Property 'url' does not exist on type 'string'`. A mojom struct can be
+typemapped to any TS type and nothing in the `.mojom` says so - the declaration
+lives in the BUILD.gn of whatever module owns it.
+
+`tools/check-ts-typemaps.py` reads those declarations at the pinned tag, for
+every mojom `flux.mojom` imports, and fails if the stub declares or uses a type
+that Chromium maps away. It is the only check here that verifies the stub
+against something outside itself. It exits 0 and says so if the fetch fails,
+which means the stub is **unverified** - say that rather than claiming it
+agrees.
+
 Node and npm are available in this container, so there is no excuse for
 hand-formatting CSS to satisfy a linter, or for shipping TypeScript nobody
 compiled - install them and run the real thing.

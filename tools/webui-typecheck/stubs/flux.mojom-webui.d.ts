@@ -35,9 +35,12 @@ export declare enum WriteScope {
   kPurchase,
 }
 
-export interface Url {
-  url: string;
-}
+// url.mojom.Url does NOT arrive as an object. url/mojom/BUILD.gn declares a
+// ts_typemap for it - `mojom = "url.mojom.Url", ts = "string"` - so every
+// url.mojom.Url field in the generated bindings is a plain string, and a
+// nullable one is `string|null`. This stub previously declared it as
+// `{url: string}`, which type-checks perfectly here and fails the real build
+// with "Property 'url' does not exist on type 'string'".
 
 export interface Time {
   internalValue: bigint;
@@ -46,7 +49,7 @@ export interface Time {
 export interface ActionRecord {
   toolName: string;
   summary: string;
-  pageUrl: Url|null;
+  pageUrl: string|null;
   startedAt: Time;
   finishedAt: Time;
   succeeded: boolean;
@@ -59,7 +62,7 @@ export interface ApprovalRequest {
   toolName: string;
   rationale: string;
   effectSummary: string;
-  pageUrl: Url|null;
+  pageUrl: string|null;
   payloadPreview: string|null;
 }
 
@@ -98,13 +101,13 @@ export interface TaskStep {
 
 export interface ArtifactFile {
   name: string;
-  url: Url;
+  url: string;
 }
 
 export interface RunArtifact {
   title: string;
   kind: string;
-  url: Url;
+  url: string;
   files: ArtifactFile[];
 }
 

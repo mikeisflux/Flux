@@ -22,6 +22,10 @@
           },
           {
             "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/check-ts-typemaps.py"
+          },
+          {
+            "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/tools/check-patches.sh"
           },
           {
