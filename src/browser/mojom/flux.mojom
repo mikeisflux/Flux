@@ -240,6 +240,17 @@ interface FluxPageHandler {
   // layout change the frame has to make; the page cannot resize itself.
   GetSidebarCollapsed() => (bool collapsed);
   SetSidebarCollapsed(bool collapsed);
+
+  // Navigates the window to a console screen: "templates", "connectors" and
+  // so on, matching the fragments app.ts routes on.
+  //
+  // The sidebar is a different document from the tab, so it cannot simply set
+  // location.hash. It used to be a target=_blank link relying on Blink's
+  // new-window path reaching the sidebar view's OpenURLFromTab - which is a
+  // long chain of renderer plumbing to depend on, and it did not arrive: the
+  // nav row highlighted and the tab never moved. This says what it means
+  // instead, over the pipe the shell already holds.
+  ShowScreen(string screen);
 };
 
 // What the console is allowed to know about a stored key. Deliberately never

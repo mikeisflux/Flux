@@ -157,6 +157,7 @@ export declare class FluxPageHandlerRemote {
   disconnect(connectorId: string): void;
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
+  showScreen(screen: string): void;
 }
 
 // Every method the observer must implement, so that a class handed to the

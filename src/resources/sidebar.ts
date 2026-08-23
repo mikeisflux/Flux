@@ -75,13 +75,48 @@ class FluxSidebar {
   }
 
   /**
-   * The active row is set optimistically on click rather than read back from
-   * the tab. The sidebar cannot see what the tab is showing, and a nav row
-   * that lags a click by a round trip reads as a dropped input.
+   * Nav rows navigate the window over the Mojo pipe, and mark themselves
+   * current optimistically.
+   *
+   * They used to be target=_blank links, on the theory that a new-window
+   * request would reach FluxSidebarView::OpenURLFromTab and be redirected into
+   * the active tab. It did not arrive - the row highlighted and the tab never
+   * moved - and the whole mechanism was a lot of Blink plumbing to depend on
+   * for something the shell can just say. showScreen() is the browser process
+   * doing the navigation, which is what OpenCommandPalette already did for
+   * Ctrl+K, and that path has always worked.
+   *
+   * The href stays: it keeps the row a real link for focus and middle-click,
+   * and it is where the screen name comes from if data-view is ever missing.
+   *
+   * Current is set on click rather than read back from the tab. The sidebar
+   * cannot see what the tab is showing, and a nav row that lags a click by a
+   * round trip reads as a dropped input.
    */
   private markCurrentOnClick() {
-    for (const el of document.querySelectorAll<HTMLElement>('.nav-item')) {
-      el.addEventListener('click', () => {
+    // EVERY link in this document, not just the nav rows. The search icon
+    // points at #search and is not a .nav-item; left to itself it would
+    // navigate the sidebar's own frame and replace the shell with the console.
+    // There is no link here that should ever load in this frame.
+    for (const el of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+      el.addEventListener('click', event => {
+        const screen = el.dataset['view'] || el.hash.replace(/^#/, '');
+        if (!screen) {
+          return;
+        }
+        // A modified click still means "open this somewhere else" - let the
+        // browser have it. Those go out through AddNewContents, which the
+        // sidebar does not handle, so they are inert rather than wrong.
+        if (event.ctrlKey || event.metaKey || event.shiftKey ||
+            event.button !== 0) {
+          return;
+        }
+        event.preventDefault();
+        this.handler.showScreen(screen);
+
+        if (!el.classList.contains('nav-item')) {
+          return;
+        }
         for (const other of document.querySelectorAll('.nav-item')) {
           other.removeAttribute('aria-current');
         }

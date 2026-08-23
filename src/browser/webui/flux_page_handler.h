@@ -87,6 +87,7 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void Disconnect(const std::string& connector_id) override;
   void GetSidebarCollapsed(GetSidebarCollapsedCallback callback) override;
   void SetSidebarCollapsed(bool collapsed) override;
+  void ShowScreen(const std::string& screen) override;
 
   // Turns a ConnectorStatus into the mojom struct the console renders.
   mojom::ConnectorStatusPtr ToMojom(const ConnectorStatus& status) const;

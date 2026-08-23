@@ -2,9 +2,13 @@
 
 #include "chrome/browser/flux/webui/flux_page_handler.h"
 
+#include <array>
+#include <string_view>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
@@ -21,8 +25,10 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "url/gurl.h"
 
 namespace flux {
 
@@ -512,6 +518,46 @@ void FluxPageHandler::GetSidebarCollapsed(
     GetSidebarCollapsedCallback callback) {
   std::move(callback).Run(
       profile_->GetPrefs()->GetBoolean(prefs::kSidebarCollapsed));
+}
+
+void FluxPageHandler::ShowScreen(const std::string& screen) {
+  if (!web_contents_) {
+    return;
+  }
+  content::WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  // The screen name is a fragment on the console's own URL, and it is checked
+  // against a fixed set rather than pasted in. It arrives from a renderer, and
+  // a renderer is not trusted to name a URL the browser process will then
+  // navigate to - Resolve() on an unvalidated string is how a "#" turns into
+  // something that is not the console at all.
+  static constexpr auto kScreens = std::to_array<std::string_view>(
+      {"new-task", "templates", "workflows", "connectors", "customize",
+       "approvals", "settings", "agent", "search", "welcome"});
+  if (!base::Contains(kScreens, screen)) {
+    return;
+  }
+
+  const GURL url =
+      GURL(chrome::kChromeUIFluxURL).Resolve(base::StrCat({"#", screen}));
+  if (!url.is_valid()) {
+    return;
+  }
+
+  // CURRENT_TAB: the console's nav is the window's nav. The sidebar is chrome
+  // that stays put and the tab beside it is the content area, so clicking
+  // Templates should show Templates there rather than opening a second console
+  // tab beside the first.
+  delegate->OpenURLFromTab(
+      web_contents_,
+      content::OpenURLParams(url, content::Referrer(),
+                             WindowOpenDisposition::CURRENT_TAB,
+                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                             /*is_renderer_initiated=*/false),
+      /*navigation_handle_callback=*/{});
 }
 
 void FluxPageHandler::SetSidebarCollapsed(bool collapsed) {
