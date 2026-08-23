@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -43,6 +44,30 @@ mojom::WriteScope ParseScope(const std::string* value) {
 std::string StringOr(const base::DictValue& dict, std::string_view key) {
   const std::string* value = dict.FindString(key);
   return value ? *value : std::string();
+}
+
+// Copies an operation's documented parameters out of the definition.
+//
+// The values are prose written for a reader ("plainText (the only value)"),
+// not a schema, so they are carried across as written. A non-string value is
+// rendered rather than dropped: four definitions nest a dict here and one uses
+// a bool, and a parameter that silently vanishes is the failure this whole
+// field exists to prevent.
+void ReadParams(const base::DictValue& op,
+                std::string_view key,
+                std::map<std::string, std::string>* out) {
+  const base::DictValue* params = op.FindDict(key);
+  if (!params)
+    return;
+  for (const auto [name, value] : *params) {
+    if (const std::string* text = value.GetIfString()) {
+      (*out)[name] = *text;
+    } else if (std::optional<bool> flag = value.GetIfBool()) {
+      (*out)[name] = *flag ? "true" : "false";
+    } else if (std::optional<std::string> json = base::WriteJson(value)) {
+      (*out)[name] = *json;
+    }
+  }
 }
 
 // Looks the packed resource up by path rather than by a generated IDR symbol.
@@ -157,6 +182,8 @@ bool ConnectorRegistry::LoadFromJson(const std::string& json) {
         parsed_op.path = StringOr(op, "path");
         parsed_op.write_scope = ParseScope(op.FindString("write_scope"));
         parsed_op.notes = StringOr(op, "notes");
+        ReadParams(op, "params", &parsed_op.params);
+        ReadParams(op, "body", &parsed_op.body);
         def.operations[name] = std::move(parsed_op);
       }
     }

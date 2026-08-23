@@ -30,6 +30,18 @@ struct ConnectorOperation {
   mojom::WriteScope write_scope = mojom::WriteScope::kReadOnly;
   std::string notes;
 
+  // Documented parameters, name -> what the definition says about it
+  // ("1-500, default 50"). Query or path parameters in `params`, request-body
+  // fields in `body`.
+  //
+  // These were authored for 35 operations and parsed by nothing, so the model
+  // was told an operation's name, method and path and left to invent the rest
+  // - while connector_list's own description promised it "operation names and
+  // their required parameters are not guessable". It was right about that and
+  // then did not supply them.
+  std::map<std::string, std::string> params;
+  std::map<std::string, std::string> body;
+
   // True when `path` is a full URL rather than a suffix of the base URL.
   // Basecamp's authorization document is the case that forced this: the call
   // that discovers the base URL cannot itself be relative to it.

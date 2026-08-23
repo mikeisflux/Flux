@@ -65,9 +65,45 @@ for f in defs:
             f'connectable, so the console stops offering a form that leads '
             f'nowhere.')
 
+# An operation field the registry never parses is authored data the agent
+# never sees. `params` and `body` were in exactly that state for 35 operations
+# while connector_list's own description told the model that "operation names
+# and their required parameters are not guessable" - true, and then it did not
+# supply them.
+#
+# Everything else at this level is documentation for whoever maintains the
+# definition, and listing it here is what makes that a decision rather than an
+# accident: a field added later and not parsed is not on this list, so it
+# fires.
+DOCUMENTED_ONLY = {
+    'scope',        # the provider's own OAuth scope string, not our write scope
+    'permissions',  # what the token needs; scopes are requested wholesale
+    'rate_limit',   # per-operation limits, not enforced by the client
+    'response',     # the shape that comes back
+    'mutation',     # GraphQL operation name; no GraphQL transport yet
+    'tool',         # MCP tool name; there is no MCP client in the tree
+}
+
+registry = pathlib.Path(
+    'src/browser/connectors/connector_registry.cc').read_text(encoding='utf-8')
+authored = set()
+for f in defs:
+    d = json.loads(f.read_text(encoding='utf-8'))
+    for op in (d.get('operations') or {}).values():
+        if isinstance(op, dict):
+            authored |= set(op)
+
+for field in sorted(authored - DOCUMENTED_ONLY):
+    if f'"{field}"' not in registry:
+        issues.append(
+            f'operations.{field}: authored in data/connectors and never read '
+            f'by connector_registry.cc. It reaches neither the client nor the '
+            f'model - parse it into ConnectorOperation, or add it to '
+            f'DOCUMENTED_ONLY in this check if it is a note for maintainers.')
+
 for i in issues:
     print(i)
 if issues:
-    print(f'\n{len(issues)} unexecutable definition(s)')
+    print(f'\n{len(issues)} definition problem(s)')
     sys.exit(1)
 print(f'Connector definitions OK ({len(defs)} checked)')

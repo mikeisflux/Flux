@@ -209,6 +209,13 @@ class ListConnectorsTool : public Tool {
                              "  [", ScopeName(op.write_scope), "]\n"});
       if (!op.notes.empty())
         base::StrAppend(&out, {"      ", op.notes, "\n"});
+      // The parameters, with whatever the definition says about each - the
+      // allowed values and the defaults are the half a model cannot infer from
+      // a name, and this tool's description is what promises them.
+      for (const auto& [param, about] : op.params)
+        base::StrAppend(&out, {"      - ", param, ": ", about, "\n"});
+      for (const auto& [field, about] : op.body)
+        base::StrAppend(&out, {"      - body.", field, ": ", about, "\n"});
     }
 
     // The gotchas are the reason this tool exists rather than the model

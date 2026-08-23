@@ -312,6 +312,30 @@ Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
 
+### Authored data is only as real as the parser
+
+`check-connector-defs.py` also fails on an operation field that
+`connector_registry.cc` never reads. `params` and `body` were authored for 35
+operations - names, allowed values and defaults, "1-500, default 50" - and
+parsed by nothing, so `connector_list` handed the model an operation's name,
+method and path and left it to invent the rest. Its own description says
+"operation names and their required parameters are not guessable". It was
+right, and then it did not supply them.
+
+The allowlist is what makes this usable rather than noisy. `scope`,
+`permissions`, `rate_limit`, `response`, `mutation` and `tool` are notes for
+whoever maintains the definition, and naming them in `DOCUMENTED_ONLY` turns
+that into a decision - a field added later and not parsed is not on the list,
+so it fires. Without it the check would have reported six things that were
+fine and one that was not, which is the shape nobody reads.
+
+The same sweep across the other catalogues found nothing, and the reason is
+worth keeping: a template card names its services as labels ("LinkedIn",
+"Docs") while the connector registry uses ids ("google"). Two namespaces that
+look like one, reconciled in `connectorMark` by slugifying both. 367 of 387
+template references resolve to a real mark; the 20 that do not are all on the
+"Missing:" list at the top of `connector_icons.ts`.
+
 ### A feature can be wired to nothing and still look finished
 
 `tools/check-pref-flow.py` catches a pref that nothing outside the console ever

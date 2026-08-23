@@ -190,8 +190,23 @@ struct TaskSpec {
   string? template_id;
   WriteScope write_scope;
   ModelConfig model;
-  // Chromium profile this run acts as. Parallel runs get isolated contexts by
-  // default so they cannot collide over cookies or single-session services.
+  // Vestigial, and deliberately kept rather than quietly dropped: it is
+  // persisted in saved workflows, so the field has to keep parsing.
+  //
+  // It described the original design - a profile per run - which was wrong for
+  // this product and was abandoned. A run shares the user's profile, because
+  // the reason to put an agent in the browser at all is that the user is
+  // already signed in everywhere. Nothing reads this: the console always sends
+  // "", the scheduler round-trips it, and AgentRunner takes the real Profile
+  // from its constructor.
+  //
+  // The comment that used to sit here promised that "parallel runs get
+  // isolated contexts by default so they cannot collide over cookies or
+  // single-session services". That is the opposite of what happens, and
+  // AgentRunner says so in its own class comment - concurrent runs share one
+  // cookie jar and CAN collide, which the concurrency cap and write scopes are
+  // what make survivable. A comment claiming a safety property the code does
+  // not provide is worse than no comment.
   string profile_id;
   // Hard ceiling; the run fails closed rather than billing indefinitely.
   uint64 credit_budget;
