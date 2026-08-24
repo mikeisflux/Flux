@@ -33,26 +33,31 @@
   },
   "operations": {
     "list_customers": {
+      "label": "List customers",
       "method": "GET",
       "path": "/customers",
       "write_scope": "readonly"
     },
     "list_invoices": {
+      "label": "List invoices",
       "method": "GET",
       "path": "/invoices",
       "write_scope": "readonly"
     },
     "list_payment_intents": {
+      "label": "List payments",
       "method": "GET",
       "path": "/payment_intents",
       "write_scope": "readonly"
     },
     "list_subscriptions": {
+      "label": "List subscriptions",
       "method": "GET",
       "path": "/subscriptions",
       "write_scope": "readonly"
     },
     "search_customers": {
+      "label": "Search customers",
       "method": "GET",
       "path": "/customers/search",
       "write_scope": "readonly"

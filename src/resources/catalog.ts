@@ -148,3 +148,43 @@ export function transportLabel(id: string, transport: Transport): string {
       return `${id} - driven in the browser`;
   }
 }
+
+/** One action the agent can take through a connector, as the console shows it. */
+export interface ConnectorAction {
+  name: string;
+  label: string;
+  writeScope: string;
+}
+
+/**
+ * The actions each connector offers, keyed by connector id.
+ *
+ * Read out of connector_defs.json - the same packed file the browser process
+ * parses - rather than sent over mojo. The list does not change while the
+ * browser is running and the console wants all of it, which is the same reason
+ * the other three catalogues are static resources.
+ */
+export const loadConnectorActions = once(async () => {
+  const packed = await loadPackedJson<{
+    connectors: Array<{
+      id: string,
+      operations?: Record<string, {label?: string, write_scope?: string}>,
+    }>,
+  }>('connector_defs.json');
+  const byId = new Map<string, ConnectorAction[]>();
+  for (const def of packed.connectors) {
+    const actions: ConnectorAction[] = [];
+    for (const [name, op] of Object.entries(def.operations ?? {})) {
+      actions.push({
+        name,
+        // The label is required by check-connector-defs.py, so a missing one
+        // is a build-time failure rather than something to paper over - but
+        // falling back to the id beats rendering "undefined" if one slips.
+        label: op.label || name,
+        writeScope: op.write_scope || 'readonly',
+      });
+    }
+    byId.set(def.id, actions);
+  }
+  return byId;
+});

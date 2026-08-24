@@ -32,21 +32,25 @@
   },
   "operations": {
     "list_bookings": {
+      "label": "List bookings",
       "method": "GET",
       "path": "/bookings",
       "write_scope": "readonly"
     },
     "get_booking": {
+      "label": "Get a booking",
       "method": "GET",
       "path": "/bookings/{uid}",
       "write_scope": "readonly"
     },
     "list_event_types": {
+      "label": "List event types",
       "method": "GET",
       "path": "/event-types",
       "write_scope": "readonly"
     },
     "list_schedules": {
+      "label": "List schedules",
       "method": "GET",
       "path": "/schedules",
       "write_scope": "readonly"

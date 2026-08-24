@@ -25,20 +25,87 @@
     "note": "Deliberately null. There is no HTTP base URL to record - see `shape`."
   },
   "operations": {
-    "query_email_and_calendar": {"tool": "query_email_and_calendar", "write_scope": "readonly", "notes": "Semantic search in natural language across mail and calendar. The right first call for an open-ended question."},
-    "list_threads": {"tool": "list_threads", "write_scope": "readonly", "notes": "Structured filters - From, To, Subject, Labels, Split, date. Prefer this over the semantic search when the filter is known, since it is deterministic."},
-    "get_thread": {"tool": "get_thread", "write_scope": "readonly", "notes": "Full thread including messages, drafts and comments."},
-    "get_message": {"tool": "get_message", "write_scope": "readonly"},
-    "get_attachment": {"tool": "get_attachment", "write_scope": "readonly"},
-    "list_labels": {"tool": "list_labels", "write_scope": "readonly"},
-    "list_splits": {"tool": "list_splits", "write_scope": "readonly", "notes": "Split Inboxes, e.g. Important and Other."},
-    "get_availability": {"tool": "get_availability", "write_scope": "readonly", "notes": "Free time across a set of participants."},
-    "get_read_statuses": {"tool": "get_read_statuses", "write_scope": "readonly", "notes": "Who opened a sent email, when, and on what device. It is the user's own read-tracking data, but it is data about other people - worth surfacing in a summary only when the task actually asked for it."},
-    "list_accounts": {"tool": "list_accounts", "write_scope": "readonly", "notes": "Which mailboxes are linked and which is default. Worth calling first on any multi-account request: tools act on the default account unless told otherwise, so a search that looks empty is often a search of the wrong inbox."},
-    "create_or_update_draft": {"tool": "create_or_update_draft", "write_scope": "draft", "notes": "Writes in the user's voice using their Personalization settings. Drafts created here appear in Superhuman Mail; drafts made in Gmail or Outlook do not, and vice versa."},
-    "create_or_update_event": {"tool": "create_or_update_event", "write_scope": "send", "notes": "Scoped as `send`, not `draft`, on purpose: creating or moving a meeting mails invitations to the other attendees. It is outbound whatever it is called."},
-    "send_draft": {"tool": "send_draft", "write_scope": "send", "notes": "Sends immediately with no built-in delay. Superhuman's own guidance is to require confirmation on every call, and Flux must do that rather than relying on the client's tool-approval settings. Supports Smart Send (deliver when the recipient is most likely to open it), Scheduled Send, and Undo Send."},
-    "undo_send": {"tool": "undo_send", "write_scope": "draft", "notes": "Cancels a send inside the undo window. Recorded as a write rather than readonly because it changes state, but it only ever retracts - it is the safe half of send_draft and should stay available wherever send_draft is."}
+    "query_email_and_calendar": {
+      "label": "Search email and calendar",
+      "tool": "query_email_and_calendar",
+      "write_scope": "readonly",
+      "notes": "Semantic search in natural language across mail and calendar. The right first call for an open-ended question."
+    },
+    "list_threads": {
+      "label": "List threads",
+      "tool": "list_threads",
+      "write_scope": "readonly",
+      "notes": "Structured filters - From, To, Subject, Labels, Split, date. Prefer this over the semantic search when the filter is known, since it is deterministic."
+    },
+    "get_thread": {
+      "label": "Get a thread",
+      "tool": "get_thread",
+      "write_scope": "readonly",
+      "notes": "Full thread including messages, drafts and comments."
+    },
+    "get_message": {
+      "label": "Read a message",
+      "tool": "get_message",
+      "write_scope": "readonly"
+    },
+    "get_attachment": {
+      "label": "Download an attachment",
+      "tool": "get_attachment",
+      "write_scope": "readonly"
+    },
+    "list_labels": {
+      "label": "List labels",
+      "tool": "list_labels",
+      "write_scope": "readonly"
+    },
+    "list_splits": {
+      "label": "List splits",
+      "tool": "list_splits",
+      "write_scope": "readonly",
+      "notes": "Split Inboxes, e.g. Important and Other."
+    },
+    "get_availability": {
+      "label": "Get availability",
+      "tool": "get_availability",
+      "write_scope": "readonly",
+      "notes": "Free time across a set of participants."
+    },
+    "get_read_statuses": {
+      "label": "Get read statuses",
+      "tool": "get_read_statuses",
+      "write_scope": "readonly",
+      "notes": "Who opened a sent email, when, and on what device. It is the user's own read-tracking data, but it is data about other people - worth surfacing in a summary only when the task actually asked for it."
+    },
+    "list_accounts": {
+      "label": "List accounts",
+      "tool": "list_accounts",
+      "write_scope": "readonly",
+      "notes": "Which mailboxes are linked and which is default. Worth calling first on any multi-account request: tools act on the default account unless told otherwise, so a search that looks empty is often a search of the wrong inbox."
+    },
+    "create_or_update_draft": {
+      "label": "Create or update a draft",
+      "tool": "create_or_update_draft",
+      "write_scope": "draft",
+      "notes": "Writes in the user's voice using their Personalization settings. Drafts created here appear in Superhuman Mail; drafts made in Gmail or Outlook do not, and vice versa."
+    },
+    "create_or_update_event": {
+      "label": "Create or update an event",
+      "tool": "create_or_update_event",
+      "write_scope": "send",
+      "notes": "Scoped as `send`, not `draft`, on purpose: creating or moving a meeting mails invitations to the other attendees. It is outbound whatever it is called."
+    },
+    "send_draft": {
+      "label": "Send a draft",
+      "tool": "send_draft",
+      "write_scope": "send",
+      "notes": "Sends immediately with no built-in delay. Superhuman's own guidance is to require confirmation on every call, and Flux must do that rather than relying on the client's tool-approval settings. Supports Smart Send (deliver when the recipient is most likely to open it), Scheduled Send, and Undo Send."
+    },
+    "undo_send": {
+      "label": "Undo send",
+      "tool": "undo_send",
+      "write_scope": "draft",
+      "notes": "Cancels a send inside the undo window. Recorded as a write rather than readonly because it changes state, but it only ever retracts - it is the safe half of send_draft and should stay available wherever send_draft is."
+    }
   },
   "never_expose": [
     "trash_thread and update_thread - update_thread looks like harmless labelling but its documented actions include moving a thread to Trash, so the two carry the same risk.",

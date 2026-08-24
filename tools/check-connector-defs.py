@@ -101,6 +101,20 @@ for field in sorted(authored - DOCUMENTED_ONLY):
             f'model - parse it into ConnectorOperation, or add it to '
             f'DOCUMENTED_ONLY in this check if it is a note for maintainers.')
 
+# Every operation needs a human label. The Connectors screen lists them as the
+# actions the agent will be able to take once the account is connected, and a
+# raw id like "gmail_modify_labels" in that list is the difference between a
+# screen someone reads and one they skim past.
+for f in defs:
+    d = json.loads(f.read_text(encoding='utf-8'))
+    cid = d.get('id', f.stem)
+    for name, op in (d.get('operations') or {}).items():
+        if isinstance(op, dict) and not (op.get('label') or '').strip():
+            issues.append(
+                f'{cid}.{name}: no "label". The connector dialog lists the '
+                f'actions by label, and an operation without one shows up as '
+                f'its raw id.')
+
 for i in issues:
     print(i)
 if issues:

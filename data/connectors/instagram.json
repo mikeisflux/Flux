@@ -41,6 +41,7 @@
   },
   "operations": {
     "get_profile": {
+      "label": "Get profile",
       "method": "GET",
       "path": "/me",
       "params": {
@@ -51,12 +52,14 @@
       "notes": "The connect-time check."
     },
     "list_media": {
+      "label": "List media",
       "method": "GET",
       "path": "/me/media",
       "scope": "instagram_business_basic",
       "write_scope": "readonly"
     },
     "create_media_container": {
+      "label": "Stage a post",
       "method": "POST",
       "path": "/me/media",
       "params": {
@@ -69,6 +72,7 @@
       "notes": "Two-step publish: this returns a container id, which is then passed to media_publish. The media has to be reachable at a public URL - Instagram fetches it, Flux does not upload bytes."
     },
     "publish_media": {
+      "label": "Publish a post",
       "method": "POST",
       "path": "/me/media_publish",
       "params": {
@@ -79,12 +83,14 @@
       "notes": "Stories are Business-only; every other media type works for Creator accounts too."
     },
     "list_comments": {
+      "label": "List comments",
       "method": "GET",
       "path": "/{ig_media_id}/comments",
       "scope": "instagram_business_manage_comments",
       "write_scope": "readonly"
     },
     "reply_to_comment": {
+      "label": "Reply to a comment",
       "method": "POST",
       "path": "/{ig_comment_id}/replies",
       "params": {
@@ -94,6 +100,7 @@
       "write_scope": "send"
     },
     "media_insights": {
+      "label": "Get media insights",
       "method": "GET",
       "path": "/{ig_media_id}/insights",
       "scope": "instagram_business_basic",

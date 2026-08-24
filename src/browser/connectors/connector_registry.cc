@@ -154,6 +154,10 @@ bool ConnectorRegistry::LoadFromJson(const std::string& json) {
           }
         }
       }
+      if (const base::DictValue* client = auth->FindDict("client")) {
+        def.auth.builtin_client_id = StringOr(*client, "id");
+        def.auth.builtin_client_secret = StringOr(*client, "secret");
+      }
       if (const base::DictValue* pt = auth->FindDict("personal_token")) {
         def.auth.personal_token_label = StringOr(*pt, "label");
         def.auth.personal_token_where = StringOr(*pt, "where");
@@ -178,6 +182,7 @@ bool ConnectorRegistry::LoadFromJson(const std::string& json) {
         const base::DictValue& op = value.GetDict();
         ConnectorOperation parsed_op;
         parsed_op.name = name;
+        parsed_op.label = StringOr(op, "label");
         parsed_op.method = StringOr(op, "method");
         parsed_op.path = StringOr(op, "path");
         parsed_op.write_scope = ParseScope(op.FindString("write_scope"));

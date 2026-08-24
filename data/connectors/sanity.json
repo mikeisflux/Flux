@@ -25,17 +25,20 @@
   },
   "operations": {
     "query": {
+      "label": "Run a GROQ query",
       "method": "GET",
       "path": "/data/query/{dataset}",
       "write_scope": "readonly",
       "notes": "GROQ via the query parameter. Long queries must be POSTed instead - URLs have a length limit and GROQ gets long."
     },
     "get_document": {
+      "label": "Get a document",
       "method": "GET",
       "path": "/data/doc/{dataset}/{documentId}",
       "write_scope": "readonly"
     },
     "list_datasets": {
+      "label": "List datasets",
       "method": "GET",
       "path": "https://api.sanity.io/v2021-06-07/projects/{projectId}/datasets",
       "write_scope": "readonly"

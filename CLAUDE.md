@@ -578,6 +578,15 @@ first run a matter of deleting the folder.
   A mark you hold the rights to goes in `branding/connectors/<id>.svg` and
   wins over all of it. Output is committed, so a build machine needs no npm.
 - `data/connectors/*.json` - per-connector auth endpoints and operation maps.
+  Every operation carries a `label` ("Create a to-do"), because the Connectors
+  dialog lists them as the actions the agent will be able to take and a raw id
+  in that list is a screen nobody reads. `auth.client` is an OAuth app Flux
+  itself registered with the provider: for a desktop application the secret is
+  not confidential - the binary is downloadable and Google's installed-app flow
+  says so, which is why PKCE is mandatory there - and shipping one turns
+  "register an app, enable six APIs, configure a consent screen" into a single
+  Connect button. A user-registered app always wins over it, and a connector
+  with neither still gets the registration form.
   Names, descriptions and badges live in `src/resources/connectors.json` so
   the console and the browser process cannot disagree about them.
 - `src/resources/templates.json` - the 250-template catalog. It lives with the

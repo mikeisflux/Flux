@@ -27,12 +27,14 @@
   },
   "operations": {
     "query_boards": {
+      "label": "Query boards",
       "method": "POST",
       "path": "/",
       "write_scope": "readonly",
       "notes": "GraphQL query."
     },
     "query_items": {
+      "label": "Query items",
       "method": "POST",
       "path": "/",
       "write_scope": "readonly",

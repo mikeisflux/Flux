@@ -49,6 +49,7 @@
   },
   "operations": {
     "list_accounts": {
+      "label": "List accounts",
       "method": "GET",
       "path": "/accounts",
       "write_scope": "readonly",

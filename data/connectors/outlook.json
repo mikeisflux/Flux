@@ -29,37 +29,44 @@
   },
   "operations": {
     "list_messages": {
+      "label": "List messages",
       "method": "GET",
       "path": "/me/messages",
       "write_scope": "readonly"
     },
     "get_message": {
+      "label": "Read a message",
       "method": "GET",
       "path": "/me/messages/{id}",
       "write_scope": "readonly"
     },
     "create_draft": {
+      "label": "Create a draft",
       "method": "POST",
       "path": "/me/messages",
       "write_scope": "draft"
     },
     "list_events": {
+      "label": "List calendar events",
       "method": "GET",
       "path": "/me/calendar/events",
       "write_scope": "readonly"
     },
     "create_event": {
+      "label": "Create a calendar event",
       "method": "POST",
       "path": "/me/calendar/events",
       "write_scope": "send",
       "notes": "Creating an event with attendees sends invitations."
     },
     "list_tasks": {
+      "label": "List tasks",
       "method": "GET",
       "path": "/me/todo/lists",
       "write_scope": "readonly"
     },
     "create_task": {
+      "label": "Create a task",
       "method": "POST",
       "path": "/me/todo/lists/{listId}/tasks",
       "write_scope": "draft"

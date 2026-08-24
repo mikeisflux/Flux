@@ -47,6 +47,7 @@
   },
   "operations": {
     "list_notes": {
+      "label": "List notes",
       "method": "GET",
       "path": "/notes",
       "params": {
@@ -57,6 +58,7 @@
       "notes": "Returns { notes, hasMore, cursor }. The natural shape for an incremental sync: keep the last created_after and page until hasMore is false."
     },
     "get_note": {
+      "label": "Get a note",
       "method": "GET",
       "path": "/notes/{note_id}",
       "params": {
@@ -66,6 +68,7 @@
       "notes": "Carries title, owner, summary and, with include=transcript, the transcript inline. Returns 413 with error code TRANSCRIPT_TOO_LARGE when the transcript will not fit - fall back to the transcript endpoint rather than retrying."
     },
     "get_transcript": {
+      "label": "Get a transcript",
       "method": "GET",
       "path": "/notes/{note_id}/transcript",
       "write_scope": "readonly",

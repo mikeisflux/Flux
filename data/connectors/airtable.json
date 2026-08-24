@@ -27,16 +27,19 @@
   },
   "operations": {
     "list_bases": {
+      "label": "List bases",
       "method": "GET",
       "path": "/meta/bases",
       "write_scope": "readonly"
     },
     "get_base_schema": {
+      "label": "Get base schema",
       "method": "GET",
       "path": "/meta/bases/{baseId}/tables",
       "write_scope": "readonly"
     },
     "list_records": {
+      "label": "List records",
       "method": "GET",
       "path": "/{baseId}/{tableIdOrName}",
       "write_scope": "readonly"

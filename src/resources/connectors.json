@@ -5,7 +5,7 @@
     {
       "id": "google",
       "name": "Google",
-      "description": "Read and write Gmail, Drive, Docs, Sheets, and Calendar (powered by Composio)",
+      "description": "Read and write Gmail, Drive, Docs, Sheets, and Calendar",
       "transport": "api",
       "badge": null,
       "definition": "authored"

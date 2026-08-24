@@ -34,21 +34,25 @@
   },
   "operations": {
     "list_workspaces": {
+      "label": "List workspaces",
       "method": "GET",
       "path": "/workspaces",
       "write_scope": "readonly"
     },
     "search_tasks": {
+      "label": "Search tasks",
       "method": "GET",
       "path": "/workspaces/{workspace_gid}/tasks/search",
       "write_scope": "readonly"
     },
     "get_task": {
+      "label": "Get a task",
       "method": "GET",
       "path": "/tasks/{task_gid}",
       "write_scope": "readonly"
     },
     "list_projects": {
+      "label": "List projects",
       "method": "GET",
       "path": "/projects",
       "write_scope": "readonly"

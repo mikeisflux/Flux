@@ -24,16 +24,19 @@
       },
       "operations": {
         "list_bases": {
+          "label": "List bases",
           "method": "GET",
           "path": "/meta/bases",
           "write_scope": "readonly"
         },
         "get_base_schema": {
+          "label": "Get base schema",
           "method": "GET",
           "path": "/meta/bases/{baseId}/tables",
           "write_scope": "readonly"
         },
         "list_records": {
+          "label": "List records",
           "method": "GET",
           "path": "/{baseId}/{tableIdOrName}",
           "write_scope": "readonly"
@@ -66,21 +69,25 @@
       },
       "operations": {
         "people_search": {
+          "label": "Search people",
           "method": "POST",
           "path": "/mixed_people/search",
           "write_scope": "readonly"
         },
         "organization_search": {
+          "label": "Search organizations",
           "method": "POST",
           "path": "/mixed_companies/search",
           "write_scope": "readonly"
         },
         "people_enrich": {
+          "label": "Enrich a person",
           "method": "POST",
           "path": "/people/match",
           "write_scope": "readonly"
         },
         "organization_enrich": {
+          "label": "Enrich an organization",
           "method": "GET",
           "path": "/organizations/enrich",
           "write_scope": "readonly"
@@ -121,21 +128,25 @@
       },
       "operations": {
         "list_workspaces": {
+          "label": "List workspaces",
           "method": "GET",
           "path": "/workspaces",
           "write_scope": "readonly"
         },
         "search_tasks": {
+          "label": "Search tasks",
           "method": "GET",
           "path": "/workspaces/{workspace_gid}/tasks/search",
           "write_scope": "readonly"
         },
         "get_task": {
+          "label": "Get a task",
           "method": "GET",
           "path": "/tasks/{task_gid}",
           "write_scope": "readonly"
         },
         "list_projects": {
+          "label": "List projects",
           "method": "GET",
           "path": "/projects",
           "write_scope": "readonly"
@@ -173,22 +184,26 @@
       },
       "operations": {
         "accessible_resources": {
+          "label": "List accessible sites",
           "method": "GET",
           "path": "https://api.atlassian.com/oauth/token/accessible-resources",
           "write_scope": "readonly",
           "notes": "Call this first; it returns the cloudid every other call needs."
         },
         "search_issues": {
+          "label": "Search Jira issues",
           "method": "GET",
           "path": "/rest/api/3/search",
           "write_scope": "readonly"
         },
         "get_issue": {
+          "label": "Get a Jira issue",
           "method": "GET",
           "path": "/rest/api/3/issue/{issueIdOrKey}",
           "write_scope": "readonly"
         },
         "search_confluence": {
+          "label": "Search Confluence",
           "method": "GET",
           "path": "https://api.atlassian.com/ex/confluence/{cloudid}/wiki/rest/api/search",
           "write_scope": "readonly"
@@ -227,21 +242,25 @@
       },
       "operations": {
         "list_objects": {
+          "label": "List objects",
           "method": "GET",
           "path": "/objects",
           "write_scope": "readonly"
         },
         "query_records": {
+          "label": "Query records",
           "method": "POST",
           "path": "/objects/{object}/records/query",
           "write_scope": "readonly"
         },
         "get_record": {
+          "label": "Get a record",
           "method": "GET",
           "path": "/objects/{object}/records/{record_id}",
           "write_scope": "readonly"
         },
         "list_lists": {
+          "label": "List lists",
           "method": "GET",
           "path": "/lists",
           "write_scope": "readonly"
@@ -304,216 +323,255 @@
       },
       "operations": {
         "get_authorization": {
+          "label": "Get authorization",
           "method": "GET",
           "path": "https://launchpad.37signals.com/authorization.json",
           "write_scope": "readonly",
           "notes": "Absolute, not relative to base_url - this is the call that produces the base URL. Also returns expires_at, which is the cheapest way to know a token is about to lapse."
         },
         "list_projects": {
+          "label": "List projects",
           "method": "GET",
           "path": "/projects.json",
           "write_scope": "readonly",
           "notes": "Active projects visible to the user, newest first. Each carries its dock, which is where the message_board, todoset, schedule and chat IDs come from."
         },
         "get_project": {
+          "label": "Get a project",
           "method": "GET",
           "path": "/projects/{project_id}.json",
           "write_scope": "readonly"
         },
         "get_todoset": {
+          "label": "Get the to-do set",
           "method": "GET",
           "path": "/todosets/{todoset_id}.json",
           "write_scope": "readonly",
           "notes": "The todoset ID comes from the project's dock, not from a list endpoint."
         },
         "list_todolists": {
+          "label": "List to-do lists",
           "method": "GET",
           "path": "/todosets/{todoset_id}/todolists.json",
           "write_scope": "readonly"
         },
         "list_todos": {
+          "label": "List to-dos",
           "method": "GET",
           "path": "/todolists/{todolist_id}/todos.json",
           "write_scope": "readonly",
           "notes": "Returns only active, pending to-dos by default. completed=true returns only completed ones; status=archived or status=trashed returns archived or trashed to-dos including both pending and completed. The two combine."
         },
         "get_todo": {
+          "label": "Get a to-do",
           "method": "GET",
           "path": "/todos/{todo_id}.json",
           "write_scope": "readonly"
         },
         "create_todo": {
+          "label": "Create a to-do",
           "method": "POST",
           "path": "/todolists/{todolist_id}/todos.json",
           "write_scope": "draft",
           "notes": "Requires content. Optional description (HTML), assignee_ids, completion_subscriber_ids, due_on, starts_on, and notify. Draft rather than send while notify is false: the to-do is visible in the project but nobody is messaged. Set notify true only under a send-scoped task."
         },
         "update_todo": {
+          "label": "Update a to-do",
           "method": "PUT",
           "path": "/todos/{todo_id}.json",
           "write_scope": "draft"
         },
         "complete_todo": {
+          "label": "Complete a to-do",
           "method": "POST",
           "path": "/todos/{todo_id}/completion.json",
           "write_scope": "draft"
         },
         "uncomplete_todo": {
+          "label": "Reopen a to-do",
           "method": "DELETE",
           "path": "/todos/{todo_id}/completion.json",
           "write_scope": "draft"
         },
         "list_messages": {
+          "label": "List messages",
           "method": "GET",
           "path": "/message_boards/{message_board_id}/messages.json",
           "write_scope": "readonly"
         },
         "get_message": {
+          "label": "Get a message",
           "method": "GET",
           "path": "/messages/{message_id}.json",
           "write_scope": "readonly"
         },
         "draft_message": {
+          "label": "Draft a message",
           "method": "POST",
           "path": "/message_boards/{message_board_id}/messages.json",
           "write_scope": "draft",
           "notes": "Omit status. Requires subject; content is optional HTML. The message is created as a draft and notifies nobody, which is what makes this the draft-scoped form of the same endpoint as post_message."
         },
         "post_message": {
+          "label": "Post a message",
           "method": "POST",
           "path": "/message_boards/{message_board_id}/messages.json",
           "write_scope": "send",
           "notes": "Same endpoint with status: \"active\". Publishes and notifies. Everyone on the project is notified and subscribed unless subscriptions is given as an array of person IDs."
         },
         "publish_message": {
+          "label": "Publish a draft message",
           "method": "PUT",
           "path": "/messages/{message_id}.json",
           "write_scope": "send",
           "notes": "Publishes an existing draft with a body of {\"status\": \"active\"} and nothing else. The update merges, so subject, content and subscribers are preserved - resending them is how you change who gets notified by accident. Documents publish the same way via PUT /documents/{id}.json."
         },
         "list_comments": {
+          "label": "List comments",
           "method": "GET",
           "path": "/recordings/{recording_id}/comments.json",
           "write_scope": "readonly"
         },
         "create_comment": {
+          "label": "Add a comment",
           "method": "POST",
           "path": "/recordings/{recording_id}/comments.json",
           "write_scope": "send",
           "notes": "Send, not draft: every subscriber to the recording is notified the moment it posts, and there is no draft state for a comment. Requires content as HTML."
         },
         "list_campfires": {
+          "label": "List Campfires",
           "method": "GET",
           "path": "/chats.json",
           "write_scope": "readonly"
         },
         "list_campfire_lines": {
+          "label": "Read Campfire chat",
           "method": "GET",
           "path": "/chats/{chat_id}/lines.json",
           "write_scope": "readonly"
         },
         "create_campfire_line": {
+          "label": "Post to Campfire",
           "method": "POST",
           "path": "/chats/{chat_id}/lines.json",
           "write_scope": "send",
           "notes": "Requires content. Pass content_type: \"text/html\" for rich text; plain text is the default. A campfire line cannot be drafted, so this is always send."
         },
         "get_my_assignments": {
+          "label": "Get my assignments",
           "method": "GET",
           "path": "/my/assignments.json",
           "write_scope": "readonly",
           "notes": "Grouped into priorities (\"Up Next\") and non_priorities. Card table steps are folded into their parent card as children."
         },
         "get_assignments_due": {
+          "label": "Get assignments due",
           "method": "GET",
           "path": "/my/assignments/due.json",
           "write_scope": "readonly",
           "notes": "scope is one of overdue, due_today, due_tomorrow, due_later_this_week, due_next_week, due_later; defaults to overdue. An unrecognised scope is a 400 that lists the valid ones."
         },
         "get_completed_assignments": {
+          "label": "Get completed assignments",
           "method": "GET",
           "path": "/my/assignments/completed.json",
           "write_scope": "readonly"
         },
         "prioritize_assignment": {
+          "label": "Prioritize an assignment",
           "method": "POST",
           "path": "/my/priorities.json",
           "write_scope": "draft",
           "notes": "Adds a recording to Up Next. Returns 204 No Content - no body to parse."
         },
         "deprioritize_assignment": {
+          "label": "Deprioritize an assignment",
           "method": "DELETE",
           "path": "/my/priorities/{recording_id}.json",
           "write_scope": "draft",
           "notes": "Returns 204 No Content."
         },
         "list_schedule_entries": {
+          "label": "List schedule entries",
           "method": "GET",
           "path": "/schedules/{schedule_id}/entries.json",
           "write_scope": "readonly"
         },
         "get_schedule_entry": {
+          "label": "Get a schedule entry",
           "method": "GET",
           "path": "/schedule_entries/{entry_id}.json",
           "write_scope": "readonly"
         },
         "create_schedule_entry": {
+          "label": "Create a schedule entry",
           "method": "POST",
           "path": "/schedules/{schedule_id}/entries.json",
           "write_scope": "send",
           "notes": "Requires summary, starts_at and ends_at (ISO 8601). Send, not draft, because a schedule entry over the API publishes immediately unless status: \"drafted\" is passed - the opposite default to messages and documents. participant_ids, all_day, url (returned as join_url), highlighted, notify and recurrence_schedule are optional."
         },
         "list_people": {
+          "label": "List people",
           "method": "GET",
           "path": "/people.json",
           "write_scope": "readonly"
         },
         "list_project_people": {
+          "label": "List people on a project",
           "method": "GET",
           "path": "/projects/{project_id}/people.json",
           "write_scope": "readonly",
           "notes": "The source of the person IDs that assignee_ids, subscriptions and participant_ids take."
         },
         "get_person": {
+          "label": "Get a person",
           "method": "GET",
           "path": "/people/{person_id}.json",
           "write_scope": "readonly"
         },
         "get_my_profile": {
+          "label": "Get my profile",
           "method": "GET",
           "path": "/my/profile.json",
           "write_scope": "readonly",
           "notes": "The correct way to learn who the token belongs to inside Basecamp. The identity on the authorization document is a Basecamp ID, not a person, and the docs say plainly not to use it for this."
         },
         "get_search_metadata": {
+          "label": "Get search metadata",
           "method": "GET",
           "path": "/searches/metadata.json",
           "write_scope": "readonly",
           "notes": "Fetch this before searching rather than hardcoding type names - the docs say the available types vary. Keys look like Kanban::Card and Schedule::Entry, not \"card\" and \"event\"."
         },
         "search": {
+          "label": "Search Basecamp",
           "method": "GET",
           "path": "/search.json",
           "write_scope": "readonly",
           "notes": "Requires q. Optional type_names[], bucket_ids[], creator_ids[], file_type, exclude_chat, since (last_7_days | last_30_days | last_90_days | last_12_months | forever), sort (best_match | recency), page, per_page. The singular type, bucket_id and creator_id are deprecated."
         },
         "list_documents": {
+          "label": "List documents",
           "method": "GET",
           "path": "/vaults/{vault_id}/documents.json",
           "write_scope": "readonly"
         },
         "get_document": {
+          "label": "Get a document",
           "method": "GET",
           "path": "/documents/{document_id}.json",
           "write_scope": "readonly"
         },
         "create_document": {
+          "label": "Create a document",
           "method": "POST",
           "path": "/vaults/{vault_id}/documents.json",
           "write_scope": "draft",
           "notes": "Requires title and content (HTML). Draft-scoped because status is omitted; passing status: \"active\" publishes and notifies, which is a send-scoped act."
         },
         "get_notifications": {
+          "label": "Get notifications",
           "method": "GET",
           "path": "/my/readings.json",
           "write_scope": "readonly",
@@ -585,6 +643,7 @@
       },
       "operations": {
         "get_current_user": {
+          "label": "Get current user",
           "method": "GET",
           "path": "/v2/users/me",
           "scope": "users.readonly",
@@ -592,24 +651,28 @@
           "notes": "The cheapest confirmation that a token works and has not expired. Worth calling on connect."
         },
         "list_transactions": {
+          "label": "List transactions",
           "method": "GET",
           "path": "/v2/transactions/card/primary",
           "scope": "transactions.card.readonly",
           "write_scope": "readonly"
         },
         "list_expenses": {
+          "label": "List expenses",
           "method": "GET",
           "path": "/v1/expenses",
           "scope": "expenses.card.readonly",
           "write_scope": "readonly"
         },
         "list_cards": {
+          "label": "List cards",
           "method": "GET",
           "path": "/v2/cards",
           "scope": "cards.readonly",
           "write_scope": "readonly"
         },
         "list_budgets": {
+          "label": "List budgets",
           "method": "GET",
           "path": "/v2/budgets",
           "scope": "budgets.readonly",
@@ -659,21 +722,25 @@
       },
       "operations": {
         "list_bookings": {
+          "label": "List bookings",
           "method": "GET",
           "path": "/bookings",
           "write_scope": "readonly"
         },
         "get_booking": {
+          "label": "Get a booking",
           "method": "GET",
           "path": "/bookings/{uid}",
           "write_scope": "readonly"
         },
         "list_event_types": {
+          "label": "List event types",
           "method": "GET",
           "path": "/event-types",
           "write_scope": "readonly"
         },
         "list_schedules": {
+          "label": "List schedules",
           "method": "GET",
           "path": "/schedules",
           "write_scope": "readonly"
@@ -711,22 +778,26 @@
       },
       "operations": {
         "get_current_user": {
+          "label": "Get current user",
           "method": "GET",
           "path": "/users/me",
           "write_scope": "readonly",
           "notes": "Returns the URI every other call needs."
         },
         "list_event_types": {
+          "label": "List event types",
           "method": "GET",
           "path": "/event_types",
           "write_scope": "readonly"
         },
         "list_scheduled_events": {
+          "label": "List scheduled events",
           "method": "GET",
           "path": "/scheduled_events",
           "write_scope": "readonly"
         },
         "list_availability": {
+          "label": "List availability",
           "method": "GET",
           "path": "/user_availability_schedules",
           "write_scope": "readonly"
@@ -758,27 +829,32 @@
       },
       "operations": {
         "verify_token": {
+          "label": "Verify the API token",
           "method": "GET",
           "path": "/user/tokens/verify",
           "write_scope": "readonly",
           "notes": "Call this on connect; it is the cheapest way to confirm a token works and has not been revoked."
         },
         "list_zones": {
+          "label": "List zones",
           "method": "GET",
           "path": "/zones",
           "write_scope": "readonly"
         },
         "radar_traffic": {
+          "label": "Get Radar traffic",
           "method": "GET",
           "path": "/radar/http/timeseries",
           "write_scope": "readonly"
         },
         "list_workers": {
+          "label": "List Workers",
           "method": "GET",
           "path": "/accounts/{account_id}/workers/scripts",
           "write_scope": "readonly"
         },
         "worker_logs": {
+          "label": "Get Worker logs",
           "method": "GET",
           "path": "/accounts/{account_id}/workers/scripts/{script}/tails",
           "write_scope": "readonly"
@@ -822,12 +898,14 @@
       },
       "operations": {
         "whoami": {
+          "label": "Get current user",
           "method": "GET",
           "path": "/whoami",
           "write_scope": "readonly",
           "notes": "The connect-time check. Returns name, loginId, workspace, and crucially `scoped` and `tokenName`."
         },
         "list_docs": {
+          "label": "List docs",
           "method": "GET",
           "path": "/docs",
           "params": {
@@ -842,23 +920,27 @@
           "notes": "Only docs the user has opened at least once, ordered by the latest event relevant to them. A doc shared but never opened does not appear. Rate limited far harder than other reads - 4 requests per 6 seconds."
         },
         "get_doc": {
+          "label": "Get a doc",
           "method": "GET",
           "path": "/docs/{docId}",
           "write_scope": "readonly",
           "notes": "docSize.overApiSizeLimit is worth checking before a big read."
         },
         "list_pages": {
+          "label": "List pages",
           "method": "GET",
           "path": "/docs/{docId}/pages",
           "write_scope": "readonly"
         },
         "get_page": {
+          "label": "Get a page",
           "method": "GET",
           "path": "/docs/{docId}/pages/{pageIdOrName}",
           "write_scope": "readonly",
           "notes": "contentType is canvas, embed or syncPage. isEffectivelyHidden accounts for a hidden parent, isHidden does not."
         },
         "list_page_content": {
+          "label": "Read page content",
           "method": "GET",
           "path": "/docs/{docId}/pages/{pageIdOrName}/content",
           "params": {
@@ -869,6 +951,7 @@
           "notes": "Plain text only. For html or markdown use the export flow below."
         },
         "export_page": {
+          "label": "Export a page",
           "method": "POST",
           "path": "/docs/{docId}/pages/{pageIdOrName}/export",
           "params": {
@@ -878,6 +961,7 @@
           "notes": "Asynchronous: returns an export id, then poll GET .../export/{requestId} until status completes and read downloadLink. The link expires quickly and a fresh one is issued on each status call, so fetch immediately or re-poll. This is a read despite being a POST."
         },
         "list_tables": {
+          "label": "List tables",
           "method": "GET",
           "path": "/docs/{docId}/tables",
           "params": {
@@ -886,11 +970,13 @@
           "write_scope": "readonly"
         },
         "get_table": {
+          "label": "Get a table",
           "method": "GET",
           "path": "/docs/{docId}/tables/{tableIdOrName}",
           "write_scope": "readonly"
         },
         "list_columns": {
+          "label": "List columns",
           "method": "GET",
           "path": "/docs/{docId}/tables/{tableIdOrName}/columns",
           "params": {
@@ -901,6 +987,7 @@
           "notes": "Call this before reading rows. Column IDs are immutable; names are not, and row values are keyed by column ID unless useColumnNames is set."
         },
         "list_rows": {
+          "label": "List rows",
           "method": "GET",
           "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
           "params": {
@@ -916,11 +1003,13 @@
           "notes": "syncToken is the incremental-sync mechanism: the response carries nextSyncToken, and passing it back later returns only what has since changed. Use it instead of re-reading a whole table on a schedule."
         },
         "get_row": {
+          "label": "Get a row",
           "method": "GET",
           "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
           "write_scope": "readonly"
         },
         "upsert_rows": {
+          "label": "Upsert rows",
           "method": "POST",
           "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
           "params": {
@@ -932,28 +1021,33 @@
           "notes": "Base tables only - not views. Without keyColumns it inserts and returns addedRowIds; with them it upserts and addedRowIds is absent. If several rows match the key, ALL of them are updated. Always 202."
         },
         "update_row": {
+          "label": "Update a row",
           "method": "PUT",
           "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
           "write_scope": "send",
           "notes": "Addressing by name updates an arbitrary matching row. Use the row ID."
         },
         "list_formulas": {
+          "label": "List formulas",
           "method": "GET",
           "path": "/docs/{docId}/formulas",
           "write_scope": "readonly"
         },
         "get_formula": {
+          "label": "Get a formula",
           "method": "GET",
           "path": "/docs/{docId}/formulas/{formulaIdOrName}",
           "write_scope": "readonly",
           "notes": "Returns the computed value. A cheap way to read a rollup without pulling the table it summarises."
         },
         "list_controls": {
+          "label": "List controls",
           "method": "GET",
           "path": "/docs/{docId}/controls",
           "write_scope": "readonly"
         },
         "resolve_browser_link": {
+          "label": "Resolve a browser link",
           "method": "GET",
           "path": "/resolveBrowserLink",
           "params": {
@@ -964,6 +1058,7 @@
           "notes": "Turns a coda.io URL the user pasted into an API href. The natural first call when a task starts from a link rather than an ID."
         },
         "mutation_status": {
+          "label": "Check mutation status",
           "method": "GET",
           "path": "/mutationStatus/{requestId}",
           "write_scope": "readonly",
@@ -1036,6 +1131,7 @@
       },
       "operations": {
         "list_invoices": {
+          "label": "List invoices",
           "method": "GET",
           "path": "/invoices/",
           "params": {
@@ -1067,6 +1163,7 @@
           "notes": "amount_due_updated_at is the field to sync on for anything about who owes what: DualEntry moves it whenever the invoice is edited OR whenever a posted customer payment or prepayment application referencing it is written. updated_after alone will miss a payment that changed the balance without touching the invoice record."
         },
         "list_webhooks": {
+          "label": "List webhooks",
           "method": "GET",
           "path": "/webhooks/",
           "params": {
@@ -1123,6 +1220,7 @@
       },
       "operations": {
         "publish": {
+          "label": "Publish a post",
           "method": "POST",
           "path": "/{page_id}/feed",
           "params": {
@@ -1132,6 +1230,7 @@
           "write_scope": "send"
         },
         "schedule": {
+          "label": "Schedule a post",
           "method": "POST",
           "path": "/{page_id}/feed",
           "params": {
@@ -1143,16 +1242,19 @@
           "notes": "Native scheduling - between 10 minutes and 6 months out. A recurring workflow can queue posts here and skip the browser entirely."
         },
         "list_posts": {
+          "label": "List posts",
           "method": "GET",
           "path": "/{page_id}/posts",
           "write_scope": "readonly"
         },
         "read_comments": {
+          "label": "Read comments",
           "method": "GET",
           "path": "/{post_id}/comments",
           "write_scope": "readonly"
         },
         "insights": {
+          "label": "Get post insights",
           "method": "GET",
           "path": "/{page_id}/insights",
           "write_scope": "readonly"
@@ -1195,36 +1297,43 @@
       },
       "operations": {
         "search_code": {
+          "label": "Search code",
           "method": "GET",
           "path": "/search/code",
           "write_scope": "readonly"
         },
         "search_issues": {
+          "label": "Search issues",
           "method": "GET",
           "path": "/search/issues",
           "write_scope": "readonly"
         },
         "list_pull_requests": {
+          "label": "List pull requests",
           "method": "GET",
           "path": "/repos/{owner}/{repo}/pulls",
           "write_scope": "readonly"
         },
         "get_pull_request": {
+          "label": "Get a pull request",
           "method": "GET",
           "path": "/repos/{owner}/{repo}/pulls/{number}",
           "write_scope": "readonly"
         },
         "list_issues": {
+          "label": "List issues",
           "method": "GET",
           "path": "/repos/{owner}/{repo}/issues",
           "write_scope": "readonly"
         },
         "create_issue": {
+          "label": "Create an issue",
           "method": "POST",
           "path": "/repos/{owner}/{repo}/issues",
           "write_scope": "draft"
         },
         "create_issue_comment": {
+          "label": "Comment on an issue",
           "method": "POST",
           "path": "/repos/{owner}/{repo}/issues/{number}/comments",
           "write_scope": "send",
@@ -1267,62 +1376,74 @@
       },
       "operations": {
         "gmail_list": {
+          "label": "List Gmail messages",
           "method": "GET",
           "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
           "write_scope": "readonly"
         },
         "gmail_get": {
+          "label": "Read a Gmail message",
           "method": "GET",
           "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}",
           "write_scope": "readonly"
         },
         "gmail_create_draft": {
+          "label": "Create a Gmail draft",
           "method": "POST",
           "path": "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
           "write_scope": "draft",
           "notes": "Saves a draft. Sending a draft is a separate endpoint and a separate scope Flux does not hold."
         },
         "gmail_modify_labels": {
+          "label": "Modify Gmail labels",
           "method": "POST",
           "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}/modify",
           "write_scope": "draft"
         },
         "drive_list": {
+          "label": "List Drive files",
           "method": "GET",
           "path": "https://www.googleapis.com/drive/v3/files",
           "write_scope": "readonly"
         },
         "drive_upload": {
+          "label": "Upload a file to Drive",
           "method": "POST",
           "path": "https://www.googleapis.com/upload/drive/v3/files",
           "write_scope": "draft"
         },
         "docs_get": {
+          "label": "Read a Google Doc",
           "method": "GET",
           "path": "https://docs.googleapis.com/v1/documents/{documentId}",
           "write_scope": "readonly"
         },
         "docs_update": {
+          "label": "Update a Google Doc",
           "method": "POST",
           "path": "https://docs.googleapis.com/v1/documents/{documentId}:batchUpdate",
           "write_scope": "draft"
         },
         "sheets_read": {
+          "label": "Read a Sheets range",
           "method": "GET",
           "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
           "write_scope": "readonly"
         },
         "sheets_write": {
+          "label": "Write a Sheets range",
           "method": "PUT",
           "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
           "write_scope": "draft"
         },
         "calendar_list_events": {
+          "label": "List calendar events",
           "method": "GET",
           "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
           "write_scope": "readonly"
         },
         "calendar_create_event": {
+          "label": "Create a calendar event",
           "method": "POST",
           "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
           "write_scope": "send",
@@ -1359,21 +1480,25 @@
       },
       "operations": {
         "run_report": {
+          "label": "Run a report",
           "method": "POST",
           "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runReport",
           "write_scope": "readonly"
         },
         "run_realtime_report": {
+          "label": "Run a realtime report",
           "method": "POST",
           "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runRealtimeReport",
           "write_scope": "readonly"
         },
         "list_accounts": {
+          "label": "List accounts",
           "method": "GET",
           "path": "https://analyticsadmin.googleapis.com/v1beta/accounts",
           "write_scope": "readonly"
         },
         "list_properties": {
+          "label": "List properties",
           "method": "GET",
           "path": "https://analyticsadmin.googleapis.com/v1beta/properties",
           "write_scope": "readonly"
@@ -1426,6 +1551,7 @@
       },
       "operations": {
         "list_recordings": {
+          "label": "List recordings",
           "method": "POST",
           "path": "/v2/recordings",
           "params": {
@@ -1436,6 +1562,7 @@
           "write_scope": "readonly"
         },
         "get_recording": {
+          "label": "Get a recording",
           "method": "POST",
           "path": "/v2/recordings/{recording_id}",
           "params": {
@@ -1444,23 +1571,27 @@
           "write_scope": "readonly"
         },
         "get_transcript": {
+          "label": "Get a transcript",
           "method": "GET",
           "path": "/v2/recordings/{recording_id}/transcript",
           "write_scope": "readonly",
           "notes": "JSON array of { start, end, speaker, participant_id, text }, timestamps in ms from the start of the recording. Add .txt, .vtt or .srt to the path for the text forms; .txt is 'Speaker: line' and is the cheapest thing to hand a model."
         },
         "list_users": {
+          "label": "List users",
           "method": "POST",
           "path": "/v2/users",
           "write_scope": "readonly"
         },
         "list_teams": {
+          "label": "List teams",
           "method": "POST",
           "path": "/v2/teams",
           "write_scope": "readonly",
           "notes": "Needed to resolve the team id for the recording filter."
         },
         "list_meeting_types": {
+          "label": "List meeting types",
           "method": "POST",
           "path": "/v2/meeting_types",
           "write_scope": "readonly",
@@ -1526,6 +1657,7 @@
       },
       "operations": {
         "list_notes": {
+          "label": "List notes",
           "method": "GET",
           "path": "/notes",
           "params": {
@@ -1536,6 +1668,7 @@
           "notes": "Returns { notes, hasMore, cursor }. The natural shape for an incremental sync: keep the last created_after and page until hasMore is false."
         },
         "get_note": {
+          "label": "Get a note",
           "method": "GET",
           "path": "/notes/{note_id}",
           "params": {
@@ -1545,6 +1678,7 @@
           "notes": "Carries title, owner, summary and, with include=transcript, the transcript inline. Returns 413 with error code TRANSCRIPT_TOO_LARGE when the transcript will not fit - fall back to the transcript endpoint rather than retrying."
         },
         "get_transcript": {
+          "label": "Get a transcript",
           "method": "GET",
           "path": "/notes/{note_id}/transcript",
           "write_scope": "readonly",
@@ -1582,21 +1716,25 @@
       },
       "operations": {
         "search_contacts": {
+          "label": "Search contacts",
           "method": "POST",
           "path": "/crm/v3/objects/contacts/search",
           "write_scope": "readonly"
         },
         "search_companies": {
+          "label": "Search companies",
           "method": "POST",
           "path": "/crm/v3/objects/companies/search",
           "write_scope": "readonly"
         },
         "search_deals": {
+          "label": "Search deals",
           "method": "POST",
           "path": "/crm/v3/objects/deals/search",
           "write_scope": "readonly"
         },
         "get_deal": {
+          "label": "Get a deal",
           "method": "GET",
           "path": "/crm/v3/objects/deals/{dealId}",
           "write_scope": "readonly"
@@ -1647,6 +1785,7 @@
       },
       "operations": {
         "get_profile": {
+          "label": "Get profile",
           "method": "GET",
           "path": "/me",
           "params": {
@@ -1657,12 +1796,14 @@
           "notes": "The connect-time check."
         },
         "list_media": {
+          "label": "List media",
           "method": "GET",
           "path": "/me/media",
           "scope": "instagram_business_basic",
           "write_scope": "readonly"
         },
         "create_media_container": {
+          "label": "Stage a post",
           "method": "POST",
           "path": "/me/media",
           "params": {
@@ -1675,6 +1816,7 @@
           "notes": "Two-step publish: this returns a container id, which is then passed to media_publish. The media has to be reachable at a public URL - Instagram fetches it, Flux does not upload bytes."
         },
         "publish_media": {
+          "label": "Publish a post",
           "method": "POST",
           "path": "/me/media_publish",
           "params": {
@@ -1685,12 +1827,14 @@
           "notes": "Stories are Business-only; every other media type works for Creator accounts too."
         },
         "list_comments": {
+          "label": "List comments",
           "method": "GET",
           "path": "/{ig_media_id}/comments",
           "scope": "instagram_business_manage_comments",
           "write_scope": "readonly"
         },
         "reply_to_comment": {
+          "label": "Reply to a comment",
           "method": "POST",
           "path": "/{ig_comment_id}/replies",
           "params": {
@@ -1700,6 +1844,7 @@
           "write_scope": "send"
         },
         "media_insights": {
+          "label": "Get media insights",
           "method": "GET",
           "path": "/{ig_media_id}/insights",
           "scope": "instagram_business_basic",
@@ -1744,21 +1889,25 @@
       },
       "operations": {
         "list_segments": {
+          "label": "List segments",
           "method": "GET",
           "path": "/segments",
           "write_scope": "readonly"
         },
         "list_lists": {
+          "label": "List lists",
           "method": "GET",
           "path": "/lists",
           "write_scope": "readonly"
         },
         "list_campaigns": {
+          "label": "List campaigns",
           "method": "GET",
           "path": "/campaigns",
           "write_scope": "readonly"
         },
         "query_metric_aggregates": {
+          "label": "Query metric aggregates",
           "method": "POST",
           "path": "/metric-aggregates",
           "write_scope": "readonly"
@@ -1799,24 +1948,28 @@
       },
       "operations": {
         "query_issues": {
+          "label": "Query issues",
           "method": "POST",
           "path": "/",
           "write_scope": "readonly",
           "notes": "GraphQL query. Everything read goes through this one endpoint."
         },
         "create_issue": {
+          "label": "Create an issue",
           "method": "POST",
           "path": "/",
           "write_scope": "draft",
           "notes": "issueCreate mutation. Draft rather than send: an issue is visible internally but is not an outbound message."
         },
         "create_comment": {
+          "label": "Add a comment",
           "method": "POST",
           "path": "/",
           "write_scope": "draft",
           "notes": "commentCreate mutation."
         },
         "update_issue": {
+          "label": "Update an issue",
           "method": "POST",
           "path": "/",
           "write_scope": "draft",
@@ -1877,6 +2030,7 @@
       },
       "operations": {
         "list_accounts": {
+          "label": "List accounts",
           "method": "GET",
           "path": "/accounts",
           "write_scope": "readonly",
@@ -1910,12 +2064,14 @@
       },
       "operations": {
         "query_boards": {
+          "label": "Query boards",
           "method": "POST",
           "path": "/",
           "write_scope": "readonly",
           "notes": "GraphQL query."
         },
         "query_items": {
+          "label": "Query items",
           "method": "POST",
           "path": "/",
           "write_scope": "readonly",
@@ -1956,36 +2112,43 @@
       },
       "operations": {
         "search": {
+          "label": "Search Notion",
           "method": "POST",
           "path": "/search",
           "write_scope": "readonly"
         },
         "get_page": {
+          "label": "Get a page",
           "method": "GET",
           "path": "/pages/{page_id}",
           "write_scope": "readonly"
         },
         "get_block_children": {
+          "label": "Read page blocks",
           "method": "GET",
           "path": "/blocks/{block_id}/children",
           "write_scope": "readonly"
         },
         "query_database": {
+          "label": "Query a database",
           "method": "POST",
           "path": "/databases/{database_id}/query",
           "write_scope": "readonly"
         },
         "create_page": {
+          "label": "Create a page",
           "method": "POST",
           "path": "/pages",
           "write_scope": "draft"
         },
         "update_page": {
+          "label": "Update a page",
           "method": "PATCH",
           "path": "/pages/{page_id}",
           "write_scope": "draft"
         },
         "append_blocks": {
+          "label": "Append blocks to a page",
           "method": "PATCH",
           "path": "/blocks/{block_id}/children",
           "write_scope": "draft"
@@ -2021,37 +2184,44 @@
       },
       "operations": {
         "list_messages": {
+          "label": "List messages",
           "method": "GET",
           "path": "/me/messages",
           "write_scope": "readonly"
         },
         "get_message": {
+          "label": "Read a message",
           "method": "GET",
           "path": "/me/messages/{id}",
           "write_scope": "readonly"
         },
         "create_draft": {
+          "label": "Create a draft",
           "method": "POST",
           "path": "/me/messages",
           "write_scope": "draft"
         },
         "list_events": {
+          "label": "List calendar events",
           "method": "GET",
           "path": "/me/calendar/events",
           "write_scope": "readonly"
         },
         "create_event": {
+          "label": "Create a calendar event",
           "method": "POST",
           "path": "/me/calendar/events",
           "write_scope": "send",
           "notes": "Creating an event with attendees sends invitations."
         },
         "list_tasks": {
+          "label": "List tasks",
           "method": "GET",
           "path": "/me/todo/lists",
           "write_scope": "readonly"
         },
         "create_task": {
+          "label": "Create a task",
           "method": "POST",
           "path": "/me/todo/lists/{listId}/tasks",
           "write_scope": "draft"
@@ -2093,6 +2263,7 @@
       },
       "operations": {
         "reply_to_thread": {
+          "label": "Reply to a thread",
           "mutation": "replyToThread",
           "permissions": [
             "thread:reply"
@@ -2101,6 +2272,7 @@
           "notes": "Only works when the thread's `channel` is API, CHAT, EMAIL, SLACK or MS_TEAMS. Read `channel` off the thread first; otherwise the mutation fails with cannot_reply_to_thread and a message saying why."
         },
         "reply_to_email": {
+          "label": "Reply to an email",
           "mutation": "replyToEmail",
           "permissions": [
             "email:create",
@@ -2110,6 +2282,7 @@
           "notes": "Replies to one inbound email by inReplyToEmailId, rather than to the thread. Takes customerId plus both textContent and markdownContent - send both, they are the two renderings of the same message, not alternatives."
         },
         "send_new_email": {
+          "label": "Send a new email",
           "mutation": "sendNewEmail",
           "permissions": [
             "email:create"
@@ -2141,22 +2314,26 @@
       },
       "operations": {
         "query": {
+          "label": "Run a HogQL query",
           "method": "POST",
           "path": "/projects/{project_id}/query/",
           "write_scope": "readonly",
           "notes": "HogQL. The general read path for anything analytical."
         },
         "list_insights": {
+          "label": "List insights",
           "method": "GET",
           "path": "/projects/{project_id}/insights/",
           "write_scope": "readonly"
         },
         "list_feature_flags": {
+          "label": "List feature flags",
           "method": "GET",
           "path": "/projects/{project_id}/feature_flags/",
           "write_scope": "readonly"
         },
         "list_experiments": {
+          "label": "List experiments",
           "method": "GET",
           "path": "/projects/{project_id}/experiments/",
           "write_scope": "readonly"
@@ -2201,18 +2378,21 @@
       },
       "operations": {
         "get_me": {
+          "label": "Get current user",
           "method": "GET",
           "path": "/me",
           "write_scope": "readonly",
           "notes": "Returns details about the organisation the token belongs to. The connect-time check."
         },
         "list_accounts": {
+          "label": "List accounts",
           "method": "GET",
           "path": "/accounts",
           "write_scope": "readonly",
           "rate_limit": "60/min"
         },
         "get_account": {
+          "label": "Get an account",
           "method": "GET",
           "path": "/accounts/{id}",
           "write_scope": "readonly",
@@ -2220,6 +2400,7 @@
           "notes": "id may be the Pylon ID or an external ID."
         },
         "search_accounts": {
+          "label": "Search accounts",
           "method": "POST",
           "path": "/accounts/search",
           "write_scope": "readonly",
@@ -2227,12 +2408,14 @@
           "notes": "A POST that reads. search_text is fuzzy and is intersected with the filter. Filterable: id (equals/in/not_in), domains and tags (contains/does_not_contain/in/not_in), name (equals/in/not_in/string_contains), external_ids and owner_id (equals/in/not_in/is_set/is_unset). Custom fields are addressed by slug in field."
         },
         "get_account_relationships": {
+          "label": "Get account relationships",
           "method": "GET",
           "path": "/accounts/{account_id}/relationships",
           "write_scope": "readonly",
           "rate_limit": "60/min"
         },
         "list_audit_logs": {
+          "label": "List audit logs",
           "method": "GET",
           "path": "/audit-logs",
           "write_scope": "readonly",
@@ -2240,6 +2423,7 @@
           "notes": "Returns 403 unless the organisation is entitled to it."
         },
         "search_audit_logs": {
+          "label": "Search audit logs",
           "method": "POST",
           "path": "/audit-logs/search",
           "write_scope": "readonly",
@@ -2247,12 +2431,14 @@
           "notes": "Filterable: action (equals/in/not_in/string_contains/string_does_not_contain), action_happened_at (time_is_after/time_is_before/time_range). Timestamps are RFC 3339."
         },
         "list_contacts": {
+          "label": "List contacts",
           "method": "GET",
           "path": "/contacts",
           "write_scope": "readonly",
           "rate_limit": "60/min"
         },
         "get_contact": {
+          "label": "Get a contact",
           "method": "GET",
           "path": "/contacts/{id}",
           "write_scope": "readonly",
@@ -2260,6 +2446,7 @@
           "notes": "id may be the Pylon ID or an external ID."
         },
         "search_contacts": {
+          "label": "Search contacts",
           "method": "POST",
           "path": "/contacts/search",
           "write_scope": "readonly",
@@ -2267,6 +2454,7 @@
           "notes": "Filterable: id and account_id (equals/in/not_in), email and name (equals/in/not_in/string_contains). Custom fields by slug in field. search_text is fuzzy and intersects the filter."
         },
         "list_users": {
+          "label": "List users",
           "method": "GET",
           "path": "/users",
           "write_scope": "readonly",
@@ -2274,12 +2462,14 @@
           "notes": "Organisation members, not contacts. include_deactivated defaults to false."
         },
         "get_user": {
+          "label": "Get a user",
           "method": "GET",
           "path": "/users/{id}",
           "write_scope": "readonly",
           "rate_limit": "60/min"
         },
         "search_users": {
+          "label": "Search users",
           "method": "POST",
           "path": "/users/search",
           "write_scope": "readonly",
@@ -2287,6 +2477,7 @@
           "notes": "Only email is filterable, and only with equals/in/not_in."
         },
         "get_call_recording": {
+          "label": "Get a call recording",
           "method": "GET",
           "path": "/call-recordings/{id}",
           "write_scope": "readonly",
@@ -2294,6 +2485,7 @@
           "notes": "Carries title, summary, participant_emails, duration_ms and a url. source names the recorder - fathom, gong, grain, granola or custom_call_recorder."
         },
         "search_call_recordings": {
+          "label": "Search call recordings",
           "method": "POST",
           "path": "/call-recordings/search",
           "write_scope": "readonly",
@@ -2301,6 +2493,7 @@
           "notes": "Filterable: account_id (equals/in/not_in/is_set/is_unset), source (equals/in/not_in), title (equals/string_contains), start_time (time_is_after/time_is_before/time_range). Timestamps are RFC 3339. This one's limit is <= 1000, not < 1000 - the only endpoint read so far that differs."
         },
         "list_issues": {
+          "label": "List issues",
           "method": "GET",
           "path": "/issues",
           "params": {
@@ -2314,6 +2507,7 @@
           "notes": "start_time and end_time are REQUIRED and the span must be <= 30 days. There is no 'list everything' - a wider search has to be windowed, or use search_issues."
         },
         "search_issues": {
+          "label": "Search issues",
           "method": "POST",
           "path": "/issues/search",
           "params": {
@@ -2327,6 +2521,7 @@
           "notes": "The practical way in, since it has no 30-day window. Filterable: created_at / resolved_at / updated_at / latest_message_activity_at (time ops), account_id / requester_id / assignee_id / ticket_form_id / issue_type (equals,in,not_in,is_set,is_unset), state / team_id / follower_user_id / follower_contact_id / slack_channel_id (equals,in,not_in), tags (contains,does_not_contain,in,not_in), title / body_html (string_contains,string_does_not_contain). Custom fields by slug in field; tags by name."
         },
         "get_issue": {
+          "label": "Get an issue",
           "method": "GET",
           "path": "/issues/{id}",
           "write_scope": "readonly",
@@ -2334,6 +2529,7 @@
           "notes": "Accepts the ID or the issue number. The most generous limit on the API."
         },
         "list_issue_statuses": {
+          "label": "List issue statuses",
           "method": "GET",
           "path": "/issue-statuses",
           "write_scope": "readonly",
@@ -2341,12 +2537,14 @@
           "notes": "Resolve before filtering on state - the standard values are new, waiting_on_you, waiting_on_customer, on_hold and closed, but organisations define custom status slugs too."
         },
         "get_issue_followers": {
+          "label": "Get issue followers",
           "method": "GET",
           "path": "/issues/{id}/followers",
           "write_scope": "readonly",
           "rate_limit": "60/min"
         },
         "get_issue_voice_calls": {
+          "label": "Get issue voice calls",
           "method": "GET",
           "path": "/issues/{id}/voice-calls",
           "write_scope": "readonly",
@@ -2354,6 +2552,7 @@
           "notes": "Phone issues only. Returns recordings with parsed transcript segments and a PRESIGNED download URL for the audio. Recordings whose transcript has not finished are silently omitted - an empty result may mean 'not yet', not 'none', so refetch before concluding."
         },
         "list_messages": {
+          "label": "List messages",
           "method": "GET",
           "path": "/issues/{id}/messages",
           "params": {
@@ -2365,12 +2564,14 @@
           "notes": "Oldest first, and includes both customer-visible replies and internal notes - is_private separates them. Omitting BOTH limit and cursor returns every message for backwards compatibility; passing a cursor without a limit gives pages of 100. On a long issue the default is therefore unbounded - pass a limit."
         },
         "list_issue_threads": {
+          "label": "List issue threads",
           "method": "GET",
           "path": "/issues/{id}/threads",
           "write_scope": "readonly",
           "rate_limit": "20/min"
         },
         "reply_to_issue": {
+          "label": "Reply to an issue",
           "method": "POST",
           "path": "/issues/{id}/reply",
           "params": {
@@ -2386,6 +2587,7 @@
           "notes": "Customer-facing - the requester sees this. message_id must be the TOP-LEVEL id from list_messages, not thread_id and not email_info.message_id, and it must point at a customer-visible message rather than an internal note. On an email conversation email_info must carry at least one recipient: the referenced message sets the threading headers but its recipients are NOT copied, so a reply with no recipients goes nowhere."
         },
         "create_internal_note": {
+          "label": "Add an internal note",
           "method": "POST",
           "path": "/issues/{id}/note",
           "params": {
@@ -2465,27 +2667,32 @@
       },
       "operations": {
         "query": {
+          "label": "Run a query",
           "method": "GET",
           "path": "/query",
           "write_scope": "readonly",
           "notes": "The general read path, taking a SQL-like query string."
         },
         "get_invoice": {
+          "label": "Get an invoice",
           "method": "GET",
           "path": "/invoice/{invoiceId}",
           "write_scope": "readonly"
         },
         "get_bill": {
+          "label": "Get a bill",
           "method": "GET",
           "path": "/bill/{billId}",
           "write_scope": "readonly"
         },
         "reports_profit_and_loss": {
+          "label": "Profit and loss report",
           "method": "GET",
           "path": "/reports/ProfitAndLoss",
           "write_scope": "readonly"
         },
         "reports_aged_receivables": {
+          "label": "Aged receivables report",
           "method": "GET",
           "path": "/reports/AgedReceivables",
           "write_scope": "readonly"
@@ -2543,6 +2750,7 @@
       },
       "operations": {
         "list_transactions": {
+          "label": "List transactions",
           "method": "GET",
           "path": "/transactions",
           "scope": "transactions:read",
@@ -2550,6 +2758,7 @@
           "notes": "The endpoint Ramp's quickstart uses to prove a token works."
         },
         "get_current_user": {
+          "label": "Get current user",
           "method": "GET",
           "path": "/users",
           "scope": "users:read",
@@ -2557,18 +2766,21 @@
           "notes": "Client-credentials tokens have no user context, so this lists the business's users rather than identifying a caller."
         },
         "list_cards": {
+          "label": "List cards",
           "method": "GET",
           "path": "/cards",
           "scope": "cards:read",
           "write_scope": "readonly"
         },
         "list_reimbursements": {
+          "label": "List reimbursements",
           "method": "GET",
           "path": "/reimbursements",
           "scope": "reimbursements:read",
           "write_scope": "readonly"
         },
         "list_bills": {
+          "label": "List bills",
           "method": "GET",
           "path": "/bills",
           "scope": "bills:read",
@@ -2602,23 +2814,27 @@
       },
       "operations": {
         "query": {
+          "label": "Run a SOQL query",
           "method": "GET",
           "path": "/query",
           "write_scope": "readonly",
           "notes": "SOQL via the q parameter."
         },
         "search": {
+          "label": "Search records",
           "method": "GET",
           "path": "/search",
           "write_scope": "readonly",
           "notes": "SOSL via the q parameter."
         },
         "get_record": {
+          "label": "Get a record",
           "method": "GET",
           "path": "/sobjects/{sobject}/{id}",
           "write_scope": "readonly"
         },
         "describe": {
+          "label": "Describe an object",
           "method": "GET",
           "path": "/sobjects/{sobject}/describe",
           "write_scope": "readonly"
@@ -2649,17 +2865,20 @@
       },
       "operations": {
         "query": {
+          "label": "Run a GROQ query",
           "method": "GET",
           "path": "/data/query/{dataset}",
           "write_scope": "readonly",
           "notes": "GROQ via the query parameter. Long queries must be POSTed instead - URLs have a length limit and GROQ gets long."
         },
         "get_document": {
+          "label": "Get a document",
           "method": "GET",
           "path": "/data/doc/{dataset}/{documentId}",
           "write_scope": "readonly"
         },
         "list_datasets": {
+          "label": "List datasets",
           "method": "GET",
           "path": "https://api.sanity.io/v2021-06-07/projects/{projectId}/datasets",
           "write_scope": "readonly"
@@ -2700,21 +2919,25 @@
       },
       "operations": {
         "list_issues": {
+          "label": "List issues",
           "method": "GET",
           "path": "/projects/{org}/{project}/issues/",
           "write_scope": "readonly"
         },
         "get_issue": {
+          "label": "Get an issue",
           "method": "GET",
           "path": "/issues/{issue_id}/",
           "write_scope": "readonly"
         },
         "list_events": {
+          "label": "List events",
           "method": "GET",
           "path": "/issues/{issue_id}/events/",
           "write_scope": "readonly"
         },
         "get_latest_event": {
+          "label": "Get the latest event",
           "method": "GET",
           "path": "/issues/{issue_id}/events/latest/",
           "write_scope": "readonly"
@@ -2758,32 +2981,38 @@
       },
       "operations": {
         "search_messages": {
+          "label": "Search messages",
           "method": "GET",
           "path": "/search.messages",
           "write_scope": "readonly",
           "notes": "Requires a user token, not a bot token - bots cannot search."
         },
         "list_channels": {
+          "label": "List channels",
           "method": "GET",
           "path": "/conversations.list",
           "write_scope": "readonly"
         },
         "channel_history": {
+          "label": "Read channel history",
           "method": "GET",
           "path": "/conversations.history",
           "write_scope": "readonly"
         },
         "list_users": {
+          "label": "List users",
           "method": "GET",
           "path": "/users.list",
           "write_scope": "readonly"
         },
         "lookup_user_by_email": {
+          "label": "Find a user by email",
           "method": "GET",
           "path": "/users.lookupByEmail",
           "write_scope": "readonly"
         },
         "post_message": {
+          "label": "Post a message",
           "method": "POST",
           "path": "/chat.postMessage",
           "write_scope": "send",
@@ -2822,26 +3051,31 @@
       },
       "operations": {
         "list_customers": {
+          "label": "List customers",
           "method": "GET",
           "path": "/customers",
           "write_scope": "readonly"
         },
         "list_invoices": {
+          "label": "List invoices",
           "method": "GET",
           "path": "/invoices",
           "write_scope": "readonly"
         },
         "list_payment_intents": {
+          "label": "List payments",
           "method": "GET",
           "path": "/payment_intents",
           "write_scope": "readonly"
         },
         "list_subscriptions": {
+          "label": "List subscriptions",
           "method": "GET",
           "path": "/subscriptions",
           "write_scope": "readonly"
         },
         "search_customers": {
+          "label": "Search customers",
           "method": "GET",
           "path": "/customers/search",
           "write_scope": "readonly"
@@ -2863,68 +3097,82 @@
       },
       "operations": {
         "query_email_and_calendar": {
+          "label": "Search email and calendar",
           "tool": "query_email_and_calendar",
           "write_scope": "readonly",
           "notes": "Semantic search in natural language across mail and calendar. The right first call for an open-ended question."
         },
         "list_threads": {
+          "label": "List threads",
           "tool": "list_threads",
           "write_scope": "readonly",
           "notes": "Structured filters - From, To, Subject, Labels, Split, date. Prefer this over the semantic search when the filter is known, since it is deterministic."
         },
         "get_thread": {
+          "label": "Get a thread",
           "tool": "get_thread",
           "write_scope": "readonly",
           "notes": "Full thread including messages, drafts and comments."
         },
         "get_message": {
+          "label": "Read a message",
           "tool": "get_message",
           "write_scope": "readonly"
         },
         "get_attachment": {
+          "label": "Download an attachment",
           "tool": "get_attachment",
           "write_scope": "readonly"
         },
         "list_labels": {
+          "label": "List labels",
           "tool": "list_labels",
           "write_scope": "readonly"
         },
         "list_splits": {
+          "label": "List splits",
           "tool": "list_splits",
           "write_scope": "readonly",
           "notes": "Split Inboxes, e.g. Important and Other."
         },
         "get_availability": {
+          "label": "Get availability",
           "tool": "get_availability",
           "write_scope": "readonly",
           "notes": "Free time across a set of participants."
         },
         "get_read_statuses": {
+          "label": "Get read statuses",
           "tool": "get_read_statuses",
           "write_scope": "readonly",
           "notes": "Who opened a sent email, when, and on what device. It is the user's own read-tracking data, but it is data about other people - worth surfacing in a summary only when the task actually asked for it."
         },
         "list_accounts": {
+          "label": "List accounts",
           "tool": "list_accounts",
           "write_scope": "readonly",
           "notes": "Which mailboxes are linked and which is default. Worth calling first on any multi-account request: tools act on the default account unless told otherwise, so a search that looks empty is often a search of the wrong inbox."
         },
         "create_or_update_draft": {
+          "label": "Create or update a draft",
           "tool": "create_or_update_draft",
           "write_scope": "draft",
           "notes": "Writes in the user's voice using their Personalization settings. Drafts created here appear in Superhuman Mail; drafts made in Gmail or Outlook do not, and vice versa."
         },
         "create_or_update_event": {
+          "label": "Create or update an event",
           "tool": "create_or_update_event",
           "write_scope": "send",
           "notes": "Scoped as `send`, not `draft`, on purpose: creating or moving a meeting mails invitations to the other attendees. It is outbound whatever it is called."
         },
         "send_draft": {
+          "label": "Send a draft",
           "tool": "send_draft",
           "write_scope": "send",
           "notes": "Sends immediately with no built-in delay. Superhuman's own guidance is to require confirmation on every call, and Flux must do that rather than relying on the client's tool-approval settings. Supports Smart Send (deliver when the recipient is most likely to open it), Scheduled Send, and Undo Send."
         },
         "undo_send": {
+          "label": "Undo send",
           "tool": "undo_send",
           "write_scope": "draft",
           "notes": "Cancels a send inside the undo window. Recorded as a write rather than readonly because it changes state, but it only ever retracts - it is the safe half of send_draft and should stay available wherever send_draft is."
@@ -2958,21 +3206,25 @@
       },
       "operations": {
         "list_sites": {
+          "label": "List sites",
           "method": "GET",
           "path": "/sites",
           "write_scope": "readonly"
         },
         "list_pages": {
+          "label": "List pages",
           "method": "GET",
           "path": "/sites/{site_id}/pages",
           "write_scope": "readonly"
         },
         "list_collections": {
+          "label": "List collections",
           "method": "GET",
           "path": "/sites/{site_id}/collections",
           "write_scope": "readonly"
         },
         "list_collection_items": {
+          "label": "List collection items",
           "method": "GET",
           "path": "/collections/{collection_id}/items",
           "write_scope": "readonly"
@@ -3034,6 +3286,7 @@
       },
       "operations": {
         "get_profile": {
+          "label": "Get profile",
           "method": "GET",
           "path": "/v1/profiles/me",
           "scope": "profile",
@@ -3041,6 +3294,7 @@
           "notes": "Partner API. The cheapest confirmation a token works. Returns id, names, email, email_confirmed and timezone. The response is an ARRAY containing one profile, not an object - a Partner API quirk that also applies to /v1/apps and /v1/categories."
         },
         "list_stored_actions": {
+          "label": "List stored actions",
           "method": "GET",
           "path": "/actions/v1/stored-actions",
           "scope": "external",
@@ -3048,6 +3302,7 @@
           "notes": "A stored action binds a connection, an app, an action key and its inputs into one runnable object. This is the catalogue of what the user has already set up - Flux should offer these rather than trying to compose an action from scratch."
         },
         "run_stored_action": {
+          "label": "Run a stored action",
           "method": "POST",
           "path": "/actions/v1/stored-actions/{stored_action_id}/run",
           "body": {
@@ -3063,6 +3318,7 @@
           "notes": "Returns 202 with a run id; it does NOT return results. Poll get_stored_action_run. Always send an idempotency_id - see gotchas. callback_url gets the same body the run-poll endpoint returns."
         },
         "list_inboxes": {
+          "label": "List inboxes",
           "method": "GET",
           "path": "/trigger-inbox/v1/inboxes",
           "params": {
@@ -3076,6 +3332,7 @@
           "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user. Each inbox also carries notification_url: a URL Zapier POSTs to when messages become available, so an inbox does not have to be polled at all. Flux has no public endpoint to register one, but it is the documented alternative and is why the read limits here are not the constraint they look like."
         },
         "list_messages": {
+          "label": "List messages",
           "method": "GET",
           "path": "/trigger-inbox/v1/inboxes/{inbox_id}/messages",
           "params": {
@@ -3086,6 +3343,7 @@
           "notes": "Message status is available, leased, acked or quarantined. message_attributes carries lease_count, error_message and possible_duplicate_data."
         },
         "list_categories": {
+          "label": "List categories",
           "method": "GET",
           "path": "/v1/categories",
           "params": {
@@ -3096,6 +3354,7 @@
           "notes": "Partner API, and the spec lists no security requirement at all for this one. Useful only for populating a directory UI."
         },
         "list_app_actions": {
+          "label": "List app actions",
           "method": "GET",
           "path": "/v2/actions",
           "params": {
@@ -3107,6 +3366,7 @@
           "notes": "Partner API. What a given app can do. `key` is the developer-provided stable identifier; `id` is explicitly documented as unstable and changing when the referenced app changes - never persist `id`, match on `key`. is_instant marks a real-time trigger and can only be true when the action is a READ."
         },
         "list_authentications": {
+          "label": "List authentications",
           "method": "GET",
           "path": "/v2/authentications",
           "params": {
@@ -3119,6 +3379,7 @@
           "notes": "Partner API. The user's own connections to an app. Returns only authentications the user OWNS, never ones shared with them, because a Zap cannot be built on a borrowed connection. is_expired true means the user has to reconnect - check it before offering an action rather than letting the run fail."
         },
         "get_stored_action_run": {
+          "label": "Get a stored action run",
           "method": "GET",
           "path": "/actions/v1/stored-actions/{stored_action_id}/runs/{run_id}",
           "scope": "external",
@@ -3133,12 +3394,14 @@
           }
         },
         "get_stored_action": {
+          "label": "Get a stored action",
           "method": "GET",
           "path": "/actions/v1/stored-actions/{stored_action_id}",
           "scope": "external",
           "write_scope": "readonly"
         },
         "create_stored_action": {
+          "label": "Create a stored action",
           "method": "POST",
           "path": "/actions/v1/stored-actions",
           "body": {
@@ -3155,6 +3418,7 @@
           "notes": "Saves a runnable configuration; it does NOT execute anything, which is why this is `draft` and not `send`. Returns 200 (not 201) with just the id. Only core actions - external and App Extension actions cannot be stored. The triple selected_api + action_type + action_key is mandatory; action_id is deliberately not accepted."
         },
         "get_action_input_fields": {
+          "label": "Get action input fields",
           "method": "POST",
           "path": "/v2/actions/{action_id}/inputs",
           "body": {
@@ -3169,6 +3433,7 @@
           "notes": "Partner API. A POST that reads - the current inputs are sent because later fields depend on earlier ones. Fields resolve against the app's CURRENT version unless selected_api pins one; pin it when editing an action built against an older version. Returns input_field, info_field or fieldset entries; invalidates_input_fields true means changing this field forces a refetch."
         },
         "get_action_input_choices": {
+          "label": "Get action input choices",
           "method": "POST",
           "path": "/v2/actions/{action_id}/inputs/{input_id}/choices",
           "params": {
@@ -3179,6 +3444,7 @@
           "notes": "Partner API. The values behind a SELECT field."
         },
         "get_action_output_fields": {
+          "label": "Get action output fields",
           "method": "POST",
           "path": "/v2/actions/{action_id}/outputs",
           "body": {

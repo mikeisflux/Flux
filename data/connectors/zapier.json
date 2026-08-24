@@ -70,6 +70,7 @@
   },
   "operations": {
     "get_profile": {
+      "label": "Get profile",
       "method": "GET",
       "path": "/v1/profiles/me",
       "scope": "profile",
@@ -77,6 +78,7 @@
       "notes": "Partner API. The cheapest confirmation a token works. Returns id, names, email, email_confirmed and timezone. The response is an ARRAY containing one profile, not an object - a Partner API quirk that also applies to /v1/apps and /v1/categories."
     },
     "list_stored_actions": {
+      "label": "List stored actions",
       "method": "GET",
       "path": "/actions/v1/stored-actions",
       "scope": "external",
@@ -84,6 +86,7 @@
       "notes": "A stored action binds a connection, an app, an action key and its inputs into one runnable object. This is the catalogue of what the user has already set up - Flux should offer these rather than trying to compose an action from scratch."
     },
     "run_stored_action": {
+      "label": "Run a stored action",
       "method": "POST",
       "path": "/actions/v1/stored-actions/{stored_action_id}/run",
       "body": {
@@ -99,6 +102,7 @@
       "notes": "Returns 202 with a run id; it does NOT return results. Poll get_stored_action_run. Always send an idempotency_id - see gotchas. callback_url gets the same body the run-poll endpoint returns."
     },
     "list_inboxes": {
+      "label": "List inboxes",
       "method": "GET",
       "path": "/trigger-inbox/v1/inboxes",
       "params": {
@@ -112,6 +116,7 @@
       "notes": "An inbox is a durable, user-scoped queue for one trigger subscription. `name` also appears as a filter and a field but is deprecated - use `key`, which is set at creation, immutable and unique per user. Each inbox also carries notification_url: a URL Zapier POSTs to when messages become available, so an inbox does not have to be polled at all. Flux has no public endpoint to register one, but it is the documented alternative and is why the read limits here are not the constraint they look like."
     },
     "list_messages": {
+      "label": "List messages",
       "method": "GET",
       "path": "/trigger-inbox/v1/inboxes/{inbox_id}/messages",
       "params": {
@@ -122,6 +127,7 @@
       "notes": "Message status is available, leased, acked or quarantined. message_attributes carries lease_count, error_message and possible_duplicate_data."
     },
     "list_categories": {
+      "label": "List categories",
       "method": "GET",
       "path": "/v1/categories",
       "params": {
@@ -132,6 +138,7 @@
       "notes": "Partner API, and the spec lists no security requirement at all for this one. Useful only for populating a directory UI."
     },
     "list_app_actions": {
+      "label": "List app actions",
       "method": "GET",
       "path": "/v2/actions",
       "params": {
@@ -143,6 +150,7 @@
       "notes": "Partner API. What a given app can do. `key` is the developer-provided stable identifier; `id` is explicitly documented as unstable and changing when the referenced app changes - never persist `id`, match on `key`. is_instant marks a real-time trigger and can only be true when the action is a READ."
     },
     "list_authentications": {
+      "label": "List authentications",
       "method": "GET",
       "path": "/v2/authentications",
       "params": {
@@ -155,6 +163,7 @@
       "notes": "Partner API. The user's own connections to an app. Returns only authentications the user OWNS, never ones shared with them, because a Zap cannot be built on a borrowed connection. is_expired true means the user has to reconnect - check it before offering an action rather than letting the run fail."
     },
     "get_stored_action_run": {
+      "label": "Get a stored action run",
       "method": "GET",
       "path": "/actions/v1/stored-actions/{stored_action_id}/runs/{run_id}",
       "scope": "external",
@@ -169,12 +178,14 @@
       }
     },
     "get_stored_action": {
+      "label": "Get a stored action",
       "method": "GET",
       "path": "/actions/v1/stored-actions/{stored_action_id}",
       "scope": "external",
       "write_scope": "readonly"
     },
     "create_stored_action": {
+      "label": "Create a stored action",
       "method": "POST",
       "path": "/actions/v1/stored-actions",
       "body": {
@@ -191,6 +202,7 @@
       "notes": "Saves a runnable configuration; it does NOT execute anything, which is why this is `draft` and not `send`. Returns 200 (not 201) with just the id. Only core actions - external and App Extension actions cannot be stored. The triple selected_api + action_type + action_key is mandatory; action_id is deliberately not accepted."
     },
     "get_action_input_fields": {
+      "label": "Get action input fields",
       "method": "POST",
       "path": "/v2/actions/{action_id}/inputs",
       "body": {
@@ -205,6 +217,7 @@
       "notes": "Partner API. A POST that reads - the current inputs are sent because later fields depend on earlier ones. Fields resolve against the app's CURRENT version unless selected_api pins one; pin it when editing an action built against an older version. Returns input_field, info_field or fieldset entries; invalidates_input_fields true means changing this field forces a refetch."
     },
     "get_action_input_choices": {
+      "label": "Get action input choices",
       "method": "POST",
       "path": "/v2/actions/{action_id}/inputs/{input_id}/choices",
       "params": {
@@ -215,6 +228,7 @@
       "notes": "Partner API. The values behind a SELECT field."
     },
     "get_action_output_fields": {
+      "label": "Get action output fields",
       "method": "POST",
       "path": "/v2/actions/{action_id}/outputs",
       "body": {

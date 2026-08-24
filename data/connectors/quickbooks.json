@@ -26,27 +26,32 @@
   },
   "operations": {
     "query": {
+      "label": "Run a query",
       "method": "GET",
       "path": "/query",
       "write_scope": "readonly",
       "notes": "The general read path, taking a SQL-like query string."
     },
     "get_invoice": {
+      "label": "Get an invoice",
       "method": "GET",
       "path": "/invoice/{invoiceId}",
       "write_scope": "readonly"
     },
     "get_bill": {
+      "label": "Get a bill",
       "method": "GET",
       "path": "/bill/{billId}",
       "write_scope": "readonly"
     },
     "reports_profit_and_loss": {
+      "label": "Profit and loss report",
       "method": "GET",
       "path": "/reports/ProfitAndLoss",
       "write_scope": "readonly"
     },
     "reports_aged_receivables": {
+      "label": "Aged receivables report",
       "method": "GET",
       "path": "/reports/AgedReceivables",
       "write_scope": "readonly"

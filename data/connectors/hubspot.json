@@ -26,21 +26,25 @@
   },
   "operations": {
     "search_contacts": {
+      "label": "Search contacts",
       "method": "POST",
       "path": "/crm/v3/objects/contacts/search",
       "write_scope": "readonly"
     },
     "search_companies": {
+      "label": "Search companies",
       "method": "POST",
       "path": "/crm/v3/objects/companies/search",
       "write_scope": "readonly"
     },
     "search_deals": {
+      "label": "Search deals",
       "method": "POST",
       "path": "/crm/v3/objects/deals/search",
       "write_scope": "readonly"
     },
     "get_deal": {
+      "label": "Get a deal",
       "method": "GET",
       "path": "/crm/v3/objects/deals/{dealId}",
       "write_scope": "readonly"

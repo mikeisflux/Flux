@@ -86,6 +86,7 @@
   },
   "operations": {
     "list_transactions": {
+      "label": "List transactions",
       "method": "GET",
       "path": "/transactions",
       "scope": "transactions:read",
@@ -93,6 +94,7 @@
       "notes": "The endpoint Ramp's quickstart uses to prove a token works."
     },
     "get_current_user": {
+      "label": "Get current user",
       "method": "GET",
       "path": "/users",
       "scope": "users:read",
@@ -100,18 +102,21 @@
       "notes": "Client-credentials tokens have no user context, so this lists the business's users rather than identifying a caller."
     },
     "list_cards": {
+      "label": "List cards",
       "method": "GET",
       "path": "/cards",
       "scope": "cards:read",
       "write_scope": "readonly"
     },
     "list_reimbursements": {
+      "label": "List reimbursements",
       "method": "GET",
       "path": "/reimbursements",
       "scope": "reimbursements:read",
       "write_scope": "readonly"
     },
     "list_bills": {
+      "label": "List bills",
       "method": "GET",
       "path": "/bills",
       "scope": "bills:read",

@@ -17,6 +17,14 @@
 namespace flux {
 namespace {
 
+// Where a built-in OAuth app sends the browser back to.
+//
+// It does not have to resolve to anything: OAuthRedirectWatcher catches the
+// navigation in the tab before it is ever sent. It does have to match what was
+// registered with the provider exactly, which is why it is one constant here
+// rather than a string each definition repeats.
+constexpr char kDefaultRedirectUri[] = "http://127.0.0.1/flux/oauth";
+
 // The one place the discovery response is turned into a base URL. Kept out of
 // ConnectorClient because it is about interpreting a document, not about
 // making a request.
@@ -149,8 +157,20 @@ bool ConnectorService::SetClient(const std::string& connector_id,
 OAuthClient ConnectorService::GetClient(const std::string& connector_id) const {
   OAuthClient client;
   const std::string blob = clients_.Get(connector_id);
-  if (blob.empty())
+  if (blob.empty()) {
+    // Nothing registered by the user, so fall back to the app Flux ships for
+    // this provider, if it ships one. This is the whole difference between
+    // "Connect Google" and a form asking for a client id, a secret and a
+    // redirect URI - which is a developer's job, not a user's, and for Gmail
+    // and Drive is gated behind a Google security assessment on top.
+    const ConnectorDef* def = registry_.Get(connector_id);
+    if (def && def->auth.has_builtin_client()) {
+      client.client_id = def->auth.builtin_client_id;
+      client.client_secret = def->auth.builtin_client_secret;
+      client.redirect_uri = kDefaultRedirectUri;
+    }
     return client;
+  }
   std::optional<base::DictValue> parsed =
       base::JSONReader::ReadDict(blob, base::JSON_PARSE_RFC);
   if (!parsed)

@@ -38,36 +38,43 @@
   },
   "operations": {
     "search_code": {
+      "label": "Search code",
       "method": "GET",
       "path": "/search/code",
       "write_scope": "readonly"
     },
     "search_issues": {
+      "label": "Search issues",
       "method": "GET",
       "path": "/search/issues",
       "write_scope": "readonly"
     },
     "list_pull_requests": {
+      "label": "List pull requests",
       "method": "GET",
       "path": "/repos/{owner}/{repo}/pulls",
       "write_scope": "readonly"
     },
     "get_pull_request": {
+      "label": "Get a pull request",
       "method": "GET",
       "path": "/repos/{owner}/{repo}/pulls/{number}",
       "write_scope": "readonly"
     },
     "list_issues": {
+      "label": "List issues",
       "method": "GET",
       "path": "/repos/{owner}/{repo}/issues",
       "write_scope": "readonly"
     },
     "create_issue": {
+      "label": "Create an issue",
       "method": "POST",
       "path": "/repos/{owner}/{repo}/issues",
       "write_scope": "draft"
     },
     "create_issue_comment": {
+      "label": "Comment on an issue",
       "method": "POST",
       "path": "/repos/{owner}/{repo}/issues/{number}/comments",
       "write_scope": "send",

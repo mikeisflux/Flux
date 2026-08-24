@@ -38,21 +38,25 @@
   },
   "operations": {
     "list_segments": {
+      "label": "List segments",
       "method": "GET",
       "path": "/segments",
       "write_scope": "readonly"
     },
     "list_lists": {
+      "label": "List lists",
       "method": "GET",
       "path": "/lists",
       "write_scope": "readonly"
     },
     "list_campaigns": {
+      "label": "List campaigns",
       "method": "GET",
       "path": "/campaigns",
       "write_scope": "readonly"
     },
     "query_metric_aggregates": {
+      "label": "Query metric aggregates",
       "method": "POST",
       "path": "/metric-aggregates",
       "write_scope": "readonly"

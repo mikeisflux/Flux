@@ -31,22 +31,26 @@
   },
   "operations": {
     "get_current_user": {
+      "label": "Get current user",
       "method": "GET",
       "path": "/users/me",
       "write_scope": "readonly",
       "notes": "Returns the URI every other call needs."
     },
     "list_event_types": {
+      "label": "List event types",
       "method": "GET",
       "path": "/event_types",
       "write_scope": "readonly"
     },
     "list_scheduled_events": {
+      "label": "List scheduled events",
       "method": "GET",
       "path": "/scheduled_events",
       "write_scope": "readonly"
     },
     "list_availability": {
+      "label": "List availability",
       "method": "GET",
       "path": "/user_availability_schedules",
       "write_scope": "readonly"

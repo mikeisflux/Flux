@@ -84,6 +84,7 @@
   },
   "operations": {
     "get_current_user": {
+      "label": "Get current user",
       "method": "GET",
       "path": "/v2/users/me",
       "scope": "users.readonly",
@@ -91,24 +92,28 @@
       "notes": "The cheapest confirmation that a token works and has not expired. Worth calling on connect."
     },
     "list_transactions": {
+      "label": "List transactions",
       "method": "GET",
       "path": "/v2/transactions/card/primary",
       "scope": "transactions.card.readonly",
       "write_scope": "readonly"
     },
     "list_expenses": {
+      "label": "List expenses",
       "method": "GET",
       "path": "/v1/expenses",
       "scope": "expenses.card.readonly",
       "write_scope": "readonly"
     },
     "list_cards": {
+      "label": "List cards",
       "method": "GET",
       "path": "/v2/cards",
       "scope": "cards.readonly",
       "write_scope": "readonly"
     },
     "list_budgets": {
+      "label": "List budgets",
       "method": "GET",
       "path": "/v2/budgets",
       "scope": "budgets.readonly",

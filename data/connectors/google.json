@@ -36,62 +36,74 @@
   },
   "operations": {
     "gmail_list": {
+      "label": "List Gmail messages",
       "method": "GET",
       "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
       "write_scope": "readonly"
     },
     "gmail_get": {
+      "label": "Read a Gmail message",
       "method": "GET",
       "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}",
       "write_scope": "readonly"
     },
     "gmail_create_draft": {
+      "label": "Create a Gmail draft",
       "method": "POST",
       "path": "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
       "write_scope": "draft",
       "notes": "Saves a draft. Sending a draft is a separate endpoint and a separate scope Flux does not hold."
     },
     "gmail_modify_labels": {
+      "label": "Modify Gmail labels",
       "method": "POST",
       "path": "https://gmail.googleapis.com/gmail/v1/users/me/messages/{id}/modify",
       "write_scope": "draft"
     },
     "drive_list": {
+      "label": "List Drive files",
       "method": "GET",
       "path": "https://www.googleapis.com/drive/v3/files",
       "write_scope": "readonly"
     },
     "drive_upload": {
+      "label": "Upload a file to Drive",
       "method": "POST",
       "path": "https://www.googleapis.com/upload/drive/v3/files",
       "write_scope": "draft"
     },
     "docs_get": {
+      "label": "Read a Google Doc",
       "method": "GET",
       "path": "https://docs.googleapis.com/v1/documents/{documentId}",
       "write_scope": "readonly"
     },
     "docs_update": {
+      "label": "Update a Google Doc",
       "method": "POST",
       "path": "https://docs.googleapis.com/v1/documents/{documentId}:batchUpdate",
       "write_scope": "draft"
     },
     "sheets_read": {
+      "label": "Read a Sheets range",
       "method": "GET",
       "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
       "write_scope": "readonly"
     },
     "sheets_write": {
+      "label": "Write a Sheets range",
       "method": "PUT",
       "path": "https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values/{range}",
       "write_scope": "draft"
     },
     "calendar_list_events": {
+      "label": "List calendar events",
       "method": "GET",
       "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
       "write_scope": "readonly"
     },
     "calendar_create_event": {
+      "label": "Create a calendar event",
       "method": "POST",
       "path": "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events",
       "write_scope": "send",

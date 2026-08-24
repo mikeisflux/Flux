@@ -70,216 +70,255 @@
   ],
   "operations": {
     "get_authorization": {
+      "label": "Get authorization",
       "method": "GET",
       "path": "https://launchpad.37signals.com/authorization.json",
       "write_scope": "readonly",
       "notes": "Absolute, not relative to base_url - this is the call that produces the base URL. Also returns expires_at, which is the cheapest way to know a token is about to lapse."
     },
     "list_projects": {
+      "label": "List projects",
       "method": "GET",
       "path": "/projects.json",
       "write_scope": "readonly",
       "notes": "Active projects visible to the user, newest first. Each carries its dock, which is where the message_board, todoset, schedule and chat IDs come from."
     },
     "get_project": {
+      "label": "Get a project",
       "method": "GET",
       "path": "/projects/{project_id}.json",
       "write_scope": "readonly"
     },
     "get_todoset": {
+      "label": "Get the to-do set",
       "method": "GET",
       "path": "/todosets/{todoset_id}.json",
       "write_scope": "readonly",
       "notes": "The todoset ID comes from the project's dock, not from a list endpoint."
     },
     "list_todolists": {
+      "label": "List to-do lists",
       "method": "GET",
       "path": "/todosets/{todoset_id}/todolists.json",
       "write_scope": "readonly"
     },
     "list_todos": {
+      "label": "List to-dos",
       "method": "GET",
       "path": "/todolists/{todolist_id}/todos.json",
       "write_scope": "readonly",
       "notes": "Returns only active, pending to-dos by default. completed=true returns only completed ones; status=archived or status=trashed returns archived or trashed to-dos including both pending and completed. The two combine."
     },
     "get_todo": {
+      "label": "Get a to-do",
       "method": "GET",
       "path": "/todos/{todo_id}.json",
       "write_scope": "readonly"
     },
     "create_todo": {
+      "label": "Create a to-do",
       "method": "POST",
       "path": "/todolists/{todolist_id}/todos.json",
       "write_scope": "draft",
       "notes": "Requires content. Optional description (HTML), assignee_ids, completion_subscriber_ids, due_on, starts_on, and notify. Draft rather than send while notify is false: the to-do is visible in the project but nobody is messaged. Set notify true only under a send-scoped task."
     },
     "update_todo": {
+      "label": "Update a to-do",
       "method": "PUT",
       "path": "/todos/{todo_id}.json",
       "write_scope": "draft"
     },
     "complete_todo": {
+      "label": "Complete a to-do",
       "method": "POST",
       "path": "/todos/{todo_id}/completion.json",
       "write_scope": "draft"
     },
     "uncomplete_todo": {
+      "label": "Reopen a to-do",
       "method": "DELETE",
       "path": "/todos/{todo_id}/completion.json",
       "write_scope": "draft"
     },
     "list_messages": {
+      "label": "List messages",
       "method": "GET",
       "path": "/message_boards/{message_board_id}/messages.json",
       "write_scope": "readonly"
     },
     "get_message": {
+      "label": "Get a message",
       "method": "GET",
       "path": "/messages/{message_id}.json",
       "write_scope": "readonly"
     },
     "draft_message": {
+      "label": "Draft a message",
       "method": "POST",
       "path": "/message_boards/{message_board_id}/messages.json",
       "write_scope": "draft",
       "notes": "Omit status. Requires subject; content is optional HTML. The message is created as a draft and notifies nobody, which is what makes this the draft-scoped form of the same endpoint as post_message."
     },
     "post_message": {
+      "label": "Post a message",
       "method": "POST",
       "path": "/message_boards/{message_board_id}/messages.json",
       "write_scope": "send",
       "notes": "Same endpoint with status: \"active\". Publishes and notifies. Everyone on the project is notified and subscribed unless subscriptions is given as an array of person IDs."
     },
     "publish_message": {
+      "label": "Publish a draft message",
       "method": "PUT",
       "path": "/messages/{message_id}.json",
       "write_scope": "send",
       "notes": "Publishes an existing draft with a body of {\"status\": \"active\"} and nothing else. The update merges, so subject, content and subscribers are preserved - resending them is how you change who gets notified by accident. Documents publish the same way via PUT /documents/{id}.json."
     },
     "list_comments": {
+      "label": "List comments",
       "method": "GET",
       "path": "/recordings/{recording_id}/comments.json",
       "write_scope": "readonly"
     },
     "create_comment": {
+      "label": "Add a comment",
       "method": "POST",
       "path": "/recordings/{recording_id}/comments.json",
       "write_scope": "send",
       "notes": "Send, not draft: every subscriber to the recording is notified the moment it posts, and there is no draft state for a comment. Requires content as HTML."
     },
     "list_campfires": {
+      "label": "List Campfires",
       "method": "GET",
       "path": "/chats.json",
       "write_scope": "readonly"
     },
     "list_campfire_lines": {
+      "label": "Read Campfire chat",
       "method": "GET",
       "path": "/chats/{chat_id}/lines.json",
       "write_scope": "readonly"
     },
     "create_campfire_line": {
+      "label": "Post to Campfire",
       "method": "POST",
       "path": "/chats/{chat_id}/lines.json",
       "write_scope": "send",
       "notes": "Requires content. Pass content_type: \"text/html\" for rich text; plain text is the default. A campfire line cannot be drafted, so this is always send."
     },
     "get_my_assignments": {
+      "label": "Get my assignments",
       "method": "GET",
       "path": "/my/assignments.json",
       "write_scope": "readonly",
       "notes": "Grouped into priorities (\"Up Next\") and non_priorities. Card table steps are folded into their parent card as children."
     },
     "get_assignments_due": {
+      "label": "Get assignments due",
       "method": "GET",
       "path": "/my/assignments/due.json",
       "write_scope": "readonly",
       "notes": "scope is one of overdue, due_today, due_tomorrow, due_later_this_week, due_next_week, due_later; defaults to overdue. An unrecognised scope is a 400 that lists the valid ones."
     },
     "get_completed_assignments": {
+      "label": "Get completed assignments",
       "method": "GET",
       "path": "/my/assignments/completed.json",
       "write_scope": "readonly"
     },
     "prioritize_assignment": {
+      "label": "Prioritize an assignment",
       "method": "POST",
       "path": "/my/priorities.json",
       "write_scope": "draft",
       "notes": "Adds a recording to Up Next. Returns 204 No Content - no body to parse."
     },
     "deprioritize_assignment": {
+      "label": "Deprioritize an assignment",
       "method": "DELETE",
       "path": "/my/priorities/{recording_id}.json",
       "write_scope": "draft",
       "notes": "Returns 204 No Content."
     },
     "list_schedule_entries": {
+      "label": "List schedule entries",
       "method": "GET",
       "path": "/schedules/{schedule_id}/entries.json",
       "write_scope": "readonly"
     },
     "get_schedule_entry": {
+      "label": "Get a schedule entry",
       "method": "GET",
       "path": "/schedule_entries/{entry_id}.json",
       "write_scope": "readonly"
     },
     "create_schedule_entry": {
+      "label": "Create a schedule entry",
       "method": "POST",
       "path": "/schedules/{schedule_id}/entries.json",
       "write_scope": "send",
       "notes": "Requires summary, starts_at and ends_at (ISO 8601). Send, not draft, because a schedule entry over the API publishes immediately unless status: \"drafted\" is passed - the opposite default to messages and documents. participant_ids, all_day, url (returned as join_url), highlighted, notify and recurrence_schedule are optional."
     },
     "list_people": {
+      "label": "List people",
       "method": "GET",
       "path": "/people.json",
       "write_scope": "readonly"
     },
     "list_project_people": {
+      "label": "List people on a project",
       "method": "GET",
       "path": "/projects/{project_id}/people.json",
       "write_scope": "readonly",
       "notes": "The source of the person IDs that assignee_ids, subscriptions and participant_ids take."
     },
     "get_person": {
+      "label": "Get a person",
       "method": "GET",
       "path": "/people/{person_id}.json",
       "write_scope": "readonly"
     },
     "get_my_profile": {
+      "label": "Get my profile",
       "method": "GET",
       "path": "/my/profile.json",
       "write_scope": "readonly",
       "notes": "The correct way to learn who the token belongs to inside Basecamp. The identity on the authorization document is a Basecamp ID, not a person, and the docs say plainly not to use it for this."
     },
     "get_search_metadata": {
+      "label": "Get search metadata",
       "method": "GET",
       "path": "/searches/metadata.json",
       "write_scope": "readonly",
       "notes": "Fetch this before searching rather than hardcoding type names - the docs say the available types vary. Keys look like Kanban::Card and Schedule::Entry, not \"card\" and \"event\"."
     },
     "search": {
+      "label": "Search Basecamp",
       "method": "GET",
       "path": "/search.json",
       "write_scope": "readonly",
       "notes": "Requires q. Optional type_names[], bucket_ids[], creator_ids[], file_type, exclude_chat, since (last_7_days | last_30_days | last_90_days | last_12_months | forever), sort (best_match | recency), page, per_page. The singular type, bucket_id and creator_id are deprecated."
     },
     "list_documents": {
+      "label": "List documents",
       "method": "GET",
       "path": "/vaults/{vault_id}/documents.json",
       "write_scope": "readonly"
     },
     "get_document": {
+      "label": "Get a document",
       "method": "GET",
       "path": "/documents/{document_id}.json",
       "write_scope": "readonly"
     },
     "create_document": {
+      "label": "Create a document",
       "method": "POST",
       "path": "/vaults/{vault_id}/documents.json",
       "write_scope": "draft",
       "notes": "Requires title and content (HTML). Draft-scoped because status is omitted; passing status: \"active\" publishes and notifies, which is a send-scoped act."
     },
     "get_notifications": {
+      "label": "Get notifications",
       "method": "GET",
       "path": "/my/readings.json",
       "write_scope": "readonly",

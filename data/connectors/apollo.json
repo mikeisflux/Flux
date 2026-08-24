@@ -25,21 +25,25 @@
   },
   "operations": {
     "people_search": {
+      "label": "Search people",
       "method": "POST",
       "path": "/mixed_people/search",
       "write_scope": "readonly"
     },
     "organization_search": {
+      "label": "Search organizations",
       "method": "POST",
       "path": "/mixed_companies/search",
       "write_scope": "readonly"
     },
     "people_enrich": {
+      "label": "Enrich a person",
       "method": "POST",
       "path": "/people/match",
       "write_scope": "readonly"
     },
     "organization_enrich": {
+      "label": "Enrich an organization",
       "method": "GET",
       "path": "/organizations/enrich",
       "write_scope": "readonly"

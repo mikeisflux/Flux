@@ -27,23 +27,27 @@
   },
   "operations": {
     "query": {
+      "label": "Run a SOQL query",
       "method": "GET",
       "path": "/query",
       "write_scope": "readonly",
       "notes": "SOQL via the q parameter."
     },
     "search": {
+      "label": "Search records",
       "method": "GET",
       "path": "/search",
       "write_scope": "readonly",
       "notes": "SOSL via the q parameter."
     },
     "get_record": {
+      "label": "Get a record",
       "method": "GET",
       "path": "/sobjects/{sobject}/{id}",
       "write_scope": "readonly"
     },
     "describe": {
+      "label": "Describe an object",
       "method": "GET",
       "path": "/sobjects/{sobject}/describe",
       "write_scope": "readonly"

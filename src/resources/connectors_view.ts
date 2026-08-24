@@ -2,6 +2,9 @@
 
 import {connectorMark, pathIcon, searchIcon} from './icons.js';
 
+import {loadConnectorActions} from './catalog.js';
+import type {ConnectorAction} from './catalog.js';
+
 import {loadPackedJson, once} from './resource.js';
 
 import {ConnectorAuth} from './flux.mojom-webui.js';
@@ -15,6 +18,11 @@ export interface Connector {
   badge: string|null;
   definition: 'authored'|'pending';
 }
+
+// The plug on each action chip - the reference marks every action with one,
+// and it is what makes a dense two-column list read as a list of capabilities
+// rather than a wall of sentences.
+const kPlugPath = 'M6 2v5m8-5v5M4 7h12v3a6 6 0 0 1-12 0V7zm6 9v3';
 
 export const loadConnectors = once(
     () => loadPackedJson<{connectors: Connector[]}>('connectors.json')
@@ -154,6 +162,9 @@ export class ConnectorsView {
 
     const card = document.createElement('article');
     card.className = 'connector-card';
+    // The dialog needs to find this card again if it hands off to the OAuth
+    // registration form, which still renders inline underneath it.
+    card.dataset['connector'] = c.id;
 
     const mark = connectorMark(c.id, 'connector-avatar', c.name);
 
@@ -224,28 +235,11 @@ export class ConnectorsView {
       add.title = state?.hasClient === false && state?.detail ?
           state.detail :
           `Connect ${c.name}`;
-      add.addEventListener('click', async () => {
-        // An api_key connector has no OAuth app to register - it wants a
-        // token pasted. It used to fall through to the client form below,
-        // which asks for a client id, a secret and a redirect URI that this
-        // kind of connector does not have, so all twelve of them were
-        // impossible to connect.
-        if (state?.auth === ConnectorAuth.kApiKey) {
-          this.showTokenForm(card, c);
-          return;
-        }
-        // No registered app means there is nothing to connect with, so the
-        // click opens the form instead of failing. Flux ships no client
-        // secrets, so this step is unavoidable rather than an oversight.
-        if (state && !state.hasClient) {
-          this.showClientForm(card, c);
-          return;
-        }
-        const {started, error} = await this.handler.beginConnect(c.id);
-        if (!started && error) {
-          this.notice(error);
-        }
-      });
+      // One dialog for every connector, whatever its auth. The old behaviour
+      // branched here into three different inline forms, so what "+" did
+      // depended on a distinction - OAuth app versus pasted token versus
+      // already-registered - that means nothing to the person clicking it.
+      add.addEventListener('click', () => void this.openDialog(c, state));
     }
 
     card.append(mark, body, add);
@@ -253,70 +247,166 @@ export class ConnectorsView {
   }
 
   /**
-   * The pasted-token form, for connectors authorized with an API key rather
-   * than OAuth.
+   * Everything about one connector, in a dialog, with a single button.
    *
-   * One field, because that is genuinely all these need. The token goes
-   * straight to the browser process and into the OS-encrypted store; it is
-   * never held in the console beyond this submit, and a stored one is never
-   * sent back.
+   * The actions list is the point of it. "Connect Google" on its own asks a
+   * person to grant access to their mail on trust; the same button under
+   * twelve named actions - List Gmail messages, Create a Gmail draft, Read a
+   * Sheets range - tells them exactly what they are agreeing to. It is also
+   * the honest answer to "what does a connector even do", which the old card
+   * never gave.
    */
-  private showTokenForm(card: HTMLElement, c: Connector) {
-    const existing = card.parentElement?.querySelector('.connector-form');
-    if (existing) {
-      existing.remove();
+  private async openDialog(c: Connector, state: ConnectorStatus|undefined) {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'flux-dialog connector-dialog';
+
+    const head = document.createElement('div');
+    head.className = 'connector-dialog-head';
+    const title = document.createElement('h2');
+    title.textContent = c.name;
+    const blurb = document.createElement('p');
+    blurb.className = 'subtitle';
+    blurb.textContent = c.description;
+    const text = document.createElement('div');
+    text.append(title, blurb);
+    head.append(connectorMark(c.id, 'connector-mark'), text);
+
+    const body = document.createElement('div');
+    body.className = 'connector-dialog-body';
+
+    // Loaded rather than passed in: the actions live in the packed
+    // definitions, and a dialog that opens instantly with an empty list and
+    // fills in is better than a card that stalls on click.
+    let actions: ConnectorAction[] = [];
+    try {
+      actions = (await loadConnectorActions()).get(c.id) ?? [];
+    } catch (error) {
+      console.error('Could not read the connector actions.', error);
     }
 
-    const form = document.createElement('form');
-    form.className = 'connector-form';
-
-    const intro = document.createElement('p');
-    intro.textContent =
-        `${c.name} authorizes with an API key rather than OAuth. Create one ` +
-        'in its own settings and paste it here.';
-
-    const tokenInput = field(form, 'API key', '', 'password');
-    tokenInput.required = true;
-
-    const hint = document.createElement('p');
-    hint.className = 'connector-form-hint';
-    hint.textContent =
-        'Stored encrypted by the operating system, in this profile only. It ' +
-        'is never sent anywhere except to ' + c.name + '.';
-
-    const save = document.createElement('button');
-    save.type = 'submit';
-    save.textContent = 'Save and connect';
-
-    const cancel = document.createElement('button');
-    cancel.type = 'button';
-    cancel.className = 'outlined';
-    cancel.textContent = 'Cancel';
-    cancel.addEventListener('click', () => form.remove());
-
-    const row = document.createElement('div');
-    row.className = 'connector-form-actions';
-    row.append(save, cancel);
-
-    form.prepend(intro);
-    form.append(hint, row);
-
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
-      const {stored, error} =
-          await this.handler.setPersonalToken(c.id, tokenInput.value.trim());
-      if (!stored) {
-        this.notice(error ?? 'The key could not be saved.');
-        return;
+    if (actions.length > 0) {
+      const label = document.createElement('h3');
+      label.className = 'section-title';
+      label.textContent = `AVAILABLE ACTIONS (${actions.length})`;
+      const note = document.createElement('p');
+      note.className = 'subtitle';
+      note.textContent =
+          'These are the actions Flux can use after you connect this account.';
+      const grid = document.createElement('div');
+      grid.className = 'action-grid';
+      for (const action of actions) {
+        const chip = document.createElement('div');
+        chip.className = 'action-chip';
+        chip.dataset['scope'] = action.writeScope;
+        chip.append(pathIcon(kPlugPath));
+        chip.append(action.label);
+        grid.append(chip);
       }
-      form.remove();
-      await this.refreshStatus();
-      this.paint();
+      body.append(label, note, grid);
+    }
+
+    // An API key connector has nothing to authorize against - it wants a
+    // token pasted - so the field belongs in the same dialog rather than
+    // behind a different button.
+    let tokenInput: HTMLInputElement|null = null;
+    if (state?.auth === ConnectorAuth.kApiKey) {
+      const wrap = document.createElement('label');
+      wrap.className = 'dialog-field';
+      const caption = document.createElement('span');
+      caption.textContent = state.detail || 'API key';
+      tokenInput = document.createElement('input');
+      tokenInput.type = 'password';
+      tokenInput.autocomplete = 'off';
+      wrap.append(caption, tokenInput);
+      body.append(wrap);
+    }
+
+    const error = document.createElement('p');
+    error.className = 'dialog-error';
+    error.hidden = true;
+    body.append(error);
+
+    const foot = document.createElement('div');
+    foot.className = 'dialog-actions';
+    const close = document.createElement('button');
+    close.className = 'ghost';
+    close.textContent = 'Close';
+    close.addEventListener('click', () => dialog.close());
+    const connect = document.createElement('button');
+    connect.className = 'primary';
+    connect.textContent =
+        state?.connected ? `Disconnect ${c.name}` : `Connect ${c.name}`;
+    foot.append(close, connect);
+
+    connect.addEventListener('click', () => {
+      void this.resolveDialog(c, state, tokenInput, connect, error, dialog);
     });
 
-    card.after(form);
-    tokenInput.focus();
+    dialog.append(head, body, foot);
+    dialog.addEventListener('close', () => dialog.remove());
+    document.body.append(dialog);
+    dialog.showModal();
   }
+
+  /**
+   * What the one button does, decided here rather than by which button the
+   * user found.
+   */
+  private async resolveDialog(
+      c: Connector, state: ConnectorStatus|undefined,
+      tokenInput: HTMLInputElement|null, button: HTMLButtonElement,
+      error: HTMLElement, dialog: HTMLDialogElement) {
+    const fail = (message: string) => {
+      error.textContent = message;
+      error.hidden = false;
+      button.disabled = false;
+    };
+    button.disabled = true;
+    error.hidden = true;
+
+    if (state?.connected) {
+      this.handler.disconnect(c.id);
+      dialog.close();
+      return;
+    }
+
+    if (tokenInput) {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        fail('Paste the key first.');
+        return;
+      }
+      const {stored, error: why} =
+          await this.handler.setPersonalToken(c.id, token);
+      if (!stored) {
+        fail(why || 'That key was not accepted.');
+        return;
+      }
+      dialog.close();
+      return;
+    }
+
+    // hasClient is true when the user registered an app OR when Flux ships one
+    // for this provider. Only the connectors with neither still need the
+    // registration form, and they say so instead of failing silently.
+    if (state && !state.hasClient) {
+      dialog.close();
+      const card = this.grid.querySelector<HTMLElement>(
+          `[data-connector="${CSS.escape(c.id)}"]`);
+      if (card) {
+        void this.showClientForm(card, c);
+      }
+      return;
+    }
+
+    const {started, error: why} = await this.handler.beginConnect(c.id);
+    if (!started) {
+      fail(why || 'Could not start the connection.');
+      return;
+    }
+    dialog.close();
+  }
+
 
   /**
    * The OAuth app registration form, inline under the card.

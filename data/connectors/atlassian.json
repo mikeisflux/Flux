@@ -33,22 +33,26 @@
   },
   "operations": {
     "accessible_resources": {
+      "label": "List accessible sites",
       "method": "GET",
       "path": "https://api.atlassian.com/oauth/token/accessible-resources",
       "write_scope": "readonly",
       "notes": "Call this first; it returns the cloudid every other call needs."
     },
     "search_issues": {
+      "label": "Search Jira issues",
       "method": "GET",
       "path": "/rest/api/3/search",
       "write_scope": "readonly"
     },
     "get_issue": {
+      "label": "Get a Jira issue",
       "method": "GET",
       "path": "/rest/api/3/issue/{issueIdOrKey}",
       "write_scope": "readonly"
     },
     "search_confluence": {
+      "label": "Search Confluence",
       "method": "GET",
       "path": "https://api.atlassian.com/ex/confluence/{cloudid}/wiki/rest/api/search",
       "write_scope": "readonly"

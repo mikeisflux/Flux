@@ -46,12 +46,14 @@
   },
   "operations": {
     "whoami": {
+      "label": "Get current user",
       "method": "GET",
       "path": "/whoami",
       "write_scope": "readonly",
       "notes": "The connect-time check. Returns name, loginId, workspace, and crucially `scoped` and `tokenName`."
     },
     "list_docs": {
+      "label": "List docs",
       "method": "GET",
       "path": "/docs",
       "params": {
@@ -66,23 +68,27 @@
       "notes": "Only docs the user has opened at least once, ordered by the latest event relevant to them. A doc shared but never opened does not appear. Rate limited far harder than other reads - 4 requests per 6 seconds."
     },
     "get_doc": {
+      "label": "Get a doc",
       "method": "GET",
       "path": "/docs/{docId}",
       "write_scope": "readonly",
       "notes": "docSize.overApiSizeLimit is worth checking before a big read."
     },
     "list_pages": {
+      "label": "List pages",
       "method": "GET",
       "path": "/docs/{docId}/pages",
       "write_scope": "readonly"
     },
     "get_page": {
+      "label": "Get a page",
       "method": "GET",
       "path": "/docs/{docId}/pages/{pageIdOrName}",
       "write_scope": "readonly",
       "notes": "contentType is canvas, embed or syncPage. isEffectivelyHidden accounts for a hidden parent, isHidden does not."
     },
     "list_page_content": {
+      "label": "Read page content",
       "method": "GET",
       "path": "/docs/{docId}/pages/{pageIdOrName}/content",
       "params": {
@@ -93,6 +99,7 @@
       "notes": "Plain text only. For html or markdown use the export flow below."
     },
     "export_page": {
+      "label": "Export a page",
       "method": "POST",
       "path": "/docs/{docId}/pages/{pageIdOrName}/export",
       "params": {
@@ -102,6 +109,7 @@
       "notes": "Asynchronous: returns an export id, then poll GET .../export/{requestId} until status completes and read downloadLink. The link expires quickly and a fresh one is issued on each status call, so fetch immediately or re-poll. This is a read despite being a POST."
     },
     "list_tables": {
+      "label": "List tables",
       "method": "GET",
       "path": "/docs/{docId}/tables",
       "params": {
@@ -110,11 +118,13 @@
       "write_scope": "readonly"
     },
     "get_table": {
+      "label": "Get a table",
       "method": "GET",
       "path": "/docs/{docId}/tables/{tableIdOrName}",
       "write_scope": "readonly"
     },
     "list_columns": {
+      "label": "List columns",
       "method": "GET",
       "path": "/docs/{docId}/tables/{tableIdOrName}/columns",
       "params": {
@@ -125,6 +135,7 @@
       "notes": "Call this before reading rows. Column IDs are immutable; names are not, and row values are keyed by column ID unless useColumnNames is set."
     },
     "list_rows": {
+      "label": "List rows",
       "method": "GET",
       "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
       "params": {
@@ -140,11 +151,13 @@
       "notes": "syncToken is the incremental-sync mechanism: the response carries nextSyncToken, and passing it back later returns only what has since changed. Use it instead of re-reading a whole table on a schedule."
     },
     "get_row": {
+      "label": "Get a row",
       "method": "GET",
       "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
       "write_scope": "readonly"
     },
     "upsert_rows": {
+      "label": "Upsert rows",
       "method": "POST",
       "path": "/docs/{docId}/tables/{tableIdOrName}/rows",
       "params": {
@@ -156,28 +169,33 @@
       "notes": "Base tables only - not views. Without keyColumns it inserts and returns addedRowIds; with them it upserts and addedRowIds is absent. If several rows match the key, ALL of them are updated. Always 202."
     },
     "update_row": {
+      "label": "Update a row",
       "method": "PUT",
       "path": "/docs/{docId}/tables/{tableIdOrName}/rows/{rowIdOrName}",
       "write_scope": "send",
       "notes": "Addressing by name updates an arbitrary matching row. Use the row ID."
     },
     "list_formulas": {
+      "label": "List formulas",
       "method": "GET",
       "path": "/docs/{docId}/formulas",
       "write_scope": "readonly"
     },
     "get_formula": {
+      "label": "Get a formula",
       "method": "GET",
       "path": "/docs/{docId}/formulas/{formulaIdOrName}",
       "write_scope": "readonly",
       "notes": "Returns the computed value. A cheap way to read a rollup without pulling the table it summarises."
     },
     "list_controls": {
+      "label": "List controls",
       "method": "GET",
       "path": "/docs/{docId}/controls",
       "write_scope": "readonly"
     },
     "resolve_browser_link": {
+      "label": "Resolve a browser link",
       "method": "GET",
       "path": "/resolveBrowserLink",
       "params": {
@@ -188,6 +206,7 @@
       "notes": "Turns a coda.io URL the user pasted into an API href. The natural first call when a task starts from a link rather than an ID."
     },
     "mutation_status": {
+      "label": "Check mutation status",
       "method": "GET",
       "path": "/mutationStatus/{requestId}",
       "write_scope": "readonly",

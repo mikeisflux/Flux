@@ -25,27 +25,32 @@
   },
   "operations": {
     "verify_token": {
+      "label": "Verify the API token",
       "method": "GET",
       "path": "/user/tokens/verify",
       "write_scope": "readonly",
       "notes": "Call this on connect; it is the cheapest way to confirm a token works and has not been revoked."
     },
     "list_zones": {
+      "label": "List zones",
       "method": "GET",
       "path": "/zones",
       "write_scope": "readonly"
     },
     "radar_traffic": {
+      "label": "Get Radar traffic",
       "method": "GET",
       "path": "/radar/http/timeseries",
       "write_scope": "readonly"
     },
     "list_workers": {
+      "label": "List Workers",
       "method": "GET",
       "path": "/accounts/{account_id}/workers/scripts",
       "write_scope": "readonly"
     },
     "worker_logs": {
+      "label": "Get Worker logs",
       "method": "GET",
       "path": "/accounts/{account_id}/workers/scripts/{script}/tails",
       "write_scope": "readonly"

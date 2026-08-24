@@ -1857,6 +1857,82 @@ body.shell.collapsed .badge { display: none; }
   gap: 10px;
 }
 
+/* --- Connector dialog -----------------------------------------------------
+ *
+ * The actions list is the substance here, so it gets the room: two columns,
+ * scrolling on its own rather than growing the dialog past the viewport. A
+ * connector like Basecamp has 39 of them.
+ */
+.connector-dialog .connector-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  padding: 22px 24px 0;
+  gap: 14px;
+}
+
+.connector-dialog .connector-dialog-head h2 {
+  margin: 0 0 4px;
+}
+
+.connector-dialog .connector-dialog-head .subtitle {
+  margin: 0;
+}
+
+.connector-dialog .connector-dialog-body {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  gap: 6px;
+}
+
+.connector-dialog .connector-dialog-body .section-title {
+  margin: 8px 0 0;
+}
+
+.connector-dialog .connector-dialog-body .subtitle {
+  margin: 0 0 10px;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-height: 46vh;
+  overflow-y: auto;
+  gap: 8px;
+}
+
+/* One column when there is not room for two, rather than two cramped ones. */
+@media (width <= 620px) {
+  .action-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.action-chip {
+  display: flex;
+  align-items: center;
+  padding: 11px 13px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  gap: 10px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-chip svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  color: var(--fg-muted);
+}
+
+.connector-dialog .dialog-actions {
+  padding: 0 24px 22px;
+}
+
 /* --- Run screen -----------------------------------------------------------
  *
  * A transcript, not a dashboard. The column is narrow on purpose: the summary

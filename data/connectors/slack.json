@@ -40,32 +40,38 @@
   },
   "operations": {
     "search_messages": {
+      "label": "Search messages",
       "method": "GET",
       "path": "/search.messages",
       "write_scope": "readonly",
       "notes": "Requires a user token, not a bot token - bots cannot search."
     },
     "list_channels": {
+      "label": "List channels",
       "method": "GET",
       "path": "/conversations.list",
       "write_scope": "readonly"
     },
     "channel_history": {
+      "label": "Read channel history",
       "method": "GET",
       "path": "/conversations.history",
       "write_scope": "readonly"
     },
     "list_users": {
+      "label": "List users",
       "method": "GET",
       "path": "/users.list",
       "write_scope": "readonly"
     },
     "lookup_user_by_email": {
+      "label": "Find a user by email",
       "method": "GET",
       "path": "/users.lookupByEmail",
       "write_scope": "readonly"
     },
     "post_message": {
+      "label": "Post a message",
       "method": "POST",
       "path": "/chat.postMessage",
       "write_scope": "send",

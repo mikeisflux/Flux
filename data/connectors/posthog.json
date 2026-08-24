@@ -25,22 +25,26 @@
   },
   "operations": {
     "query": {
+      "label": "Run a HogQL query",
       "method": "POST",
       "path": "/projects/{project_id}/query/",
       "write_scope": "readonly",
       "notes": "HogQL. The general read path for anything analytical."
     },
     "list_insights": {
+      "label": "List insights",
       "method": "GET",
       "path": "/projects/{project_id}/insights/",
       "write_scope": "readonly"
     },
     "list_feature_flags": {
+      "label": "List feature flags",
       "method": "GET",
       "path": "/projects/{project_id}/feature_flags/",
       "write_scope": "readonly"
     },
     "list_experiments": {
+      "label": "List experiments",
       "method": "GET",
       "path": "/projects/{project_id}/experiments/",
       "write_scope": "readonly"

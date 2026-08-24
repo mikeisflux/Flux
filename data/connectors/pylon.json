@@ -38,18 +38,21 @@
   },
   "operations": {
     "get_me": {
+      "label": "Get current user",
       "method": "GET",
       "path": "/me",
       "write_scope": "readonly",
       "notes": "Returns details about the organisation the token belongs to. The connect-time check."
     },
     "list_accounts": {
+      "label": "List accounts",
       "method": "GET",
       "path": "/accounts",
       "write_scope": "readonly",
       "rate_limit": "60/min"
     },
     "get_account": {
+      "label": "Get an account",
       "method": "GET",
       "path": "/accounts/{id}",
       "write_scope": "readonly",
@@ -57,6 +60,7 @@
       "notes": "id may be the Pylon ID or an external ID."
     },
     "search_accounts": {
+      "label": "Search accounts",
       "method": "POST",
       "path": "/accounts/search",
       "write_scope": "readonly",
@@ -64,12 +68,14 @@
       "notes": "A POST that reads. search_text is fuzzy and is intersected with the filter. Filterable: id (equals/in/not_in), domains and tags (contains/does_not_contain/in/not_in), name (equals/in/not_in/string_contains), external_ids and owner_id (equals/in/not_in/is_set/is_unset). Custom fields are addressed by slug in field."
     },
     "get_account_relationships": {
+      "label": "Get account relationships",
       "method": "GET",
       "path": "/accounts/{account_id}/relationships",
       "write_scope": "readonly",
       "rate_limit": "60/min"
     },
     "list_audit_logs": {
+      "label": "List audit logs",
       "method": "GET",
       "path": "/audit-logs",
       "write_scope": "readonly",
@@ -77,6 +83,7 @@
       "notes": "Returns 403 unless the organisation is entitled to it."
     },
     "search_audit_logs": {
+      "label": "Search audit logs",
       "method": "POST",
       "path": "/audit-logs/search",
       "write_scope": "readonly",
@@ -84,12 +91,14 @@
       "notes": "Filterable: action (equals/in/not_in/string_contains/string_does_not_contain), action_happened_at (time_is_after/time_is_before/time_range). Timestamps are RFC 3339."
     },
     "list_contacts": {
+      "label": "List contacts",
       "method": "GET",
       "path": "/contacts",
       "write_scope": "readonly",
       "rate_limit": "60/min"
     },
     "get_contact": {
+      "label": "Get a contact",
       "method": "GET",
       "path": "/contacts/{id}",
       "write_scope": "readonly",
@@ -97,6 +106,7 @@
       "notes": "id may be the Pylon ID or an external ID."
     },
     "search_contacts": {
+      "label": "Search contacts",
       "method": "POST",
       "path": "/contacts/search",
       "write_scope": "readonly",
@@ -104,6 +114,7 @@
       "notes": "Filterable: id and account_id (equals/in/not_in), email and name (equals/in/not_in/string_contains). Custom fields by slug in field. search_text is fuzzy and intersects the filter."
     },
     "list_users": {
+      "label": "List users",
       "method": "GET",
       "path": "/users",
       "write_scope": "readonly",
@@ -111,12 +122,14 @@
       "notes": "Organisation members, not contacts. include_deactivated defaults to false."
     },
     "get_user": {
+      "label": "Get a user",
       "method": "GET",
       "path": "/users/{id}",
       "write_scope": "readonly",
       "rate_limit": "60/min"
     },
     "search_users": {
+      "label": "Search users",
       "method": "POST",
       "path": "/users/search",
       "write_scope": "readonly",
@@ -124,6 +137,7 @@
       "notes": "Only email is filterable, and only with equals/in/not_in."
     },
     "get_call_recording": {
+      "label": "Get a call recording",
       "method": "GET",
       "path": "/call-recordings/{id}",
       "write_scope": "readonly",
@@ -131,6 +145,7 @@
       "notes": "Carries title, summary, participant_emails, duration_ms and a url. source names the recorder - fathom, gong, grain, granola or custom_call_recorder."
     },
     "search_call_recordings": {
+      "label": "Search call recordings",
       "method": "POST",
       "path": "/call-recordings/search",
       "write_scope": "readonly",
@@ -138,6 +153,7 @@
       "notes": "Filterable: account_id (equals/in/not_in/is_set/is_unset), source (equals/in/not_in), title (equals/string_contains), start_time (time_is_after/time_is_before/time_range). Timestamps are RFC 3339. This one's limit is <= 1000, not < 1000 - the only endpoint read so far that differs."
     },
     "list_issues": {
+      "label": "List issues",
       "method": "GET",
       "path": "/issues",
       "params": {
@@ -151,6 +167,7 @@
       "notes": "start_time and end_time are REQUIRED and the span must be <= 30 days. There is no 'list everything' - a wider search has to be windowed, or use search_issues."
     },
     "search_issues": {
+      "label": "Search issues",
       "method": "POST",
       "path": "/issues/search",
       "params": {
@@ -164,6 +181,7 @@
       "notes": "The practical way in, since it has no 30-day window. Filterable: created_at / resolved_at / updated_at / latest_message_activity_at (time ops), account_id / requester_id / assignee_id / ticket_form_id / issue_type (equals,in,not_in,is_set,is_unset), state / team_id / follower_user_id / follower_contact_id / slack_channel_id (equals,in,not_in), tags (contains,does_not_contain,in,not_in), title / body_html (string_contains,string_does_not_contain). Custom fields by slug in field; tags by name."
     },
     "get_issue": {
+      "label": "Get an issue",
       "method": "GET",
       "path": "/issues/{id}",
       "write_scope": "readonly",
@@ -171,6 +189,7 @@
       "notes": "Accepts the ID or the issue number. The most generous limit on the API."
     },
     "list_issue_statuses": {
+      "label": "List issue statuses",
       "method": "GET",
       "path": "/issue-statuses",
       "write_scope": "readonly",
@@ -178,12 +197,14 @@
       "notes": "Resolve before filtering on state - the standard values are new, waiting_on_you, waiting_on_customer, on_hold and closed, but organisations define custom status slugs too."
     },
     "get_issue_followers": {
+      "label": "Get issue followers",
       "method": "GET",
       "path": "/issues/{id}/followers",
       "write_scope": "readonly",
       "rate_limit": "60/min"
     },
     "get_issue_voice_calls": {
+      "label": "Get issue voice calls",
       "method": "GET",
       "path": "/issues/{id}/voice-calls",
       "write_scope": "readonly",
@@ -191,6 +212,7 @@
       "notes": "Phone issues only. Returns recordings with parsed transcript segments and a PRESIGNED download URL for the audio. Recordings whose transcript has not finished are silently omitted - an empty result may mean 'not yet', not 'none', so refetch before concluding."
     },
     "list_messages": {
+      "label": "List messages",
       "method": "GET",
       "path": "/issues/{id}/messages",
       "params": {
@@ -202,12 +224,14 @@
       "notes": "Oldest first, and includes both customer-visible replies and internal notes - is_private separates them. Omitting BOTH limit and cursor returns every message for backwards compatibility; passing a cursor without a limit gives pages of 100. On a long issue the default is therefore unbounded - pass a limit."
     },
     "list_issue_threads": {
+      "label": "List issue threads",
       "method": "GET",
       "path": "/issues/{id}/threads",
       "write_scope": "readonly",
       "rate_limit": "20/min"
     },
     "reply_to_issue": {
+      "label": "Reply to an issue",
       "method": "POST",
       "path": "/issues/{id}/reply",
       "params": {
@@ -223,6 +247,7 @@
       "notes": "Customer-facing - the requester sees this. message_id must be the TOP-LEVEL id from list_messages, not thread_id and not email_info.message_id, and it must point at a customer-visible message rather than an internal note. On an email conversation email_info must carry at least one recipient: the referenced message sets the threading headers but its recipients are NOT copied, so a reply with no recipients goes nowhere."
     },
     "create_internal_note": {
+      "label": "Add an internal note",
       "method": "POST",
       "path": "/issues/{id}/note",
       "params": {

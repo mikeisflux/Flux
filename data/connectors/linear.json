@@ -36,24 +36,28 @@
   },
   "operations": {
     "query_issues": {
+      "label": "Query issues",
       "method": "POST",
       "path": "/",
       "write_scope": "readonly",
       "notes": "GraphQL query. Everything read goes through this one endpoint."
     },
     "create_issue": {
+      "label": "Create an issue",
       "method": "POST",
       "path": "/",
       "write_scope": "draft",
       "notes": "issueCreate mutation. Draft rather than send: an issue is visible internally but is not an outbound message."
     },
     "create_comment": {
+      "label": "Add a comment",
       "method": "POST",
       "path": "/",
       "write_scope": "draft",
       "notes": "commentCreate mutation."
     },
     "update_issue": {
+      "label": "Update an issue",
       "method": "POST",
       "path": "/",
       "write_scope": "draft",

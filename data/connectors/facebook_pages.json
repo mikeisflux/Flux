@@ -26,6 +26,7 @@
   },
   "operations": {
     "publish": {
+      "label": "Publish a post",
       "method": "POST",
       "path": "/{page_id}/feed",
       "params": {
@@ -35,6 +36,7 @@
       "write_scope": "send"
     },
     "schedule": {
+      "label": "Schedule a post",
       "method": "POST",
       "path": "/{page_id}/feed",
       "params": {
@@ -46,16 +48,19 @@
       "notes": "Native scheduling - between 10 minutes and 6 months out. A recurring workflow can queue posts here and skip the browser entirely."
     },
     "list_posts": {
+      "label": "List posts",
       "method": "GET",
       "path": "/{page_id}/posts",
       "write_scope": "readonly"
     },
     "read_comments": {
+      "label": "Read comments",
       "method": "GET",
       "path": "/{post_id}/comments",
       "write_scope": "readonly"
     },
     "insights": {
+      "label": "Get post insights",
       "method": "GET",
       "path": "/{page_id}/insights",
       "write_scope": "readonly"

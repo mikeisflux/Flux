@@ -41,6 +41,7 @@
   },
   "operations": {
     "reply_to_thread": {
+      "label": "Reply to a thread",
       "mutation": "replyToThread",
       "permissions": [
         "thread:reply"
@@ -49,6 +50,7 @@
       "notes": "Only works when the thread's `channel` is API, CHAT, EMAIL, SLACK or MS_TEAMS. Read `channel` off the thread first; otherwise the mutation fails with cannot_reply_to_thread and a message saying why."
     },
     "reply_to_email": {
+      "label": "Reply to an email",
       "mutation": "replyToEmail",
       "permissions": [
         "email:create",
@@ -58,6 +60,7 @@
       "notes": "Replies to one inbound email by inReplyToEmailId, rather than to the thread. Takes customerId plus both textContent and markdownContent - send both, they are the two renderings of the same message, not alternatives."
     },
     "send_new_email": {
+      "label": "Send a new email",
       "mutation": "sendNewEmail",
       "permissions": [
         "email:create"

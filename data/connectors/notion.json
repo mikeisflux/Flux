@@ -36,36 +36,43 @@
   },
   "operations": {
     "search": {
+      "label": "Search Notion",
       "method": "POST",
       "path": "/search",
       "write_scope": "readonly"
     },
     "get_page": {
+      "label": "Get a page",
       "method": "GET",
       "path": "/pages/{page_id}",
       "write_scope": "readonly"
     },
     "get_block_children": {
+      "label": "Read page blocks",
       "method": "GET",
       "path": "/blocks/{block_id}/children",
       "write_scope": "readonly"
     },
     "query_database": {
+      "label": "Query a database",
       "method": "POST",
       "path": "/databases/{database_id}/query",
       "write_scope": "readonly"
     },
     "create_page": {
+      "label": "Create a page",
       "method": "POST",
       "path": "/pages",
       "write_scope": "draft"
     },
     "update_page": {
+      "label": "Update a page",
       "method": "PATCH",
       "path": "/pages/{page_id}",
       "write_scope": "draft"
     },
     "append_blocks": {
+      "label": "Append blocks to a page",
       "method": "PATCH",
       "path": "/blocks/{block_id}/children",
       "write_scope": "draft"

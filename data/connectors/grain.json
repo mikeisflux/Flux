@@ -50,6 +50,7 @@
   },
   "operations": {
     "list_recordings": {
+      "label": "List recordings",
       "method": "POST",
       "path": "/v2/recordings",
       "params": {
@@ -60,6 +61,7 @@
       "write_scope": "readonly"
     },
     "get_recording": {
+      "label": "Get a recording",
       "method": "POST",
       "path": "/v2/recordings/{recording_id}",
       "params": {
@@ -68,23 +70,27 @@
       "write_scope": "readonly"
     },
     "get_transcript": {
+      "label": "Get a transcript",
       "method": "GET",
       "path": "/v2/recordings/{recording_id}/transcript",
       "write_scope": "readonly",
       "notes": "JSON array of { start, end, speaker, participant_id, text }, timestamps in ms from the start of the recording. Add .txt, .vtt or .srt to the path for the text forms; .txt is 'Speaker: line' and is the cheapest thing to hand a model."
     },
     "list_users": {
+      "label": "List users",
       "method": "POST",
       "path": "/v2/users",
       "write_scope": "readonly"
     },
     "list_teams": {
+      "label": "List teams",
       "method": "POST",
       "path": "/v2/teams",
       "write_scope": "readonly",
       "notes": "Needed to resolve the team id for the recording filter."
     },
     "list_meeting_types": {
+      "label": "List meeting types",
       "method": "POST",
       "path": "/v2/meeting_types",
       "write_scope": "readonly",

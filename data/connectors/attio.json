@@ -32,21 +32,25 @@
   },
   "operations": {
     "list_objects": {
+      "label": "List objects",
       "method": "GET",
       "path": "/objects",
       "write_scope": "readonly"
     },
     "query_records": {
+      "label": "Query records",
       "method": "POST",
       "path": "/objects/{object}/records/query",
       "write_scope": "readonly"
     },
     "get_record": {
+      "label": "Get a record",
       "method": "GET",
       "path": "/objects/{object}/records/{record_id}",
       "write_scope": "readonly"
     },
     "list_lists": {
+      "label": "List lists",
       "method": "GET",
       "path": "/lists",
       "write_scope": "readonly"

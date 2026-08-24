@@ -29,21 +29,25 @@
   },
   "operations": {
     "run_report": {
+      "label": "Run a report",
       "method": "POST",
       "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runReport",
       "write_scope": "readonly"
     },
     "run_realtime_report": {
+      "label": "Run a realtime report",
       "method": "POST",
       "path": "https://analyticsdata.googleapis.com/v1beta/properties/{propertyId}:runRealtimeReport",
       "write_scope": "readonly"
     },
     "list_accounts": {
+      "label": "List accounts",
       "method": "GET",
       "path": "https://analyticsadmin.googleapis.com/v1beta/accounts",
       "write_scope": "readonly"
     },
     "list_properties": {
+      "label": "List properties",
       "method": "GET",
       "path": "https://analyticsadmin.googleapis.com/v1beta/properties",
       "write_scope": "readonly"

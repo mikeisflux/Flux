@@ -25,6 +25,7 @@ enum class AuthType {
 // One callable endpoint, straight out of the definition's `operations` map.
 struct ConnectorOperation {
   std::string name;          // "create_todo"
+  std::string label;         // "Create a to-do" - what a person calls it
   std::string method;        // "POST"
   std::string path;          // "/todolists/{todolist_id}/todos.json"
   mojom::WriteScope write_scope = mojom::WriteScope::kReadOnly;
@@ -86,7 +87,23 @@ struct ConnectorAuth {
 
   AccountDiscovery discovery;
 
+  // An OAuth app Flux itself registered with the provider, so the user does
+  // not have to.
+  //
+  // For a desktop application the "secret" is not one: the binary is
+  // downloadable, the provider knows it, and Google's own installed-app flow
+  // documents that it is not treated as confidential - which is why PKCE is
+  // mandatory there and why every one of these definitions sets it. Shipping
+  // one turns registering an OAuth app, enabling APIs and configuring a
+  // consent screen into a single Connect button.
+  //
+  // Empty for every connector that has no such registration, and a
+  // user-registered app always wins over it - see ConnectorService::GetClient.
+  std::string builtin_client_id;
+  std::string builtin_client_secret;
+
   bool has_personal_token() const { return !personal_token_label.empty(); }
+  bool has_builtin_client() const { return !builtin_client_id.empty(); }
 };
 
 // One connector as the runtime sees it.

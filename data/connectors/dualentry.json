@@ -70,6 +70,7 @@
   },
   "operations": {
     "list_invoices": {
+      "label": "List invoices",
       "method": "GET",
       "path": "/invoices/",
       "params": {
@@ -101,6 +102,7 @@
       "notes": "amount_due_updated_at is the field to sync on for anything about who owes what: DualEntry moves it whenever the invoice is edited OR whenever a posted customer payment or prepayment application referencing it is written. updated_after alone will miss a payment that changed the balance without touching the invoice record."
     },
     "list_webhooks": {
+      "label": "List webhooks",
       "method": "GET",
       "path": "/webhooks/",
       "params": {

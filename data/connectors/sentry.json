@@ -36,21 +36,25 @@
   },
   "operations": {
     "list_issues": {
+      "label": "List issues",
       "method": "GET",
       "path": "/projects/{org}/{project}/issues/",
       "write_scope": "readonly"
     },
     "get_issue": {
+      "label": "Get an issue",
       "method": "GET",
       "path": "/issues/{issue_id}/",
       "write_scope": "readonly"
     },
     "list_events": {
+      "label": "List events",
       "method": "GET",
       "path": "/issues/{issue_id}/events/",
       "write_scope": "readonly"
     },
     "get_latest_event": {
+      "label": "Get the latest event",
       "method": "GET",
       "path": "/issues/{issue_id}/events/latest/",
       "write_scope": "readonly"
