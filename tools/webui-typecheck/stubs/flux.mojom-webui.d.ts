@@ -70,7 +70,10 @@ export interface UserTemplate {
 export interface AskAttachment {
   name: string;
   mimeType: string;
-  bytes: Uint8Array;
+  // array<uint8> generates number[], not Uint8Array. See
+  // mojom_ts_generator.py's _kind_to_ts_type: every integer kind maps to
+  // "number", and an array of a non-nullable kind is "%s[]".
+  bytes: number[];
 }
 
 export interface AskStep {

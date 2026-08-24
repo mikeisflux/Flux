@@ -172,7 +172,8 @@ class AskPanel {
         this.fileLabel.textContent = `${file.name} is too large`;
         continue;
       }
-      const bytes = new Uint8Array(await file.arrayBuffer());
+      // mojo's array<uint8> is number[] on this side, not a Uint8Array.
+      const bytes = Array.from(new Uint8Array(await file.arrayBuffer()));
       this.attachments.push({
         name: file.name,
         mimeType: file.type || 'application/octet-stream',

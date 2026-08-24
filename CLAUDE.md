@@ -105,6 +105,27 @@ against something outside itself. It exits 0 and says so if the fetch fails,
 which means the stub is **unverified** - say that rather than claiming it
 agrees.
 
+`tools/check-mojom-stub-types.py` covers the other half: the stub against
+`flux.mojom`'s own declarations. `array<uint8> bytes` was declared
+`Uint8Array`, because that is what a bytes field obviously is. The generator
+emits `number[]` - `_kind_to_ts_type` maps every integer width to `number`,
+and an array of a non-nullable kind to `%s[]` - so `ask.ts` type-checked here
+and died at target 116 of 1536. The mapping table is read out of
+`mojom_ts_generator.py` at the pinned tag rather than from memory, which is
+where the `Uint8Array` came from in the first place.
+
+The two checks divide by where the answer lives. A type an imported module
+typemaps away is invisible in the `.mojom` and only `check-ts-typemaps.py` can
+find it; a type flux.mojom declares itself is fully determined and this one
+compares it. Only fields present in BOTH are compared - an incomplete stub is
+safe, because `tsc` fails on anything the console uses that the stub does not
+declare. It is a **wrong** stub that is dangerous, and the danger is specific:
+it is a self-consistent world where every line that agrees with the fiction
+passes.
+
+Watch `int64`/`uint64` in particular - those are `bigint`, not `number`, and
+that is the same bug wearing different clothes.
+
 Node and npm are available in this container, so there is no excuse for
 hand-formatting CSS to satisfy a linter, or for shipping TypeScript nobody
 compiled - install them and run the real thing.
