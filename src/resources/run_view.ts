@@ -173,9 +173,24 @@ export class RunView {
     this.subagentPanel.className = 'plan-panel subagent-panel';
     this.subagentPanel.hidden = true;
 
-    screen.append(head, this.stepCount, this.stream, this.artifactHost,
-                  this.subagentPanel, this.planPanel, this.questionHost,
+    // A real pinned footer, not a sticky panel. `position: sticky` keeps an
+    // element in flow at its natural position and floats it up over whatever
+    // PRECEDES it, so the newest tool calls were drawn underneath the task
+    // list and scrolling only pushed them back under it again. Splitting the
+    // screen into a scroller and a footer is the only way the transcript can
+    // be read all the way to its end.
+    screen.classList.add('run-screen');
+
+    const scroller = document.createElement('div');
+    scroller.className = 'run-scroll';
+    scroller.append(head, this.stepCount, this.stream, this.artifactHost);
+
+    const footer = document.createElement('div');
+    footer.className = 'run-footer';
+    footer.append(this.subagentPanel, this.planPanel, this.questionHost,
                   this.composerBox());
+
+    screen.append(scroller, footer);
     return screen;
   }
 

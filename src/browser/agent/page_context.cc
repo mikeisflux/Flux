@@ -183,10 +183,21 @@ void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
       continue;
 
     const ax::mojom::Role role = node->GetRole();
-    if (node->IsInvisibleOrIgnored())
-      continue;
 
-    if (IsInteractiveRole(role) &&
+    // Invisible and ignored are not the same thing, and treating them as one
+    // threw away most of every real page.
+    //
+    // Invisible (display:none) genuinely has nothing under it worth reading,
+    // so the whole subtree goes. IGNORED does not mean that at all: Blink's
+    // tree is full of ignored structural wrappers whose descendants are the
+    // actual content, which is precisely why AXNode offers
+    // UnignoredChildrenBegin(). Skipping an ignored node's subtree blanked
+    // everything below the first such wrapper.
+    if (node->data().IsInvisible())
+      continue;
+    const bool emit = !node->IsIgnored();
+
+    if (emit && IsInteractiveRole(role) &&
         snapshot.interactive.size() < kMaxInteractiveNodes) {
       InteractiveNode entry;
       entry.node_id = node->id();
@@ -204,7 +215,7 @@ void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
         snapshot.interactive.push_back(std::move(entry));
     }
 
-    if (role == ax::mojom::Role::kStaticText && IsContentRole(role)) {
+    if (emit && role == ax::mojom::Role::kStaticText) {
       const std::string text = NameOf(*node);
       if (!text.empty() && content.size() < kMaxContentChars) {
         content.append(text);
@@ -218,6 +229,7 @@ void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
       if (IsContentRole((*it)->GetRole()) || IsInteractiveRole((*it)->GetRole()))
         stack.push_back(*it);
     }
+
   }
 
   if (content.size() >= kMaxContentChars) {

@@ -1884,6 +1884,11 @@ body.ask {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
+  /* The edge against the page. Without it the panel and a white page are one
+     undivided sheet, which is what it looked like. Drawn in the document
+     rather than as a views::Border because the panel is a WebView and this is
+     the layer that already owns every other line in it. */
+  border-left: 1px solid var(--border);
 }
 
 .visually-hidden {
@@ -2257,14 +2262,46 @@ body.ask {
 }
 
 /* --- Plan panel ----------------------------------------------------------- */
+/* The run screen scrolls its transcript and pins everything the user acts on
+   - task list, questions, composer - to the bottom.
+
+   This was `position: sticky; bottom: 96px` on the panel alone, which does not
+   do that: sticky leaves the element in flow at its natural position and
+   floats it up over whatever precedes it, so the newest tool calls rendered
+   underneath the task list and scrolling to reach them put them straight back
+   under it. */
+.screen.run-screen {
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+.run-scroll {
+  flex: 1;
+  /* Without this the flex item refuses to shrink below its content and the
+     scrollbar lands on the window instead of on the transcript. */
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.run-footer {
+  flex: none;
+  padding-top: 12px;
+}
+
 .plan-panel {
-  position: sticky;
-  bottom: 96px;
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  margin-top: 24px;
+  margin-bottom: 12px;
   background: var(--bg);
+}
+
+/* A long plan takes its height from the footer, not from the transcript. */
+.run-footer .plan-panel {
+  max-height: 34vh;
+  overflow-y: auto;
 }
 
 .plan-head {

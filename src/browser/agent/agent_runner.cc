@@ -552,6 +552,13 @@ bool AgentRunner::ChargeAndCheckBudget(uint32_t input_tokens,
       (output_tokens / 1e6) * provider_->OutputCostPerMillion(spec_->model->model);
   // Credits are thousandths of a cent, so integer arithmetic throughout.
   credits_spent_ += static_cast<uint64_t>(cost * 100000.0);
+
+  // A budget of zero is no budget, and that is the default. Spend is still
+  // counted and still shown against the run - what it no longer does is end
+  // one. A cap that stops a task at 1/5 steps has not saved the money it
+  // already spent; it has thrown it away, which is exactly what happened.
+  if (spec_->credit_budget == 0)
+    return true;
   return credits_spent_ < spec_->credit_budget;
 }
 

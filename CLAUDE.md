@@ -528,15 +528,22 @@ The fields come from the .mojom rather than a list in the check, so adding one
 to TaskSpec fails until the serializer carries it. That is the point: whoever
 adds the next field will not have read the scheduler.
 
-Two lessons that are not about serializers. **Credits are thousandths of a
-cent** - `ChargeAndCheckBudget` builds them with `cost * 100000` - and the
-depth presets were authored as 200/1000/5000, which is $0.002/$0.01/$0.05
-against a modest Opus turn costing about 3,500 of them. Every preset was
-refused on its first turn. A budget constant means nothing without the price of
-one turn written next to it. And **the agent's tab is opened on first demand**,
-not when the run starts: opening it in `Start()` put an about:blank tab in
-front of the user for every run, including runs that only call a connector and
-runs that ended before browsing at all.
+Two lessons that are not about serializers. **The agent's tab is opened on
+first demand**, not when the run starts: opening it in `Start()` put an
+about:blank tab in front of the user for every run, including runs that only
+call a connector and runs that ended before browsing at all. And **credits are
+thousandths of a cent** - `ChargeAndCheckBudget` builds them with
+`cost * 100000` - which is how the depth presets came to be authored as
+200/1000/5000, or $0.002/$0.01/$0.05, against a modest Opus turn costing about
+3,500 of them. Every preset was refused on its first turn.
+
+**There are no credit budgets now.** Raising them to 25,000/100,000/500,000
+fixed the arithmetic and missed the point: the ceiling then ended a real run at
+1 of 5 steps, having already spent the money. That is not a saving, it is the
+same spend with nothing to show for it - a browser agent's cost is front-loaded
+into reading pages, and the value is all at the end. `credit_budget == 0` means
+no budget and is the default everywhere; spend is still counted and still shown
+against the run. **Do not reintroduce one.**
 
 ### Authored data is only as real as the parser
 

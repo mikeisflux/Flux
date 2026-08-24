@@ -17,18 +17,18 @@ import type {Template} from './catalog.js';
  * browser process enforces by failing the run closed rather than billing on.
  */
 /**
- * A credit is a thousandth of a cent - see ChargeAndCheckBudget, which turns
- * dollars into them with `cost * 100000`. These were 200/1000/5000, which is
- * $0.002 / $0.01 / $0.05, and one modest Opus turn costs about 3,500 of them:
- * every preset was refused on its first turn, "Quick" on any model at all.
- * A budget only means something next to the price of a turn.
+ * Depth is how much room the model gets per turn, and nothing else.
+ *
+ * It used to carry a credit ceiling too, and that ceiling ended a real run at
+ * 1 of 5 steps having already spent the money - which is not a saving, it is
+ * the same spend with nothing to show for it. Runs are unbudgeted now; what
+ * they cost is still counted and still shown against the run.
  */
 interface Depth {
   id: string;
   label: string;
   hint: string;
   maxOutputTokens: number;
-  creditBudget: bigint;
 }
 
 const DEPTHS: Depth[] = [
@@ -37,21 +37,18 @@ const DEPTHS: Depth[] = [
     label: 'Quick',
     hint: 'One pass, no deep research. Cheapest.',
     maxOutputTokens: 4096,
-    creditBudget: 25_000n,
   },
   {
     id: 'medium',
     label: 'Medium',
     hint: 'The default. Enough room to check its own work.',
     maxOutputTokens: 16384,
-    creditBudget: 100_000n,
   },
   {
     id: 'thorough',
     label: 'Thorough',
-    hint: 'Long-running research. Costs the most; stops at the ceiling.',
+    hint: 'Long-running research. Costs the most.',
     maxOutputTokens: 65536,
-    creditBudget: 500_000n,
   },
 ];
 
@@ -374,7 +371,7 @@ export class NewTaskView {
         allowFailover: true,
       },
       profileId: '',
-      creditBudget: this.depth.creditBudget,
+      creditBudget: 0n,  // No ceiling. See ChargeAndCheckBudget.
     });
 
     if (error) {

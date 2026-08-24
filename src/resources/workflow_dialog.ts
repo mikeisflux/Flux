@@ -49,16 +49,16 @@ const PRESETS: Array<{label: string, cron: string}> = [
 // workflow saved here was unrunnable from the moment it was created. The
 // values mirror the Quick/Medium/Thorough ladder the composer uses, because
 // this is the same choice wearing a different label.
+// Which model, and how much room it gets per turn. No credit ceiling: one
+// ended a real run a fifth of the way through work it had already paid for.
 const MODES: Array<{
   label: string,
   model: string,
   tokens: number,
-  credits: bigint,
 }> = [
-  {label: 'Fast', model: 'claude-haiku-4-5-20251001', tokens: 4096,
-   credits: 25_000n},
-  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192, credits: 100_000n},
-  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384, credits: 500_000n},
+  {label: 'Fast', model: 'claude-haiku-4-5-20251001', tokens: 4096},
+  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192},
+  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384},
 ];
 
 export class WorkflowDialog {
@@ -185,7 +185,7 @@ export class WorkflowDialog {
             allowFailover: true,
           },
           profileId: '',
-          creditBudget: chosen.credits,
+          creditBudget: 0n,  // No ceiling. See ChargeAndCheckBudget.
         },
       };
 

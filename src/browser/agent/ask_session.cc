@@ -480,7 +480,7 @@ ToolResult AskSession::RunTool(const ToolCall& call) {
     auto spec = mojom::TaskSpec::New();
     spec->prompt = *prompt;
     spec->write_scope = mojom::WriteScope::kDraft;
-    spec->credit_budget = 100000;
+    spec->credit_budget = 0;  // No budget. See ChargeAndCheckBudget.
     auto model = mojom::ModelConfig::New();
     model->provider = mojom::Provider::kAnthropic;
     model->model = "claude-sonnet-5";

@@ -4,6 +4,7 @@
 #define CHROME_BROWSER_FLUX_UI_FLUX_ASK_BUTTON_H_
 
 #include "base/memory/raw_ptr.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -35,11 +36,24 @@ class FluxAskButton : public views::LabelButton {
   // views::View:
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds& available_size) const override;
+  // Defined in the .cc, not here: chromium-style rejects a virtual with a
+  // non-empty body declared inline in a header.
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+
+  // views::Button:
+  void StateChanged(ButtonState old_state) override;
 
  private:
   void Toggle();
 
+  // Whether the panel is open right now. The pill is a toggle, so it has to
+  // draw an on state, and the pref is the one place that state lives - the
+  // panel's own close button sets it too.
+  bool IsPanelOpen() const;
+  void OnOpenChanged();
+
   const raw_ptr<Profile> profile_;
+  PrefChangeRegistrar pref_change_registrar_;
 };
 
 }  // namespace flux

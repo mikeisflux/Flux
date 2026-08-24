@@ -99,12 +99,6 @@ std::optional<std::string> FluxAgentService::StartRun(
     *error = "Task prompt is empty.";
     return std::nullopt;
   }
-  // Fail closed on a zero budget rather than starting a run that cannot
-  // afford its first model call.
-  if (spec->credit_budget == 0) {
-    *error = "Task has no credit budget.";
-    return std::nullopt;
-  }
   // PumpQueue dereferences this to build the provider, and a null StructPtr
   // there is a CHECK that takes the whole browser process down - which is what
   // a workflow saved before the scheduler persisted its model did, on every
@@ -317,20 +311,22 @@ void FluxAgentService::StartSubagents(
     if (parent_runner && parent_runner->spec()) {
       spec->write_scope = parent_runner->spec()->write_scope;
       spec->model = parent_runner->spec()->model->Clone();
-      // The budget is split, not copied. Four children each inheriting the
-      // parent's ceiling is a task that can cost five times what the user
-      // agreed to. Never down to zero, though: a child
-      // given nothing fails on its first turn and reports a budget error
-      // rather than the work it was asked to do.
-      spec->credit_budget = std::max<uint64_t>(
-          1u, parent_runner->spec()->credit_budget / (work.size() + 1));
+      // Split, not copied, when the parent has a ceiling at all: four children
+      // each inheriting it is a task that can cost five times what was agreed.
+      // An unlimited parent (0) gives unlimited children, because 0 means no
+      // budget rather than an empty one.
+      const uint64_t parent_budget = parent_runner->spec()->credit_budget;
+      spec->credit_budget =
+          parent_budget == 0
+              ? 0
+              : std::max<uint64_t>(1u, parent_budget / (work.size() + 1));
       spec->profile_id = parent_runner->spec()->profile_id;
     } else {
       spec->model = mojom::ModelConfig::New();
       spec->model->provider = mojom::Provider::kAnthropic;
       spec->model->model = "claude-sonnet-5";
       spec->model->max_output_tokens = 8192;
-      spec->credit_budget = 1;
+      spec->credit_budget = 0;
     }
 
     std::string error;
