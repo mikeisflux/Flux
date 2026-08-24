@@ -9,7 +9,9 @@
 #include "base/functional/bind.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -142,10 +144,18 @@ int ScopeRank(mojom::WriteScope scope) {
 }
 
 // A digest of tool + inputs, used to notice the agent repeating itself.
-std::string DigestOf(const ToolCall& call) {
+// What makes two tool calls "the same call" for the stall detector.
+//
+// The page the call was made against is part of it. Without that, `read_page`
+// - the one tool in the set that takes no arguments at all - hashes to a
+// single constant for the life of the run, so reading Slack, then Gmail, then
+// Calendar counted as the same call three times and killed the task. Three
+// different websites, read once each, is the core loop of this product.
+std::string DigestOf(const ToolCall& call, std::string_view page_url) {
   std::string json;
   base::JSONWriter::Write(call.input, &json);
-  return base::SHA1HashString(base::StrCat({call.name, "|", json}));
+  return base::SHA1HashString(
+      base::StrCat({call.name, "|", json, "|", page_url}));
 }
 
 }  // namespace
@@ -182,9 +192,15 @@ void AgentRunner::Step() {
   if (state_ != mojom::RunState::kRunning)
     return;
 
-  if (ShouldStop()) {
+  // Which rule fired, not just that one did. This decision is Flux's own and
+  // used to log nothing at all, so a run that died here left a chrome_debug.log
+  // with no trace of it and the only evidence was one line on screen that said
+  // the same thing whatever the cause.
+  if (const std::string reason = StopReason(); !reason.empty()) {
+    LOG(WARNING) << "flux: run " << run_id_ << " stopped after "
+                 << actions_.size() << " actions - " << reason;
     Finish(mojom::RunState::kFailed,
-           "Stopped: the task stopped making progress.");
+           base::StrCat({"Stopped: ", reason, "."}));
     return;
   }
 
@@ -322,9 +338,17 @@ void AgentRunner::ExecuteToolCalls(std::vector<ToolCall> calls) {
     return;
   }
 
-  recent_action_digests_.push_back(DigestOf(call));
-  if (recent_action_digests_.size() > kRepeatWindow)
-    recent_action_digests_.erase(recent_action_digests_.begin());
+  // Observation is exempt. This window exists to catch an ACTION that leaves
+  // the world unchanged and is tried again forever - the guard's own comment
+  // says so. A read always returns the current state, so repeating one is at
+  // worst wasteful, and waste is already bounded by the credit budget and by
+  // kMaxActions. Counting reads as repeats is what turned "look at three
+  // sites" into a stalled task.
+  if (call.name != "read_page") {
+    recent_action_digests_.push_back(DigestOf(call, CurrentPageURL()));
+    if (recent_action_digests_.size() > kRepeatWindow)
+      recent_action_digests_.erase(recent_action_digests_.begin());
+  }
 
   if (RequiresApproval(call)) {
     // The run blocks here until ResolveApproval. Nothing proceeds in the
@@ -531,24 +555,42 @@ bool AgentRunner::ChargeAndCheckBudget(uint32_t input_tokens,
   return credits_spent_ < spec_->credit_budget;
 }
 
-bool AgentRunner::ShouldStop() const {
-  if (consecutive_failures_ >= kMaxConsecutiveFailures)
-    return true;
-  if (actions_.size() >= kMaxActions)
-    return true;
+std::string AgentRunner::CurrentPageURL() const {
+  // Empty before the tab is opened, which is correct: calls made with no page
+  // are all in the same (absent) context.
+  return web_contents_ ? web_contents_->GetLastCommittedURL().spec()
+                       : std::string();
+}
 
-  // Repeating the same call with the same inputs is the signature failure of
-  // long-running browser agents: the page is not in the state the model
-  // believes, so it retries forever.
+std::string AgentRunner::StopReason() const {
+  if (consecutive_failures_ >= kMaxConsecutiveFailures)
+    return base::StrCat(
+        {"the last ", base::NumberToString(consecutive_failures_),
+         " tool calls all failed"});
+  if (actions_.size() >= kMaxActions)
+    return base::StrCat({"it reached the ", base::NumberToString(kMaxActions),
+                         "-action ceiling"});
+
+  // Repeating the same call, with the same inputs, against the same page is
+  // the signature failure of long-running browser agents: the page is not in
+  // the state the model believes, so it retries forever.
   if (recent_action_digests_.size() >= kRepeatWindow) {
     for (const std::string& digest : recent_action_digests_) {
       const auto count = std::count(recent_action_digests_.begin(),
                                     recent_action_digests_.end(), digest);
-      if (count >= kMaxRepeatsInWindow)
-        return true;
+      if (count >= kMaxRepeatsInWindow) {
+        return base::StrCat({"the same action ran ",
+                             base::NumberToString(count),
+                             " times against the same page without changing "
+                             "anything"});
+      }
     }
   }
-  return false;
+  return std::string();
+}
+
+bool AgentRunner::ShouldStop() const {
+  return !StopReason().empty();
 }
 
 void AgentRunner::Cancel() {

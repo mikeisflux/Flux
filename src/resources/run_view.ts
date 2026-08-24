@@ -750,6 +750,10 @@ function planRow(step: TaskStep): HTMLElement {
   row.className = 'plan-row';
   row.dataset['state'] = STATE_CLASS[step.state] ?? 'pending';
 
+  // A status mark, not a control. Nothing here is selectable - the agent
+  // writes this list with set_plan and ticks it off with complete_step - so a
+  // pending step is a small dot rather than the full 18px ring it used to be,
+  // which read as an unselected radio button and got clicked at.
   const mark = svgRoot('0 0 20 20', 'plan-mark');
   if (step.state === TaskStepState.kDone) {
     shape(mark, 'circle', {cx: 10, cy: 10, r: 8});
@@ -758,7 +762,7 @@ function planRow(step: TaskStep): HTMLElement {
     shape(mark, 'circle', {cx: 10, cy: 10, r: 8});
     shape(mark, 'path', {d: 'M10 10V5a5 5 0 0 1 0 10z'});
   } else {
-    shape(mark, 'circle', {cx: 10, cy: 10, r: 8});
+    shape(mark, 'circle', {cx: 10, cy: 10, r: 3});
   }
 
   const text = document.createElement('span');

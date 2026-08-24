@@ -258,6 +258,38 @@ then twelve, then ten, then zero. A check is not finished when it prints
 nothing - it is finished when it prints nothing AND fires on the bug removed
 on purpose.
 
+### The stall detector counted three websites as one repeated action
+
+`read_page` is the only tool in the set whose `InputSchema()` is
+`ObjectSchema({}, {})` - no arguments at all. `DigestOf` hashed name plus
+input, so every `read_page` in a run produced the SAME hash for the life of
+that run. With `kRepeatWindow = 6` and `kMaxRepeatsInWindow = 3`, reading
+Slack, then Gmail, then Calendar was "the same call three times" and the run
+was killed with "the task stopped making progress" - at 0/5 plan steps, having
+done exactly what it was asked. Visiting several sites and reading each one is
+the core loop of this product.
+
+Two things were wrong. The digest ignored **which page the call was made
+against**, and the window counted **observation** as an action that can fail to
+make progress. A read always returns the current state; repeating one is at
+worst wasteful, and waste is already bounded by the credit budget and by
+`kMaxActions`. The signature this guard exists for - and its own comment says
+so - is an ACTION that leaves the world unchanged and is tried again forever.
+
+The wider lesson: a hash of "the call" that leaves out the state the call acts
+on will collide for any tool that takes no arguments. There is exactly one such
+tool today, and it was enough.
+
+### A run that ends on our own decision has to say so
+
+Nothing in `chrome_debug.log` explained that stop, because `ShouldStop()`
+returned a bool and logged nothing. The user saw one sentence on screen that
+reads identically whether the cause was repetition, three consecutive
+failures, or the 200-action ceiling - and the log, which is the one artifact
+that crosses the gap to this container, had no trace of it at all. It is
+`StopReason()` now: the rule that fired, in the run summary and at
+`LOG(WARNING)`.
+
 ### A name can be unreachable from where it is used
 
 `tools/check-cpp-visibility.py` covers three shapes that arrived in one build,

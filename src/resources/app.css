@@ -2300,6 +2300,13 @@ body.ask {
   stroke: var(--accent-text);
 }
 
+/* A pending step is a filled dot, so the list reads as status rather than as
+   a column of radio buttons waiting to be chosen. */
+.plan-row[data-state='pending'] .plan-mark {
+  fill: var(--border);
+  stroke: none;
+}
+
 .plan-row[data-state='done'] span {
   color: var(--fg-muted);
 }

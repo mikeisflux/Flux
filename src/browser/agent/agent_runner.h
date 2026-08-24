@@ -131,6 +131,13 @@ class AgentRunner {
   bool ChargeAndCheckBudget(uint32_t input_tokens, uint32_t output_tokens);
 
   // Stop conditions. Without these an agent loops until the budget is gone.
+  // The URL the next tool call will act against, or empty before the agent's
+  // tab exists. Part of a call's identity for the stall detector.
+  std::string CurrentPageURL() const;
+
+  // Why the run should stop, or empty if it should not. Spelled out rather
+  // than a bool so both the user and the log learn which rule fired.
+  std::string StopReason() const;
   bool ShouldStop() const;
 
   const std::string run_id_;
