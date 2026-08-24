@@ -5,7 +5,7 @@ import {pathIcon} from './icons.js';
 import {Provider, WriteScope} from './flux.mojom-webui.js';
 import type {FluxPageHandlerRemote} from './flux.mojom-webui.js';
 
-import {loadTemplates} from './catalog.js';
+import {loadTemplates, promptFor} from './catalog.js';
 import type {Template} from './catalog.js';
 
 /**
@@ -94,8 +94,17 @@ export class NewTaskView {
 
     // The examples take over the whole screen until there is a run to show
     // that the product does anything - which is the one moment they help.
+    //
+    // Unless a template was just chosen. "Use this template" hands the prompt
+    // over and navigates here, and this branch returns before the composer is
+    // ever built - so the hand-off was read out of sessionStorage, deleted on
+    // line 86, and dropped, landing the user back on the screen they started
+    // from. It reads as the button doing nothing, or as a crash back to the
+    // main screen, and it happened on every click for anyone with no runs yet
+    // - which is exactly who is most likely to be trying a template.
     const {runs} = await this.handler.listRuns();
-    if (runs.length === 0 && !sessionStorage.getItem('flux.skip-examples')) {
+    if (runs.length === 0 && !this.pending &&
+        !sessionStorage.getItem('flux.skip-examples')) {
       screen.append(this.examplesState(screen));
       root.append(screen);
       return;
@@ -181,7 +190,13 @@ export class NewTaskView {
     text.append(title, outcome);
 
     card.append(mark, text);
-    card.addEventListener('click', () => void this.start(t.title, t.id));
+    // promptFor, not the title. The title is a label - "Triage my inbox" -
+    // and the authored prompt is the whole reason the template exists; all
+    // 250 have one. Sending the title gave the agent a one-line task and
+    // silently discarded what a human wrote for it. Same source the detail
+    // dialog uses, so the two paths cannot start different runs.
+    card.addEventListener(
+        'click', () => void this.start(promptFor(t), t.id));
     return card;
   }
 
@@ -305,7 +320,11 @@ export class NewTaskView {
       chip.append(s.label);
       chip.title = t.outcome;
       chip.addEventListener('click', () => {
-        this.prompt.value = t.title;
+        // The authored prompt, for the same reason as the example cards. This
+        // one fills the composer rather than starting a run, so the user would
+        // at least see a one-line task before sending it - but they would see
+        // it and assume that is what the template is.
+        this.prompt.value = promptFor(t);
         this.templateId = t.id;
         this.prompt.focus();
       });

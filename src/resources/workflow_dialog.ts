@@ -43,10 +43,22 @@ const PRESETS: Array<{label: string, cron: string}> = [
   {label: 'First of the month at 9am', cron: '0 9 1 * *'},
 ];
 
-const MODES: Array<{label: string, model: string, tokens: number}> = [
-  {label: 'Fast', model: 'claude-haiku-4-5-20251001', tokens: 4096},
-  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192},
-  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384},
+// The credits are the per-run ceiling, and they are not optional: a spec with
+// a zero budget is refused outright by the service ("Task has no credit
+// budget"), which is the correct thing for it to do and meant that every
+// workflow saved here was unrunnable from the moment it was created. The
+// values mirror the Quick/Medium/Thorough ladder the composer uses, because
+// this is the same choice wearing a different label.
+const MODES: Array<{
+  label: string,
+  model: string,
+  tokens: number,
+  credits: bigint,
+}> = [
+  {label: 'Fast', model: 'claude-haiku-4-5-20251001', tokens: 4096,
+   credits: 200n},
+  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192, credits: 1000n},
+  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384, credits: 5000n},
 ];
 
 export class WorkflowDialog {
@@ -173,7 +185,7 @@ export class WorkflowDialog {
             allowFailover: true,
           },
           profileId: '',
-          creditBudget: BigInt(0),
+          creditBudget: chosen.credits,
         },
       };
 

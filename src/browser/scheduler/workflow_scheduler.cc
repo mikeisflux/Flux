@@ -22,6 +22,10 @@
 namespace flux {
 namespace {
 
+// What a workflow restored without a usable budget gets. Matches the composer
+// and the workflow dialog's "Medium".
+constexpr uint64_t kDefaultCreditBudget = 1000;
+
 // Expands one cron field into the set of values it matches.
 // Supports `*`, `*/n`, `a-b`, and comma lists - the subset the catalog's
 // schedules actually use.
@@ -227,10 +231,15 @@ void WorkflowScheduler::LoadFromPrefs() {
             .value_or(static_cast<int>(mojom::WriteScope::kReadOnly)));
     if (const std::string* v = dict.FindString("profile_id"))
       spec->profile_id = *v;
+    // A zero budget is refused by StartRun, so a workflow restored with one
+    // can never fire - and it would fail that way silently every morning,
+    // for good. Workflows saved before the dialog supplied a budget are all
+    // in that state, so repair on load rather than leaving them broken: the
+    // user cannot tell from the row that the record is the problem.
     uint64_t budget = 0;
     if (const std::string* v = dict.FindString("credit_budget"))
       base::StringToUint64(*v, &budget);
-    spec->credit_budget = budget;
+    spec->credit_budget = budget > 0 ? budget : kDefaultCreditBudget;
     workflow.spec = std::move(spec);
 
     // Recomputed rather than restored: the saved next_run is in the past by
