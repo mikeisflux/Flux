@@ -414,5 +414,44 @@ for h in sorted(root.rglob('*.h')):
 sys.exit(1 if bad else 0)
 VIRTPY
 
+# ui::AXTree::Unserialize on a tree that is not freshly constructed.
+#
+# RequestAXTreeSnapshot hands back a complete standalone tree every time, not a
+# delta. Unserializing a second snapshot into the tree holding the first is
+# read as an incremental update, and on a live page whose node ids have moved
+# that is an illegal reparent: a FATAL inside AXTree that takes the browser
+# process down. It killed the browser the first time the agent read Gmail
+# twice, and the code that did it carried a comment confidently asserting that
+# Unserialize "replaces the tree's contents in place". It does not.
+#
+# The fix is a fresh tree per snapshot, so the rule is: the make_unique has to
+# be right there above the Unserialize.
+python3 - <<'AXPY' || status=1
+import pathlib, re, sys
+root = pathlib.Path('src/browser')
+bad = 0
+for c in sorted(root.rglob('*.cc')):
+    lines = c.read_text(encoding='utf-8').splitlines()
+    for i, line in enumerate(lines):
+        if not re.search(r'\bUnserialize\s*\(', line):
+            continue
+        window = '\n'.join(lines[max(0, i - 3):i])
+        if 'make_unique<ui::AXTree>' not in window:
+            print(f'{c}:{i + 1}: Unserialize on a tree that was not just built')
+            print(f'    {line.strip()}')
+            print('    a snapshot is a whole tree, not a delta - build a fresh '
+                  'ui::AXTree immediately above this or it is a FATAL reparent')
+            bad += 1
+for h in sorted(root.rglob('*.h')):
+    for i, line in enumerate(h.read_text(encoding='utf-8').splitlines()):
+        if re.match(r'\s*ui::AXTree\s+\w+_\s*;', line):
+            print(f'{h}:{i + 1}: AXTree held by value')
+            print(f'    {line.strip()}')
+            print('    it has to be replaced wholesale per snapshot, and '
+                  'AXTree deletes copy and move assignment - hold a unique_ptr')
+            bad += 1
+sys.exit(1 if bad else 0)
+AXPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

@@ -3,6 +3,7 @@
 #ifndef CHROME_BROWSER_FLUX_AGENT_PAGE_CONTEXT_H_
 #define CHROME_BROWSER_FLUX_AGENT_PAGE_CONTEXT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -152,7 +153,25 @@ class PageContext {
   // The tree behind the most recent snapshot. Node ids the model refers to are
   // resolved against this, so a stale id fails cleanly rather than hitting
   // whatever now occupies that position.
-  ui::AXTree tree_;
+  // The node behind an id from the most recent snapshot, or null if there has
+  // not been one yet.
+  ui::AXNode* NodeFromId(int32_t node_id) const;
+
+  // Replaced wholesale on every snapshot, never updated in place.
+  //
+  // RequestAXTreeSnapshot returns a complete standalone tree each time, not a
+  // delta against the last one. Unserializing a second snapshot into a tree
+  // that still holds the first is read as an incremental update, and on a live
+  // application whose node ids have been reshuffled between captures that is
+  // an illegal reparent: "Node 9 is not marked for destruction, would be
+  // reparented to 3" - a FATAL inside AXTree, taking the browser process down
+  // the first time the agent read Gmail twice.
+  //
+  // A unique_ptr because AXTree deletes copy and move assignment, so the only
+  // way to replace one is to destroy it and build another. It is null until
+  // the first snapshot, and GetFromId is reached from tool calls that can
+  // arrive before one - hence NodeFromId rather than touching it directly.
+  std::unique_ptr<ui::AXTree> tree_;
   base::WeakPtrFactory<PageContext> weak_factory_{this};
 };
 

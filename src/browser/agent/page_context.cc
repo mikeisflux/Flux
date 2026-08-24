@@ -1,5 +1,7 @@
 // Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
 
+#include <memory>
+
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
@@ -162,17 +164,18 @@ void PageContext::OnAccessibilityTreeReady(SnapshotCallback callback,
   }
   snapshot.is_stable = true;
 
-  // Unserialize into the member rather than building a local and assigning:
-  // AXTree deletes both copy and move assignment, and Unserialize already
-  // replaces the tree's contents in place.
-  if (!tree_.Unserialize(update)) {
+  // A fresh tree for every snapshot. See the member's declaration: these
+  // snapshots are standalone, and feeding one into the previous tree is what
+  // killed the browser process on the second read of a live page.
+  tree_ = std::make_unique<ui::AXTree>();
+  if (!tree_->Unserialize(update)) {
     snapshot.content = "(could not read the page structure)";
     std::move(callback).Run(std::move(snapshot));
     return;
   }
 
   std::string content;
-  std::vector<const ui::AXNode*> stack{tree_.root()};
+  std::vector<const ui::AXNode*> stack{tree_->root()};
   while (!stack.empty()) {
     const ui::AXNode* node = stack.back();
     stack.pop_back();
@@ -264,8 +267,12 @@ std::string PageContext::FormatForExtraction(
   return json;
 }
 
+ui::AXNode* PageContext::NodeFromId(int32_t node_id) const {
+  return tree_ ? tree_->GetFromId(node_id) : nullptr;
+}
+
 std::optional<gfx::Point> PageContext::ResolveNodeCenter(int32_t node_id) {
-  ui::AXNode* node = tree_.GetFromId(node_id);
+  ui::AXNode* node = NodeFromId(node_id);
   if (!node || node->IsInvisibleOrIgnored())
     return std::nullopt;
   const gfx::Rect bounds =
@@ -276,7 +283,7 @@ std::optional<gfx::Point> PageContext::ResolveNodeCenter(int32_t node_id) {
 }
 
 bool PageContext::IsSubmitLike(int32_t node_id) const {
-  ui::AXNode* node = tree_.GetFromId(node_id);
+  ui::AXNode* node = NodeFromId(node_id);
   if (!node)
     return false;
 
@@ -332,7 +339,7 @@ void PageContext::ClickNode(int32_t node_id, ActionCallback callback) {
 void PageContext::TypeIntoNode(int32_t node_id,
                                const std::string& text,
                                ActionCallback callback) {
-  ui::AXNode* node = tree_.GetFromId(node_id);
+  ui::AXNode* node = NodeFromId(node_id);
   if (!node || !web_contents_) {
     std::move(callback).Run(false);
     return;
@@ -378,7 +385,7 @@ void PageContext::SubmitForm(int32_t node_id, ActionCallback callback) {
 }
 
 void PageContext::ScrollToNode(int32_t node_id, ActionCallback callback) {
-  ui::AXNode* node = tree_.GetFromId(node_id);
+  ui::AXNode* node = NodeFromId(node_id);
   if (!node || !web_contents_) {
     std::move(callback).Run(false);
     return;

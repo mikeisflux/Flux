@@ -142,6 +142,16 @@ each broken a real build once, as greps over `src/browser`:
   like nothing at all. The same shape inside a `.cc` is accepted, which is why
   all seven `override { return true; }` compiled while the one declaration in
   the header did not - declare it in the header, define it in the `.cc`.
+- `ui::AXTree::Unserialize` applies an **update**; it does not replace the
+  tree. `RequestAXTreeSnapshot` returns a complete standalone tree each time,
+  so feeding a second snapshot into the tree holding the first is read as an
+  incremental change - and on a live page whose node ids have moved, that is
+  an illegal reparent and a FATAL. The browser died the first time the agent
+  read Gmail twice. Build a fresh `AXTree` per snapshot; it is held by
+  `unique_ptr` because AXTree deletes copy and move assignment. The code that
+  did this carried a comment asserting Unserialize "replaces the tree's
+  contents in place" - **a comment is not a citation.** That claim was never
+  read out of `ax_tree.h`, and writing it down made it look settled.
 - `SimpleURLLoader::DownloadToString` DCHECKs `max_body_size <=
   kMaxBoundedStringDownloadSize` (5 MiB). It is a ceiling, not a clamp. Both
   providers passed 10 MiB, so the browser died on the first request it ever
