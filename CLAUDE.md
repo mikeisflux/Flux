@@ -258,6 +258,77 @@ then twelve, then ten, then zero. A check is not finished when it prints
 nothing - it is finished when it prints nothing AND fires on the bug removed
 on purpose.
 
+### A name can be unreachable from where it is used
+
+`tools/check-cpp-visibility.py` covers three shapes that arrived in one build,
+all of which read as ordinary C++:
+
+- `AskSession::RunTool` was **defined out of line and declared in no class
+  body** - a method renamed into existence during a debug pass, with the
+  header never told. `check-undefined-symbols.py` looks for the opposite
+  (declared, never defined) and cannot see this one.
+- `ask()`, `PendingApprovals()` and `PendingQuestions()` were **private** and
+  called from the page handler. An insertion landed below `private:`, which
+  is invisible in a diff.
+- `NormalizeCommand` was **defined 500 lines below its first caller** with no
+  declaration above it. Legal inside a class body, never at namespace scope.
+
+The header parser keeps a STACK of open classes. The first version kept one
+name, and a nested `class Delegate {` destroyed it: when the nested body
+closed the enclosing class was forgotten, every member below it went
+unrecorded, and the check reported **103 findings of which every one was
+wrong**. `agent_runner.h` opens `class Delegate` on line 39 and `private:` on
+line 98, so AgentRunner's entire private section was invisible.
+
+Then three more false positives from `const Workflow* Get(...) const;` - the
+return type is two tokens and the leading alternation had no `const`, so the
+declaration did not parse and its definition was reported as undeclared.
+
+Rule 3 is **type-directed** for the reason `check-null-deref.py` had to be:
+judging by method name alone called `observer_->OnLearnedFact()` a private
+member of FluxPageHandler, when the receiver is a `mojo::Remote` whose
+interface is generated and lives in no header here. It resolves the
+receiver's declared type first and only judges a call whose receiver it can
+name.
+
+Validated against the real pre-fix tree rather than a fixture: all three rules
+fire on the exact clang errors, same files, same lines.
+
+### A grep list cannot see an incomplete type
+
+`view.h` line 122 is `class ViewAccessibility;` and nothing more, so
+`GetViewAccessibility().SetName(...)` needs
+`ui/views/accessibility/view_accessibility.h`. FluxAskButton had the exact
+line FluxAvatarButton has, minus the include the avatar carries for it, and
+the error would have been "member access into incomplete type" nowhere near
+the include block. `check-cpp.sh` now carries a table of symbol -> required
+header; a table rather than a rule, because which types a common header
+forward-declares is a fact about Chromium at this tag, not something derivable
+from our source.
+
+### Two structs named ProposedLayout, sharing nothing
+
+`BrowserViewLayoutImpl::ProposedLayout` is **not** `views::ProposedLayout`.
+The browser one is hierarchical - `bounds`, `visibility`, and a
+`std::map<raw_ptr<View, CtnExperimental>, ProposedLayout> children` - with
+`AddChild()` and a `GetLayoutFor()` that is **const-only**, returning a
+`const ProposedLayout*`. The views one is flat, with `child_layouts` and a
+non-const `GetLayoutFor()` returning a `ChildLayout*`.
+
+The Ask panel's layout was written against the wrong one: it took a
+`views::ChildLayout*` from a call that returns a const pointer to a different
+type, and then mutated through it. Three errors in four lines, in a file that
+compiles late because it belongs to a Chromium target.
+
+Reaching into `children` directly is the fix, and it must go **through a plain
+`views::View*`**. The map is keyed by `raw_ptr<View, CtnExperimental>` and
+`contents_container` is a `raw_ptr<View>` with default traits; raw_ptr's
+cross-kind constructor is `explicit` and `static_assert`s that the only
+difference may be `kMayDangle`. Its own comment says the assert exists so the
+compiler catches other conversions rather than letting the implicit
+`raw_ptr<T> -> T* -> raw_ptr<>` route be taken - so the direct call is a hard
+error, and the two-step conversion is the supported one.
+
 ### There is no compiler here, so arity is checked instead
 
 `tools/check-arity.py` catches a call to one of this project's own methods

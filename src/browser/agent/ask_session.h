@@ -86,6 +86,9 @@ class AskSession {
   void OnToolDone(ToolResult result);
   void RunFileTool(const ToolCall& call,
                    base::OnceCallback<void(ToolResult)> done);
+  // Every tool that answers without touching the disk. Synchronous, so its
+  // result goes straight to RecordToolResult.
+  ToolResult RunTool(const ToolCall& call);
   std::vector<ToolDefinition> Tools() const;
   std::string SystemPrompt() const;
   void Emit(const mojom::AskTurn& turn);

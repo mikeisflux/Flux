@@ -8,6 +8,11 @@
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/text_constants.h"
+// GetViewAccessibility() returns a reference to a type view.h only forward
+// declares, so calling SetName() on it needs the real header. Same include
+// the avatar button carries, for the same line.
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace flux {

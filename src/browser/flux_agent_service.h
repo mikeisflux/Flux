@@ -164,6 +164,16 @@ class FluxAgentService : public KeyedService,
   ConnectorService* connectors() { return connectors_.get(); }
   ToolRegistry* tools() { return &tools_; }
 
+  // The Ask Flux conversation, created on first use. It lives on the service
+  // rather than in the panel so that closing the panel, or reloading its
+  // WebUI, does not throw the thread away.
+  AskSession* ask();
+
+  // Everything currently blocked on this person, for a console that has just
+  // connected and was not listening when it happened.
+  std::vector<mojom::ApprovalRequestPtr> PendingApprovals() const;
+  std::vector<mojom::QuestionRequestPtr> PendingQuestions() const;
+
   // KeyedService:
   void Shutdown() override;
 
@@ -175,19 +185,9 @@ class FluxAgentService : public KeyedService,
   void OnApprovalRequired(const mojom::ApprovalRequest& request) override;
   void OnQuestionsAsked(const mojom::QuestionRequest& request) override;
 
-  // Everything currently blocked on this person, for a console that has just
-  // connected and was not listening when it happened.
-  // The Ask Flux conversation, created on first use. It lives on the service
-  // rather than in the panel so that closing the panel, or reloading its
-  // WebUI, does not throw the thread away.
-  AskSession* ask();
-
   // AskSession::Delegate:
   void OnAskTurn(const mojom::AskTurn& turn, bool busy) override;
   void OnAskQuestions(const mojom::QuestionRequest& request) override;
-
-  std::vector<mojom::ApprovalRequestPtr> PendingApprovals() const;
-  std::vector<mojom::QuestionRequestPtr> PendingQuestions() const;
   void OnFinished(const std::string& run_id,
                   mojom::RunState state,
                   const std::string& summary) override;

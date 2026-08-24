@@ -52,8 +52,13 @@ constexpr size_t kMaxListedEntries = 200;
 // things a person would want a template built from actually live.
 std::vector<base::FilePath> FileRoots() {
   std::vector<base::FilePath> roots;
-  for (int key : {chrome::DIR_USER_DOCUMENTS, chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
-                  base::DIR_USER_DESKTOP}) {
+  // Spelled as ints rather than a braced list of the enumerators: the first
+  // two are chrome_paths.h's unnamed enum and the third is base::BasePathKey,
+  // and a braced list deduces one element type for all of them.
+  static constexpr int kRootKeys[] = {chrome::DIR_USER_DOCUMENTS,
+                                      chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+                                      base::DIR_USER_DESKTOP};
+  for (int key : kRootKeys) {
     base::FilePath dir;
     if (base::PathService::Get(key, &dir) && !dir.empty())
       roots.push_back(dir.StripTrailingSeparators());

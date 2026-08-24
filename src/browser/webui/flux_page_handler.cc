@@ -31,6 +31,29 @@
 
 namespace flux {
 
+namespace {
+
+// A workflow's command is how it is invoked from the palette, and it shares a
+// namespace with skills. Normalised rather than rejected: a user typing
+// "Weekly Report" in the dialog means /weekly-report, and making them learn
+// the slug rules is not worth the round trip.
+std::string NormalizeCommand(std::string_view raw) {
+  std::string out;
+  out.reserve(raw.size());
+  for (char c : raw) {
+    if (base::IsAsciiAlphaNumeric(c)) {
+      out += base::ToLowerASCII(c);
+    } else if (!out.empty() && out.back() != '-') {
+      out += '-';
+    }
+  }
+  while (!out.empty() && out.back() == '-')
+    out.pop_back();
+  return out;
+}
+
+}  // namespace
+
 FluxPageHandler::FluxPageHandler(
     mojo::PendingReceiver<mojom::FluxPageHandler> receiver,
     mojo::PendingRemote<mojom::FluxPageHandlerObserver> observer,
@@ -651,25 +674,6 @@ void FluxPageHandler::GetSidebarCollapsed(
 }
 
 namespace {
-
-// A workflow's command is how it is invoked from the palette, and it shares a
-// namespace with skills. Normalised rather than rejected: a user typing
-// "Weekly Report" in the dialog means /weekly-report, and making them learn
-// the slug rules is not worth the round trip.
-std::string NormalizeCommand(std::string_view raw) {
-  std::string out;
-  out.reserve(raw.size());
-  for (char c : raw) {
-    if (base::IsAsciiAlphaNumeric(c)) {
-      out += base::ToLowerASCII(c);
-    } else if (!out.empty() && out.back() != '-') {
-      out += '-';
-    }
-  }
-  while (!out.empty() && out.back() == '-')
-    out.pop_back();
-  return out;
-}
 
 mojom::WorkflowSummaryPtr ToSummary(const Workflow& workflow) {
   auto summary = mojom::WorkflowSummary::New();

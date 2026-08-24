@@ -453,5 +453,45 @@ for h in sorted(root.rglob('*.h')):
 sys.exit(1 if bad else 0)
 AXPY
 
+# A symbol whose type `view.h` only forward-declares.
+#
+# `views::View::GetViewAccessibility()` returns a `ViewAccessibility&`, and
+# view.h line 122 is `class ViewAccessibility;` - nothing more. Calling
+# `.SetName()` on the reference needs the real header, and without it the
+# error is "member access into incomplete type", nowhere near the include
+# block. FluxAskButton had the exact line the avatar button has, minus the
+# include the avatar button carries for it.
+#
+# A table rather than a general rule, because there is no general rule a grep
+# can apply: which types a common header forward-declares is a fact about
+# Chromium at this tag, not something derivable from our source. Add a row
+# when one costs a build.
+python3 - <<'INCPY' || status=1
+import pathlib, re, sys
+
+# symbol used -> header that has to be included for it.
+NEEDS = {
+    r'\bGetViewAccessibility\s*\(\)\s*\.':
+        'ui/views/accessibility/view_accessibility.h',
+}
+
+bad = 0
+for c in sorted(pathlib.Path('src/browser').rglob('*.cc')):
+    text = c.read_text(encoding='utf-8')
+    for pattern, header in NEEDS.items():
+        m = re.search(pattern, text)
+        if not m:
+            continue
+        if f'#include "{header}"' in text:
+            continue
+        line = text[:m.start()].count('\n') + 1
+        print(f'{c}:{line}: uses {m.group(0).strip()} without including '
+              f'{header}')
+        print('    view.h only forward-declares the type it returns, so this '
+              'is an incomplete-type error at the use site')
+        bad += 1
+sys.exit(1 if bad else 0)
+INCPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

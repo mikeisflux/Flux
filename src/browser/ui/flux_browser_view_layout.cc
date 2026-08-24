@@ -207,19 +207,39 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
     const bool open = IsAskPanelOpen();
     gfx::Rect bounds;
     if (open) {
-      if (views::ChildLayout* contents =
-              layout.GetLayoutFor(views().contents_container)) {
+      // Reached through `children` rather than GetLayoutFor(): this
+      // ProposedLayout is BrowserViewLayoutImpl's hierarchical one, not
+      // views::ProposedLayout, and its GetLayoutFor has only a const overload
+      // returning a const ProposedLayout*. There is nothing to mutate through
+      // it, and the two structs share a name and nothing else.
+      //
+      // A direct child is the right lookup regardless: the base adds
+      // contents_container to this same root layout, and CHECKs that it is
+      // parented to browser_view - so its bounds are in the same space as the
+      // panel's, which is what makes subtracting one from the other mean
+      // anything.
+      //
+      // Through a plain View* deliberately. The map is keyed by
+      // raw_ptr<View, CtnExperimental> and contents_container is a
+      // raw_ptr<View> with default traits; raw_ptr's cross-kind constructor is
+      // explicit AND static_asserts that the only difference may be
+      // kMayDangle, so handing it the raw_ptr directly is a hard error rather
+      // than a silent conversion.
+      views::View* const contents_view = views().contents_container;
+      auto it = layout.children.find(contents_view);
+      if (it != layout.children.end()) {
+        ProposedLayout& contents = it->second;
         // Never at the page's whole expense. A narrow window would otherwise
         // give the panel everything and leave the contents zero wide, which
         // is a browser showing no web page - worse than a panel that does not
         // fit, so below this the panel simply does not open.
-        const int room = contents->bounds.width() - kMinContentsWidth;
+        const int room = contents.bounds.width() - kMinContentsWidth;
         const int width = std::min(FluxAskPanelView::kWidth, room);
         if (width > 0) {
-          bounds = contents->bounds;
-          bounds.set_x(contents->bounds.right() - width);
+          bounds = contents.bounds;
+          bounds.set_x(contents.bounds.right() - width);
           bounds.set_width(width);
-          contents->bounds.set_width(contents->bounds.width() - width);
+          contents.bounds.set_width(contents.bounds.width() - width);
         }
       }
     }
