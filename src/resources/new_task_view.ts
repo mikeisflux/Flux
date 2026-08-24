@@ -16,6 +16,13 @@ import type {Template} from './catalog.js';
  * Here it is a budget: the ceiling on tokens and on credits, both of which the
  * browser process enforces by failing the run closed rather than billing on.
  */
+/**
+ * A credit is a thousandth of a cent - see ChargeAndCheckBudget, which turns
+ * dollars into them with `cost * 100000`. These were 200/1000/5000, which is
+ * $0.002 / $0.01 / $0.05, and one modest Opus turn costs about 3,500 of them:
+ * every preset was refused on its first turn, "Quick" on any model at all.
+ * A budget only means something next to the price of a turn.
+ */
 interface Depth {
   id: string;
   label: string;
@@ -30,21 +37,21 @@ const DEPTHS: Depth[] = [
     label: 'Quick',
     hint: 'One pass, no deep research. Cheapest.',
     maxOutputTokens: 4096,
-    creditBudget: 200n,
+    creditBudget: 25_000n,
   },
   {
     id: 'medium',
     label: 'Medium',
     hint: 'The default. Enough room to check its own work.',
     maxOutputTokens: 16384,
-    creditBudget: 1000n,
+    creditBudget: 100_000n,
   },
   {
     id: 'thorough',
     label: 'Thorough',
     hint: 'Long-running research. Costs the most; stops at the ceiling.',
     maxOutputTokens: 65536,
-    creditBudget: 5000n,
+    creditBudget: 500_000n,
   },
 ];
 

@@ -54,6 +54,16 @@ class Tool {
   // "Perform an action".
   virtual std::string DescribeEffect(const base::DictValue& input) const = 0;
 
+  // True when this tool acts on a web page, and so needs the run to have a tab.
+  //
+  // The tab is opened on first demand rather than when the run starts. Opening
+  // it up front meant every run took over the user's window with an about:blank
+  // tab before the first model turn - including runs that only call a connector
+  // or write a file, and including one that ended immediately without ever
+  // browsing. A tab is something the user notices, so it should appear when the
+  // agent actually has somewhere to go.
+  virtual bool NeedsPage() const { return false; }
+
   virtual void Run(const ToolContext& context,
                    base::DictValue input,
                    ResultCallback callback) = 0;

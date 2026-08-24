@@ -105,6 +105,15 @@ std::optional<std::string> FluxAgentService::StartRun(
     *error = "Task has no credit budget.";
     return std::nullopt;
   }
+  // PumpQueue dereferences this to build the provider, and a null StructPtr
+  // there is a CHECK that takes the whole browser process down - which is what
+  // a workflow saved before the scheduler persisted its model did, on every
+  // click of Run. A record we cannot read has to fail its own run and nothing
+  // else.
+  if (!spec->model) {
+    *error = "This task has no model configured. Re-save the workflow.";
+    return std::nullopt;
+  }
 
   const std::string run_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
 

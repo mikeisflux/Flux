@@ -112,6 +112,10 @@ class AgentRunner {
                     base::TimeTicks started_at,
                     const ToolResult& result);
   void OnToolFinished(ToolResult result);
+
+  // Opens the run's tab if it does not have one yet. False if a tab could not
+  // be opened, which fails the tool call rather than the run.
+  bool EnsurePage();
   void Finish(mojom::RunState state, const std::string& summary);
 
   // The user closed the run's tab out from under it.

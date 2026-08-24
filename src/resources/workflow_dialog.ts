@@ -56,9 +56,9 @@ const MODES: Array<{
   credits: bigint,
 }> = [
   {label: 'Fast', model: 'claude-haiku-4-5-20251001', tokens: 4096,
-   credits: 200n},
-  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192, credits: 1000n},
-  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384, credits: 5000n},
+   credits: 25_000n},
+  {label: 'Medium', model: 'claude-sonnet-5', tokens: 8192, credits: 100_000n},
+  {label: 'Thorough', model: 'claude-opus-5', tokens: 16384, credits: 500_000n},
 ];
 
 export class WorkflowDialog {

@@ -61,6 +61,8 @@ ToolResult Err(const std::string& message) {
 
 class NavigateTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "navigate"; }
   std::string description() const override {
     return "Navigate the browser to a URL and wait for the page to settle. "
@@ -117,6 +119,8 @@ class NavigateTool : public Tool {
 
 class ReadPageTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "read_page"; }
   std::string description() const override {
     return "Read the current page: its text content and every element you can "
@@ -148,6 +152,8 @@ class ReadPageTool : public Tool {
 
 class ClickTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "click"; }
   std::string description() const override {
     return "Click an element by the node id shown in the page snapshot. Use "
@@ -199,6 +205,8 @@ class ClickTool : public Tool {
 
 class TypeTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "type"; }
   std::string description() const override {
     return "Type text into a text field identified by node id. Replaces any "
@@ -241,6 +249,8 @@ class TypeTool : public Tool {
 
 class ExtractTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "extract"; }
   std::string description() const override {
     return "Extract structured rows from the current page. Give the field "
@@ -284,6 +294,8 @@ class ExtractTool : public Tool {
 
 class SubmitTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "submit"; }
   std::string description() const override {
     return "Submit a form. This transmits data and cannot be undone.";
@@ -326,6 +338,8 @@ class SubmitTool : public Tool {
 
 class WaitForTool : public Tool {
  public:
+  bool NeedsPage() const override { return true; }
+
   std::string name() const override { return "wait_for"; }
   std::string description() const override {
     return "Wait until text appears on the page, or until a timeout. Use this "

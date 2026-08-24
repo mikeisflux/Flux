@@ -24,7 +24,12 @@ namespace {
 
 // What a workflow restored without a usable budget gets. Matches the composer
 // and the workflow dialog's "Medium".
-constexpr uint64_t kDefaultCreditBudget = 1000;
+constexpr uint64_t kDefaultCreditBudget = 100000;
+
+// And what one restored without a model gets, for the same reason. These match
+// the dialog's "Medium" so a repaired record behaves like a freshly saved one.
+constexpr char kDefaultModel[] = "claude-sonnet-5";
+constexpr int kDefaultMaxOutputTokens = 8192;
 
 // Expands one cron field into the set of values it matches.
 // Supports `*`, `*/n`, `a-b`, and comma lists - the subset the catalog's
@@ -169,6 +174,17 @@ base::DictValue ToDict(const Workflow& workflow) {
     out.Set("profile_id", workflow.spec->profile_id);
     out.Set("credit_budget",
             base::NumberToString(workflow.spec->credit_budget));
+    // The model was the one field this pair never carried, and its absence is
+    // not a degraded run - TaskSpec::model is dereferenced unguarded when a run
+    // starts, so a workflow restored without one took the browser process down
+    // with a CHECK the moment "Run now" was clicked.
+    if (workflow.spec->model) {
+      out.Set("provider", static_cast<int>(workflow.spec->model->provider));
+      out.Set("model", workflow.spec->model->model);
+      out.Set("max_output_tokens",
+              static_cast<int>(workflow.spec->model->max_output_tokens));
+      out.Set("allow_failover", workflow.spec->model->allow_failover);
+    }
   }
   return out;
 }
@@ -240,6 +256,28 @@ void WorkflowScheduler::LoadFromPrefs() {
     if (const std::string* v = dict.FindString("credit_budget"))
       base::StringToUint64(*v, &budget);
     spec->credit_budget = budget > 0 ? budget : kDefaultCreditBudget;
+
+    // Always constructed, never left null. Every workflow saved before the
+    // serializer carried a model has none of these keys, so this is also the
+    // repair path for those records - and the alternative to repairing them is
+    // a browser that dies when the user clicks Run.
+    auto model = mojom::ModelConfig::New();
+    // Range-checked rather than cast straight through: the value comes off
+    // disk, and static_cast to an enum with no matching value is undefined.
+    const int provider = dict.FindInt("provider").value_or(
+        static_cast<int>(mojom::Provider::kAnthropic));
+    model->provider = provider == static_cast<int>(mojom::Provider::kOpenAI)
+                          ? mojom::Provider::kOpenAI
+                          : mojom::Provider::kAnthropic;
+    const std::string* model_name = dict.FindString("model");
+    model->model = (model_name && !model_name->empty()) ? *model_name
+                                                        : kDefaultModel;
+    model->max_output_tokens = static_cast<uint32_t>(std::max(
+        1, dict.FindInt("max_output_tokens").value_or(
+               kDefaultMaxOutputTokens)));
+    model->allow_failover = dict.FindBool("allow_failover").value_or(true);
+    spec->model = std::move(model);
+
     workflow.spec = std::move(spec);
 
     // Recomputed rather than restored: the saved next_run is in the past by

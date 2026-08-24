@@ -187,7 +187,16 @@ export class RunList {
   }
 }
 
+/**
+ * A run's spend, in dollars.
+ *
+ * A credit is a thousandth of a cent - ChargeAndCheckBudget builds them with
+ * `cost * 100000` - so dollars are credits / 100,000. This divided by 1,000,
+ * which is cents, and rendered them bare: a run that had spent thirty cents
+ * showed "30.00" next to nothing saying what the unit was, and a bill is the
+ * one number a user must not have to guess the units of.
+ */
 function formatCredits(credits: bigint|number): string {
-  const n = Number(credits) / 1000;
-  return n < 0.01 ? '<0.01' : n.toFixed(2);
+  const dollars = Number(credits) / 100000;
+  return dollars < 0.01 ? '<$0.01' : `$${dollars.toFixed(2)}`;
 }

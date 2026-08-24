@@ -312,6 +312,38 @@ Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
 
+### A serializer that drops a field does not degrade, it crashes
+
+`tools/check-persisted-spec.py` reads TaskSpec's fields out of `flux.mojom` and
+requires the workflow scheduler's ToDict/FromDict pair to carry every one.
+
+`model` was in neither half. `TaskSpec::New()` leaves it a null `StructPtr`,
+`PumpQueue` builds the provider with `MakeProvider(*spec->model)`, and mojo's
+`StructPtr::operator*` is a `CHECK`, not a DCHECK - so "Run now" on any saved
+workflow killed the browser process. A missing field presented as a crash
+rather than as a workflow with no model, and the stack named
+`PumpQueue`/`StartRun`/`RunWorkflowNow` while the actual bug was two hundred
+lines away in a serializer nobody was looking at.
+
+`credit_budget` was the same pair's other miss - round-tripped correctly, but
+written as zero by a console that had no budget to give it, and `StartRun`
+refuses zero. Both bugs, in one file, on the one path a user reaches by
+clicking the obvious button.
+
+The fields come from the .mojom rather than a list in the check, so adding one
+to TaskSpec fails until the serializer carries it. That is the point: whoever
+adds the next field will not have read the scheduler.
+
+Two lessons that are not about serializers. **Credits are thousandths of a
+cent** - `ChargeAndCheckBudget` builds them with `cost * 100000` - and the
+depth presets were authored as 200/1000/5000, which is $0.002/$0.01/$0.05
+against a modest Opus turn costing about 3,500 of them. Every preset was
+refused on its first turn. A budget constant means nothing without the price of
+one turn written next to it. And **the agent's tab is opened on first demand**,
+not when the run starts: opening it in `Start()` put an about:blank tab in
+front of the user for every run, including runs that only call a connector and
+runs that ended before browsing at all.
+
 ### Authored data is only as real as the parser
 
 `check-connector-defs.py` also fails on an operation field that

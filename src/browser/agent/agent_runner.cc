@@ -170,21 +170,6 @@ AgentRunner::~AgentRunner() = default;
 void AgentRunner::Start() {
   state_ = mojom::RunState::kRunning;
 
-  // Open the tab BEFORE the first model turn. Without this the runner had no
-  // browsing context at all - web_contents_ and page_ were declared and never
-  // assigned - so every browser tool received a null WebContents and the whole
-  // run was a conversation with nothing on the other end of it.
-  tab_ = std::make_unique<AgentTab>(
-      profile_, base::BindOnce(&AgentRunner::OnTabClosed,
-                               weak_factory_.GetWeakPtr()));
-  web_contents_ = tab_->Open();
-  if (!web_contents_) {
-    Finish(mojom::RunState::kFailed,
-           "Could not open a tab for this task to work in.");
-    return;
-  }
-  page_ = std::make_unique<PageContext>(web_contents_);
-
   Message task;
   task.role = Message::Role::kUser;
   task.text = spec_->prompt;
@@ -366,6 +351,21 @@ void AgentRunner::ExecuteToolCalls(std::vector<ToolCall> calls) {
 
 void AgentRunner::DispatchTool(ToolCall call) {
   Tool* tool = tools_->Get(call.name);
+
+  // The tab is opened here, the first time a tool actually needs a page, and
+  // not when the run starts. Opening it in Start() put an about:blank tab in
+  // front of the user for every run, whether or not it ever browsed.
+  if (tool && tool->NeedsPage() && !EnsurePage()) {
+    ToolResult result;
+    result.tool_call_id = call.id;
+    result.content = "Could not open a tab to work in.";
+    result.is_error = true;
+    RecordAction(call.name, tool->DescribeEffect(call.input),
+                 base::TimeTicks::Now(), result);
+    OnToolFinished(std::move(result));
+    return;
+  }
+
   ToolContext context;
   context.web_contents = web_contents_;
   context.page = page_.get();
@@ -504,6 +504,21 @@ void AgentRunner::ResolveApproval(bool approved,
     history_.push_back(std::move(note));
   }
   DispatchTool(std::move(call));
+}
+
+bool AgentRunner::EnsurePage() {
+  if (page_)
+    return true;
+  tab_ = std::make_unique<AgentTab>(
+      profile_, base::BindOnce(&AgentRunner::OnTabClosed,
+                               weak_factory_.GetWeakPtr()));
+  web_contents_ = tab_->Open();
+  if (!web_contents_) {
+    tab_.reset();
+    return false;
+  }
+  page_ = std::make_unique<PageContext>(web_contents_);
+  return true;
 }
 
 bool AgentRunner::ChargeAndCheckBudget(uint32_t input_tokens,
