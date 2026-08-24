@@ -22,15 +22,11 @@
 namespace flux {
 namespace {
 
-// What a workflow restored without a usable budget gets. Matches the composer
-// and the workflow dialog's "Medium".
-// No budget. Kept as a named constant so the serializer below has something
-// to say rather than a bare 0, and so a saved workflow that predates this
-// reads as "no limit" instead of inheriting a cap nobody chose.
-constexpr uint64_t kDefaultCreditBudget = 0;
-
-// And what one restored without a model gets, for the same reason. These match
-// the dialog's "Medium" so a repaired record behaves like a freshly saved one.
+// What a workflow restored without a model gets. Matches the dialog's
+// "Medium", so a repaired record behaves like a freshly saved one.
+//
+// There is no companion budget constant: a restored budget is used exactly as
+// stored, and 0 - the default everywhere now - means no budget at all.
 constexpr char kDefaultModel[] = "claude-sonnet-5";
 constexpr int kDefaultMaxOutputTokens = 8192;
 

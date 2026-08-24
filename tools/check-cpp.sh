@@ -493,5 +493,36 @@ for c in sorted(pathlib.Path('src/browser').rglob('*.cc')):
 sys.exit(1 if bad else 0)
 INCPY
 
+# A file-local constant nothing uses.
+#
+# `-Wunused-const-variable` plus /WX makes this an error, and it happens the
+# moment a constant's last use is deleted - which is a normal part of removing
+# a feature. Removing the credit budget left kDefaultCreditBudget behind and
+# the build died on it at target 546, twenty minutes in, for a line that reads
+# as harmless documentation.
+python3 - <<'CONSTPY' || status=1
+import pathlib, re, sys
+
+bad = 0
+for c in sorted(pathlib.Path('src/browser').rglob('*.cc')):
+    text = c.read_text(encoding='utf-8')
+    # Namespace scope only (column 0): a constant inside a function body is
+    # not internal linkage and does not trip this warning.
+    for m in re.finditer(
+            r'^(?:constexpr|const|static constexpr|static const)\s+'
+            r'[\w:<>,\s*&]+?\b(k[A-Z]\w*)\s*(?:\[\s*\])?\s*=',
+            text, re.M):
+        name = m.group(1)
+        # The declaration itself is one occurrence; anything more is a use.
+        if len(re.findall(r'\b' + re.escape(name) + r'\b', text)) > 1:
+            continue
+        line = text[:m.start()].count('\n') + 1
+        print(f'{c}:{line}: {name} is defined and never used')
+        print('    -Wunused-const-variable is an error under /WX - delete it '
+              'or use it')
+        bad += 1
+sys.exit(1 if bad else 0)
+CONSTPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

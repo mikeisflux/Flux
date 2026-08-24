@@ -173,6 +173,12 @@ each broken a real build once, as greps over `src/browser`:
   did this carried a comment asserting Unserialize "replaces the tree's
   contents in place" - **a comment is not a citation.** That claim was never
   read out of `ax_tree.h`, and writing it down made it look settled.
+- A **file-local constant nothing uses** is an error, not a warning:
+  `-Wunused-const-variable` plus `/WX`. It happens the moment a constant's
+  last use is deleted, which is a normal part of removing a feature - taking
+  the credit budget out left `kDefaultCreditBudget` behind and killed the
+  build at target 546, twenty minutes in, over a line that reads as harmless
+  documentation.
 - `SimpleURLLoader::DownloadToString` DCHECKs `max_body_size <=
   kMaxBoundedStringDownloadSize` (5 MiB). It is a ceiling, not a clamp. Both
   providers passed 10 MiB, so the browser died on the first request it ever
