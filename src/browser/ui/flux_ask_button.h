@@ -7,16 +7,17 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/label_button.h"
 
-class BrowserWindowInterface;
+class Profile;
 
 namespace flux {
 
-// "Ask Flux", in the titlebar band beside the avatar.
+// "Ask Flux", at the trailing end of the toolbar row.
 //
-// It sits here rather than in the toolbar row on purpose. The band is already
-// laid out by FluxBrowserViewLayout, so this costs one slot in code this fork
-// owns; putting it in the toolbar would mean a patch against toolbar_view.cc,
-// a file Chromium rewrites constantly, for a few pixels of position.
+// It sits immediately left of the three-dot menu, which is where the reference
+// product puts it and, more importantly, is client area: the titlebar band is
+// not. A view there answers WM_NCHITTEST with HTCAPTION, Windows begins a
+// window drag, and no click is ever delivered - which is exactly what happened
+// to the first version of this button.
 class FluxAskButton : public views::LabelButton {
   METADATA_HEADER(FluxAskButton, views::LabelButton)
 
@@ -26,7 +27,7 @@ class FluxAskButton : public views::LabelButton {
   static constexpr int kHeight = 28;
   static constexpr int kWidth = 96;
 
-  explicit FluxAskButton(BrowserWindowInterface* browser);
+  explicit FluxAskButton(Profile* profile);
   FluxAskButton(const FluxAskButton&) = delete;
   FluxAskButton& operator=(const FluxAskButton&) = delete;
   ~FluxAskButton() override;
@@ -38,7 +39,7 @@ class FluxAskButton : public views::LabelButton {
  private:
   void Toggle();
 
-  const raw_ptr<BrowserWindowInterface> browser_;
+  const raw_ptr<Profile> profile_;
 };
 
 }  // namespace flux

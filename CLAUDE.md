@@ -294,6 +294,25 @@ name.
 Validated against the real pre-fix tree rather than a fixture: all three rules
 fire on the exact clang errors, same files, same lines.
 
+### The titlebar band is not client area, and a view there gets no clicks
+
+Patch 0020 exists because of this, and it names `flux_sidebar_` and
+`flux_avatar_` one at a time. The Ask Flux pill went into the same band as a
+third view with no entry there, so Windows answered WM_NCHITTEST with
+HTCAPTION, began a window drag, and never delivered a click. It painted
+correctly, it was visible, and it did nothing - and no amount of reading its
+click handler would have shown why.
+
+It is in the toolbar row now, immediately left of the three-dot menu, which is
+both where the reference product puts it and client area. The reasoning that
+put it in the band - "the band is already laid out by code this fork owns, the
+toolbar would mean patching toolbar_view.cc" - weighed the cost of a patch
+against a few pixels of position and never counted the hit-testing, which is
+the part that decides whether the control works at all.
+
+**Anything new in that band needs a line in 0020.** Better: put it somewhere
+that is client area to begin with.
+
 ### A grep list cannot see an incomplete type
 
 `view.h` line 122 is `class ViewAccessibility;` and nothing more, so

@@ -53,11 +53,6 @@ class FluxBrowserViewLayout : public BrowserViewTabbedLayoutImpl {
   // including the gap that keeps it off the caption buttons.
   int AvatarSlot() const;
 
-  bool HasAskButton() const;
-
-  // The Ask Flux pill's slot, immediately inboard of the avatar's.
-  int AskButtonSlot() const;
-
   // Open, and therefore taking width off the contents area. Distinct from
   // "exists": the panel is built for every normal window and starts closed.
   bool IsAskPanelOpen() const;

@@ -5,7 +5,6 @@
 #include "base/functional/bind.h"
 #include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/text_constants.h"
@@ -17,11 +16,11 @@
 
 namespace flux {
 
-FluxAskButton::FluxAskButton(BrowserWindowInterface* browser)
+FluxAskButton::FluxAskButton(Profile* profile)
     : views::LabelButton(
           base::BindRepeating(&FluxAskButton::Toggle, base::Unretained(this)),
           u"Ask Flux"),
-      browser_(browser) {
+      profile_(profile) {
   // Unretained is safe: the callback belongs to this button, so it cannot
   // outlive it. Same pattern as the avatar.
   SetTooltipText(u"Ask Flux about this page");
@@ -42,7 +41,7 @@ void FluxAskButton::Toggle() {
   // The pref is what the layout reads, so opening and closing both go through
   // it - the panel's own close button sets the same one. Two controls for one
   // piece of state, and only one place that state lives.
-  PrefService* prefs = browser_->GetProfile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(prefs::kAskPanelOpen,
                     !prefs->GetBoolean(prefs::kAskPanelOpen));
 }

@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
-#include "chrome/browser/flux/ui/flux_ask_button.h"
 #include "chrome/browser/flux/ui/flux_ask_panel_view.h"
 #include "chrome/browser/flux/ui/flux_avatar_button.h"
 // For the complete type: BrowserViewLayoutViews only forward-declares
@@ -60,14 +59,6 @@ int FluxBrowserViewLayout::AvatarSlot() const {
   return FluxAvatarButton::kSize + 2 * kAvatarGap;
 }
 
-bool FluxBrowserViewLayout::HasAskButton() const {
-  return IsParentedTo(views().flux_ask_button, views().browser_view);
-}
-
-int FluxBrowserViewLayout::AskButtonSlot() const {
-  return FluxAskButton::kWidth + kAvatarGap;
-}
-
 bool FluxBrowserViewLayout::IsAskPanelOpen() const {
   const auto* panel =
       views::AsViewClass<FluxAskPanelView>(views().flux_ask_panel);
@@ -105,8 +96,7 @@ void FluxBrowserViewLayout::DoPreLayoutComputations(
     // band the caption buttons are in - insetting would pull the contents area
     // in for the whole height of the window.
     auto& trailing = inset.trailing_exclusion;
-    trailing.content.set_width(trailing.content.width() + AvatarSlot() +
-                               (HasAskButton() ? AskButtonSlot() : 0));
+    trailing.content.set_width(trailing.content.width() + AvatarSlot());
     trailing.content.set_height(
         std::max<float>(trailing.content.height(), FluxAvatarButton::kSize));
   }
@@ -178,21 +168,6 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
                          size, size);
     }
     layout.AddChild(views().flux_avatar, bounds, visible);
-
-    // The pill goes immediately inboard of the avatar, in the slot widened
-    // for it above. Measured from the avatar's own bounds rather than
-    // recomputed, so the two cannot disagree about where the band is.
-    if (views().flux_ask_button) {
-      gfx::Rect pill;
-      if (visible && HasAskButton()) {
-        pill = gfx::Rect(
-            bounds.x() - kAvatarGap - FluxAskButton::kWidth,
-            bounds.y() + (FluxAvatarButton::kSize - FluxAskButton::kHeight) / 2,
-            FluxAskButton::kWidth, FluxAskButton::kHeight);
-      }
-      layout.AddChild(views().flux_ask_button, pill,
-                      visible && HasAskButton());
-    }
   }
 
   // The panel takes its width off the contents area rather than off the
