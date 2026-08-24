@@ -581,8 +581,38 @@ export class RunView {
       n.textContent = `${index + 1}.`;
       const t = document.createElement('span');
       t.textContent = q.text;
-      label.append(n, t, field);
-      field.placeholder = q.placeholder ?? 'Type or paste here...';
+      label.append(n, t);
+
+      // Pickable answers, when the question has them. Added here as well as in
+      // the Ask panel rather than shared: the two draw the same request but
+      // they are two implementations, and a commit message of mine claimed
+      // this one got choices "for free" when it did not.
+      for (const [i, choice] of q.choices.entries()) {
+        const pick = document.createElement('button');
+        pick.className = 'question-choice';
+        const letter = document.createElement('span');
+        letter.className = 'question-letter';
+        letter.textContent = String.fromCharCode(65 + i);
+        const what = document.createElement('span');
+        what.textContent = choice;
+        pick.append(letter, what);
+        pick.addEventListener('click', () => {
+          field.value = choice;
+          remember();
+          if (index === request.questions.length - 1) {
+            submit();
+          } else {
+            index++;
+            paint();
+          }
+        });
+        label.append(pick);
+      }
+
+      label.append(field);
+      field.placeholder = q.choices.length > 0 ?
+          'Or reply directly\u2026' :
+          q.placeholder ?? 'Type or paste here...';
       field.value = answers.get(q.id) ?? '';
       count.textContent =
           `${index + 1} of ${request.questions.length}`;

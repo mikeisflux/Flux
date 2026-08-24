@@ -329,6 +329,40 @@ Add a rule when something new costs a build, and **break it on purpose to
 prove it fires** before trusting it - two checks in this repo have already
 passed while the thing they were supposed to catch went through.
 
+### An optional is not a string, and there is no compiler to say so
+
+`tools/check-nullable-mojom.py` catches a mojom `string?` used where a string
+is expected. `QuestionAnswer::text` is nullable, so it is
+`std::optional<std::string>` in C++, and
+
+    base::StrAppend(&joined, {answer->text, "\n"});
+
+does not compile. It reads perfectly and it is the obvious thing to write.
+
+Its first version matched field NAMES anywhere and reported seven things, of
+which **every one was wrong**: `CompletionResponse::error` and `Message::text`
+are plain `std::string` members that happen to share a name with a nullable
+mojom field, and `text`, `error` and `detail` are far too common for a name to
+be evidence of anything. It is type-directed now - it only looks at a variable
+it has watched being declared `mojom::XPtr`, and only at fields nullable in
+that exact struct.
+
+The bug underneath also erased meaning before it failed to build. That field
+documents null as "skipped" and an empty string as "there is no value", which
+lead the agent somewhere different, and joining an optional throws the
+distinction away first.
+
+### A comment is not a citation, and neither is a commit message
+
+Recorded next to the AXTree entry because it is the same failure. A commit
+message here claimed the run view's question panel "gets choices for free,
+since both draw the same request". It does not: the Ask panel and the run view
+are two implementations of that panel, and only one of them had been taught
+about choices. The claim was written because it *should* have been true.
+
+Check the thing before writing it down - in a comment, in CLAUDE.md, or in a
+commit message. Writing it down is what makes it look settled.
+
 ### A serializer that drops a field does not degrade, it crashes
 
 `tools/check-persisted-spec.py` reads TaskSpec's fields out of `flux.mojom` and

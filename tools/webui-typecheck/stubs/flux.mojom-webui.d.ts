@@ -256,7 +256,11 @@ export declare class FluxPageHandlerRemote {
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
   showScreen(screen: string): void;
-  getAskThread(): Promise<{turns: AskTurn[], busy: boolean}>;
+  getAskThread(): Promise<{
+    turns: AskTurn[],
+    busy: boolean,
+    pending: QuestionRequest|null,
+  }>;
   sendAsk(message: string, model: string,
           attachments: AskAttachment[]): void;
   newAskThread(): void;

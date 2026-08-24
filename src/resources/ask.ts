@@ -64,6 +64,11 @@ class AskPanel {
   private depth = DEPTHS[1]!;
   private attachments: AskAttachment[] = [];
   private busy = false;
+  // getAskThread is a round trip, and a turn can land inside it. Without this
+  // the restore that follows replaces the thread's children and that turn is
+  // gone from the screen until the next one arrives.
+  private restored = false;
+  private early: AskTurn[] = [];
 
   constructor() {
     this.handler = new FluxPageHandlerRemote();
@@ -86,6 +91,8 @@ class AskPanel {
       this.handler.newAskThread();
       this.thread.replaceChildren();
       this.questions.replaceChildren();
+      this.early = [];
+      this.restored = true;
       this.setBusy(false);
     });
     document.getElementById('ask-close')!.addEventListener('click', () => {
@@ -112,12 +119,25 @@ class AskPanel {
 
   /** The thread as the browser process has it, on load and after a reload. */
   private async restore() {
-    const {turns, busy} = await this.handler.getAskThread();
+    const {turns, busy, pending} = await this.handler.getAskThread();
     this.thread.replaceChildren();
     for (const turn of turns) {
       this.thread.append(this.turnEl(turn));
     }
+    // Anything that arrived while that was in flight. The snapshot may already
+    // contain it, so this only appends what came after the count it returned.
+    for (const turn of this.early.slice(turns.length)) {
+      this.thread.append(this.turnEl(turn));
+    }
+    this.early = [];
+    this.restored = true;
     this.setBusy(busy);
+    // Put the open question back. It is not part of the thread, so without
+    // this a panel reopened mid-question showed a reply ending in a question
+    // and no way to answer it.
+    if (pending) {
+      this.showQuestions(pending);
+    }
     this.scroll();
   }
 
@@ -248,7 +268,12 @@ class AskPanel {
     if (request.questions.length === 0) {
       return;
     }
-    const answers = request.questions.map(q => ({id: q.id, text: ''}));
+    // text is nullable in the mojom and null means skipped, which is
+    // documented there as a different thing from an empty answer. Starting
+    // them at null means Skip sends "not answered" rather than "answered with
+    // nothing", and the agent is told which happened.
+    const answers: Array<{id: string, text: string|null}> =
+        request.questions.map(q => ({id: q.id, text: null}));
     let index = 0;
 
     const panel = document.createElement('div');
@@ -282,7 +307,8 @@ class AskPanel {
     };
 
     const advance = () => {
-      answers[index]!.text = field.value.trim();
+      const typed = field.value.trim();
+      answers[index]!.text = typed === '' ? null : typed;
       if (index === request.questions.length - 1) {
         finish();
         return;
@@ -321,7 +347,7 @@ class AskPanel {
       field.placeholder = question.choices.length > 0 ?
           'Or reply directly…' :
           question.placeholder || 'Your answer';
-      field.value = answers[index]!.text;
+      field.value = answers[index]!.text ?? '';
       body.append(field);
       next.textContent =
           index === request.questions.length - 1 ? 'Done' : 'Next';
@@ -339,6 +365,10 @@ class AskPanel {
   // --- FluxPageHandlerObserver ---------------------------------------------
 
   onAskTurn(turn: AskTurn, busy: boolean) {
+    if (!this.restored) {
+      this.early.push(turn);
+      return;
+    }
     this.thread.append(this.turnEl(turn));
     this.setBusy(busy);
     this.scroll();

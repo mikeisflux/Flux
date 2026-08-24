@@ -61,6 +61,9 @@ class AskSession {
 
   std::vector<mojom::AskTurnPtr> Thread() const;
   bool busy() const { return busy_; }
+  // What the assistant is waiting to be told, so a panel that has just opened
+  // can put the question back on screen. Null when nothing is pending.
+  mojom::QuestionRequestPtr PendingQuestion() const;
 
  private:
   void Step();
@@ -74,6 +77,12 @@ class AskSession {
   // a DCHECK. Everything else here is synchronous and simply calls back
   // immediately.
   void RunNextTool();
+  // Records one result against the turn being assembled and advances. Split
+  // from OnToolDone so the synchronous path can record without re-entering
+  // RunNextTool: doing both from inside the loop ran the completion block
+  // twice - a moved-from results message pushed into history, a duplicate
+  // turn on screen, and a second concurrent request to the model.
+  void RecordToolResult(ToolResult result);
   void OnToolDone(ToolResult result);
   void RunFileTool(const ToolCall& call,
                    base::OnceCallback<void(ToolResult)> done);
@@ -86,6 +95,9 @@ class AskSession {
   const raw_ptr<Delegate> delegate_;
 
   std::unique_ptr<LLMProvider> provider_;
+  // Which one provider_ is, so a model change that crosses providers rebuilds
+  // it rather than sending the name to the wrong API.
+  bool provider_is_anthropic_ = true;
   std::string model_;
   std::vector<Message> history_;
   std::vector<mojom::AskTurnPtr> turns_;
@@ -94,6 +106,7 @@ class AskSession {
   // Set while a question is outstanding, so the answer knows which call to
   // resolve.
   std::string pending_question_call_id_;
+  mojom::QuestionRequestPtr pending_question_;
 
   // The turn being assembled while its tool calls run.
   std::vector<ToolCall> pending_calls_;

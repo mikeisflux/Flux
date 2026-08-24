@@ -1964,6 +1964,7 @@ body.ask {
 .ask-text :last-child { margin-bottom: 0; }
 
 .ask-composer {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 12px 16px 16px;
@@ -1994,8 +1995,6 @@ body.ask {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.ask-depth { position: relative; }
 
 .ask-depth-menu {
   position: absolute;

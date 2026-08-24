@@ -150,8 +150,16 @@ void AskSession::Reset() {
   history_.clear();
   turns_.clear();
   pending_question_call_id_.clear();
+  pending_question_.reset();
+  pending_calls_.clear();
+  pending_turn_.reset();
+  pending_results_ = Message();
+  next_call_ = 0;
   busy_ = false;
   provider_.reset();
+  // A model request or a file read may still be in flight. Invalidating here
+  // is what stops its reply landing in the thread the user just cleared.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void AskSession::Send(const std::string& message,
@@ -159,6 +167,27 @@ void AskSession::Send(const std::string& message,
                       std::vector<mojom::AskAttachmentPtr> attachments) {
   if (busy_ || message.empty())
     return;
+
+  // "Or reply directly" is the composer under an open question, so a message
+  // typed there is the answer to it. Appending it as a new user turn instead
+  // would leave the assistant's tool_use with no tool_result after it, which
+  // is not a degraded conversation - both providers reject the request.
+  if (!pending_question_call_id_.empty()) {
+    auto shown = mojom::AskTurn::New();
+    shown->from_user = true;
+    shown->text = message;
+    turns_.push_back(shown->Clone());
+    Emit(*shown);
+
+    std::vector<mojom::QuestionAnswerPtr> answers;
+    auto answer = mojom::QuestionAnswer::New();
+    if (pending_question_ && !pending_question_->questions.empty())
+      answer->id = pending_question_->questions.front()->id;
+    answer->text = message;
+    answers.push_back(std::move(answer));
+    Answer(std::move(answers));
+    return;
+  }
 
   std::string text = message;
   // Inlined rather than uploaded: neither provider is given a file endpoint
@@ -203,20 +232,43 @@ void AskSession::Send(const std::string& message,
 }
 
 void AskSession::Step() {
+  // Trimming the oldest two would cut between an assistant turn holding
+  // tool_calls and the user turn holding their results, and a tool_result with
+  // no tool_use before it is not a slightly odd transcript - both providers
+  // reject the request outright. So drop from the front until what is left
+  // starts on a plain user message.
   if (history_.size() > kMaxTurns) {
-    history_.erase(history_.begin(), history_.begin() + 2);
+    size_t drop = 2;
+    while (drop < history_.size() &&
+           !(history_[drop].role == Message::Role::kUser &&
+             history_[drop].tool_results.empty())) {
+      drop++;
+    }
+    if (drop < history_.size())
+      history_.erase(history_.begin(), history_.begin() + drop);
   }
 
-  if (!provider_) {
-    // Whichever key is configured, rather than a setting the user has to find.
-    // With both, the model string decides - the panel's intelligence selector
-    // names a model, and a Claude model name is not something OpenAI answers.
-    const bool anthropic = model_.starts_with("claude");
+  // The rendered thread is trimmed with it. It is cloned to the panel on every
+  // restore, and a conversation nobody ended would grow without limit.
+  while (turns_.size() > kMaxTurns) {
+    turns_.erase(turns_.begin());
+  }
+
+  // Rebuilt whenever the model changes provider, not cached from the first
+  // turn. The comment here used to say the model string decides which provider
+  // is used, while `if (!provider_)` meant it decided once and never again -
+  // so switching the intelligence selector to the other provider mid-thread
+  // would have sent its model name to the wrong API. Every preset in the panel
+  // is a Claude model today, so it was unreachable; a comment describing
+  // behaviour the code does not have is how it stops being unreachable later.
+  const bool anthropic = model_.starts_with("claude");
+  if (!provider_ || anthropic != provider_is_anthropic_) {
     provider_ = anthropic
                     ? std::unique_ptr<LLMProvider>(
                           std::make_unique<AnthropicProvider>(profile_))
                     : std::unique_ptr<LLMProvider>(
                           std::make_unique<OpenAIProvider>(profile_));
+    provider_is_anthropic_ = anthropic;
   }
 
   CompletionRequest request;
@@ -302,6 +354,12 @@ void AskSession::RunNextTool() {
           request->questions.push_back(std::move(question));
         }
       }
+      // Not busy: the session is waiting on a person, not working. Leaving
+      // it busy disabled the composer, and since the question itself was not
+      // part of the thread a reopened panel showed a dead input and nothing
+      // to answer.
+      busy_ = false;
+      pending_question_ = request->Clone();
       turns_.push_back(pending_turn_->Clone());
       Emit(*pending_turn_);
       if (delegate_)
@@ -317,18 +375,27 @@ void AskSession::RunNextTool() {
       return;
     }
 
-    OnToolDone(RunTool(call));
+    // Synchronous: record and carry on round the loop. No recursion.
+    RecordToolResult(RunTool(call));
   }
 
+  if (!pending_turn_)
+    return;
   history_.push_back(std::move(pending_results_));
   turns_.push_back(pending_turn_->Clone());
   Emit(*pending_turn_);
   pending_calls_.clear();
+  pending_turn_.reset();
+  next_call_ = 0;
   Step();
 }
 
-void AskSession::OnToolDone(ToolResult result) {
-  if (next_call_ >= pending_calls_.size())
+void AskSession::RecordToolResult(ToolResult result) {
+  // Reset() can land between dispatching a worker and its reply. The weak
+  // pointer covers destruction, not a thread the user started over on, so a
+  // late result has to be dropped rather than appended to a turn that is no
+  // longer being assembled.
+  if (!pending_turn_ || next_call_ >= pending_calls_.size())
     return;
   result.tool_call_id = pending_calls_[next_call_].id;
   auto step = mojom::AskStep::New();
@@ -337,23 +404,42 @@ void AskSession::OnToolDone(ToolResult result) {
   pending_turn_->steps.push_back(std::move(step));
   pending_results_.tool_results.push_back(std::move(result));
   next_call_++;
+}
+
+void AskSession::OnToolDone(ToolResult result) {
+  if (!pending_turn_)
+    return;
+  RecordToolResult(std::move(result));
   RunNextTool();
+}
+
+mojom::QuestionRequestPtr AskSession::PendingQuestion() const {
+  return pending_question_ ? pending_question_->Clone() : nullptr;
 }
 
 void AskSession::Answer(std::vector<mojom::QuestionAnswerPtr> answers) {
   if (pending_question_call_id_.empty())
     return;
+  pending_question_.reset();
 
+  // text is `string?`, so it is std::optional here and not a string. Null is
+  // documented as "skipped", which is a different thing from an empty answer -
+  // the mojom says so explicitly, because "I am not telling you" and "there is
+  // no value" lead the agent somewhere different.
   std::string joined;
+  size_t answered = 0;
   for (const mojom::QuestionAnswerPtr& answer : answers) {
-    if (!answer)
+    if (!answer || !answer->text.has_value()) {
+      base::StrAppend(&joined, {"(skipped)\n"});
       continue;
-    base::StrAppend(&joined, {answer->text, "\n"});
+    }
+    base::StrAppend(&joined, {*answer->text, "\n"});
+    answered++;
   }
 
   ToolResult result;
   result.tool_call_id = pending_question_call_id_;
-  result.content = joined.empty() ? "(skipped)" : joined;
+  result.content = answered > 0 ? joined : "(the user skipped these)";
   pending_question_call_id_.clear();
 
   Message message;

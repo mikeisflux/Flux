@@ -521,7 +521,12 @@ interface FluxPageHandler {
   // Restores the thread into a panel that has just opened. `busy` is true when
   // a reply is already in flight, so a reopened panel shows the spinner rather
   // than an idle composer over a question that is still being answered.
-  GetAskThread() => (array<AskTurn> turns, bool busy);
+  // `pending` is the question the assistant is blocked on, if any. Without it
+  // a panel reopened mid-question restored the conversation and not the thing
+  // it was waiting for, which left the user looking at a reply that ends in a
+  // question and no way to answer it.
+  GetAskThread() => (array<AskTurn> turns, bool busy,
+                     QuestionRequest? pending);
 
   // Answers arrive on the observer rather than here: a reply is streamed, and
   // a request that resolves once cannot carry the thinking, the steps and the

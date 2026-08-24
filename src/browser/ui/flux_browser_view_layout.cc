@@ -26,6 +26,11 @@ namespace {
 // the other. Enough that it does not read as part of either.
 constexpr int kAvatarGap = 8;
 
+// What the page keeps no matter what. The Ask panel takes its width from the
+// contents area, so without a floor a narrow window ends up with a panel and
+// no page at all.
+constexpr int kMinContentsWidth = 320;
+
 }  // namespace
 
 FluxBrowserViewLayout::FluxBrowserViewLayout(
@@ -204,12 +209,18 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
     if (open) {
       if (views::ChildLayout* contents =
               layout.GetLayoutFor(views().contents_container)) {
-        const int width =
-            std::min(FluxAskPanelView::kWidth, contents->bounds.width());
-        bounds = contents->bounds;
-        bounds.set_x(contents->bounds.right() - width);
-        bounds.set_width(width);
-        contents->bounds.set_width(contents->bounds.width() - width);
+        // Never at the page's whole expense. A narrow window would otherwise
+        // give the panel everything and leave the contents zero wide, which
+        // is a browser showing no web page - worse than a panel that does not
+        // fit, so below this the panel simply does not open.
+        const int room = contents->bounds.width() - kMinContentsWidth;
+        const int width = std::min(FluxAskPanelView::kWidth, room);
+        if (width > 0) {
+          bounds = contents->bounds;
+          bounds.set_x(contents->bounds.right() - width);
+          bounds.set_width(width);
+          contents->bounds.set_width(contents->bounds.width() - width);
+        }
       }
     }
     layout.AddChild(views().flux_ask_panel, bounds, open && !bounds.IsEmpty());

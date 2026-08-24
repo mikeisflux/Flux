@@ -96,11 +96,11 @@ void FluxPageHandler::ListPending(ListPendingCallback callback) {
 
 void FluxPageHandler::GetAskThread(GetAskThreadCallback callback) {
   if (!service_) {
-    std::move(callback).Run({}, false);
+    std::move(callback).Run({}, false, nullptr);
     return;
   }
   AskSession* ask = service_->ask();
-  std::move(callback).Run(ask->Thread(), ask->busy());
+  std::move(callback).Run(ask->Thread(), ask->busy(), ask->PendingQuestion());
 }
 
 void FluxPageHandler::SendAsk(const std::string& message,
