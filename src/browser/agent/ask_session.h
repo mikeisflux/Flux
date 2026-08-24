@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -64,10 +65,18 @@ class AskSession {
  private:
   void Step();
   void OnCompletion(CompletionResponse response);
-  // Runs one tool call and returns what to hand back to the model. Tools here
-  // are synchronous and act on prefs or the scheduler, so there is no callback
-  // and no page to wait for.
-  ToolResult RunTool(const ToolCall& call);
+
+  // The tool calls from one turn, run one after another.
+  //
+  // Sequential and callback-driven rather than a loop returning values,
+  // because reading a file has to happen on a worker thread: blocking IO on
+  // the UI thread is a jank bug that Chromium's thread restrictions turn into
+  // a DCHECK. Everything else here is synchronous and simply calls back
+  // immediately.
+  void RunNextTool();
+  void OnToolDone(ToolResult result);
+  void RunFileTool(const ToolCall& call,
+                   base::OnceCallback<void(ToolResult)> done);
   std::vector<ToolDefinition> Tools() const;
   std::string SystemPrompt() const;
   void Emit(const mojom::AskTurn& turn);
@@ -85,6 +94,12 @@ class AskSession {
   // Set while a question is outstanding, so the answer knows which call to
   // resolve.
   std::string pending_question_call_id_;
+
+  // The turn being assembled while its tool calls run.
+  std::vector<ToolCall> pending_calls_;
+  size_t next_call_ = 0;
+  Message pending_results_;
+  mojom::AskTurnPtr pending_turn_;
 
   base::WeakPtrFactory<AskSession> weak_factory_{this};
 };

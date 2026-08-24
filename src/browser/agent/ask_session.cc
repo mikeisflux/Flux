@@ -9,7 +9,15 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/uuid.h"
+#include "base/base_paths.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
@@ -30,6 +38,90 @@ constexpr size_t kMaxTurns = 60;
 // What an attachment may contribute. The bytes are inlined into the prompt, so
 // this is a prompt-size limit rather than a file-size one.
 constexpr size_t kMaxAttachmentChars = 20000;
+
+// How much of a file the model may see, and how many entries a listing may
+// return. Both are prompt-size limits rather than filesystem ones.
+constexpr size_t kMaxFileChars = 40000;
+constexpr size_t kMaxListedEntries = 200;
+
+// The only places the assistant may look.
+//
+// Three fixed directories rather than a pref, because a pref no screen can
+// edit is a setting that does not exist - and a "grant a folder" flow is a
+// feature to design, not a default to guess at. These three are where the
+// things a person would want a template built from actually live.
+std::vector<base::FilePath> FileRoots() {
+  std::vector<base::FilePath> roots;
+  for (int key : {chrome::DIR_USER_DOCUMENTS, chrome::DIR_DEFAULT_DOWNLOADS_SAFE,
+                  base::DIR_USER_DESKTOP}) {
+    base::FilePath dir;
+    if (base::PathService::Get(key, &dir) && !dir.empty())
+      roots.push_back(dir.StripTrailingSeparators());
+  }
+  return roots;
+}
+
+// Resolves `raw` and returns it only if it lands inside a root.
+//
+// Resolved FIRST and checked second, and that order is the whole point:
+// MakeAbsoluteFilePath expands symlinks, so a link inside Documents pointing
+// at C:\Users\Mike\.ssh is caught here. Checking the string before resolving
+// would pass it. Blocking, so this only ever runs on a worker.
+std::optional<base::FilePath> ResolveInsideRoot(const std::string& raw) {
+  if (raw.empty())
+    return std::nullopt;
+  const base::FilePath resolved =
+      base::MakeAbsoluteFilePath(base::FilePath::FromUTF8Unsafe(raw));
+  if (resolved.empty() || resolved.ReferencesParent())
+    return std::nullopt;
+  for (const base::FilePath& root : FileRoots()) {
+    if (root == resolved || root.IsParent(resolved))
+      return resolved;
+  }
+  return std::nullopt;
+}
+
+// Runs on a worker. Returns the text to hand the model, and whether it failed.
+std::pair<std::string, bool> ReadOnWorker(std::string path) {
+  const std::optional<base::FilePath> file = ResolveInsideRoot(path);
+  if (!file) {
+    return {"That path is outside the folders Flux may read (Documents, "
+            "Downloads and Desktop).", true};
+  }
+  std::string body;
+  if (!base::ReadFileToStringWithMaxSize(*file, &body, kMaxFileChars)) {
+    // A partial read on an oversized file still fills `body`, which is more
+    // use than an error - say it was cut rather than refusing outright.
+    if (body.empty())
+      return {"Could not read that file.", true};
+    body += "\n[truncated]";
+  }
+  return {body, false};
+}
+
+std::pair<std::string, bool> ListOnWorker(std::string path) {
+  const std::optional<base::FilePath> dir = ResolveInsideRoot(path);
+  if (!dir) {
+    return {"That path is outside the folders Flux may read (Documents, "
+            "Downloads and Desktop).", true};
+  }
+  std::string out;
+  size_t count = 0;
+  base::FileEnumerator files(
+      *dir, /*recursive=*/false,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath entry = files.Next(); !entry.empty();
+       entry = files.Next()) {
+    const base::FileEnumerator::FileInfo info = files.GetInfo();
+    base::StrAppend(&out, {info.IsDirectory() ? "dir  " : "file ",
+                           entry.BaseName().AsUTF8Unsafe(), "\n"});
+    if (++count >= kMaxListedEntries) {
+      base::StrAppend(&out, {"[more entries not listed]\n"});
+      break;
+    }
+  }
+  return {out.empty() ? "(empty)" : out, false};
+}
 
 base::DictValue StringProp(const std::string& description) {
   base::DictValue prop;
@@ -169,9 +261,17 @@ void AskSession::OnCompletion(CompletionResponse response) {
     return;
   }
 
-  Message results;
-  results.role = Message::Role::kUser;
-  for (const ToolCall& call : response.tool_calls) {
+  pending_turn_ = std::move(turn);
+  pending_calls_ = CloneToolCalls(response.tool_calls);
+  pending_results_ = Message();
+  pending_results_.role = Message::Role::kUser;
+  next_call_ = 0;
+  RunNextTool();
+}
+
+void AskSession::RunNextTool() {
+  while (next_call_ < pending_calls_.size()) {
+    const ToolCall& call = pending_calls_[next_call_];
     // ask_user stops the loop rather than returning: the answer comes from a
     // person, so there is nothing to hand back until they give it.
     if (call.name == "ask_user") {
@@ -202,26 +302,42 @@ void AskSession::OnCompletion(CompletionResponse response) {
           request->questions.push_back(std::move(question));
         }
       }
-      turns_.push_back(turn->Clone());
-      Emit(*turn);
+      turns_.push_back(pending_turn_->Clone());
+      Emit(*pending_turn_);
       if (delegate_)
         delegate_->OnAskQuestions(*request);
       return;
     }
 
-    ToolResult result = RunTool(call);
-    result.tool_call_id = call.id;
-    auto step = mojom::AskStep::New();
-    step->label = result.content;
-    step->succeeded = !result.is_error;
-    turn->steps.push_back(std::move(step));
-    results.tool_results.push_back(std::move(result));
+    if (call.name == "read_file" || call.name == "list_files") {
+      // Off to a worker thread, so this returns and the chain resumes in
+      // OnToolDone. Everything below it runs inline and falls through.
+      RunFileTool(call, base::BindOnce(&AskSession::OnToolDone,
+                                       weak_factory_.GetWeakPtr()));
+      return;
+    }
+
+    OnToolDone(RunTool(call));
   }
 
-  history_.push_back(std::move(results));
-  turns_.push_back(turn->Clone());
-  Emit(*turn);
+  history_.push_back(std::move(pending_results_));
+  turns_.push_back(pending_turn_->Clone());
+  Emit(*pending_turn_);
+  pending_calls_.clear();
   Step();
+}
+
+void AskSession::OnToolDone(ToolResult result) {
+  if (next_call_ >= pending_calls_.size())
+    return;
+  result.tool_call_id = pending_calls_[next_call_].id;
+  auto step = mojom::AskStep::New();
+  step->label = result.content;
+  step->succeeded = !result.is_error;
+  pending_turn_->steps.push_back(std::move(step));
+  pending_results_.tool_results.push_back(std::move(result));
+  next_call_++;
+  RunNextTool();
 }
 
 void AskSession::Answer(std::vector<mojom::QuestionAnswerPtr> answers) {
@@ -338,6 +454,33 @@ ToolResult AskSession::RunTool(const ToolCall& call) {
   return result;
 }
 
+void AskSession::RunFileTool(const ToolCall& call,
+                             base::OnceCallback<void(ToolResult)> done) {
+  const std::string* path = call.input.FindString("path");
+  if (!path) {
+    ToolResult result;
+    result.is_error = true;
+    result.content = base::StrCat({call.name, " needs a path."});
+    std::move(done).Run(std::move(result));
+    return;
+  }
+
+  auto finish = [](base::OnceCallback<void(ToolResult)> cb,
+                   std::pair<std::string, bool> outcome) {
+    ToolResult result;
+    result.content = outcome.first;
+    result.is_error = outcome.second;
+    std::move(cb).Run(std::move(result));
+  };
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      call.name == "read_file"
+          ? base::BindOnce(&ReadOnWorker, *path)
+          : base::BindOnce(&ListOnWorker, *path),
+      base::BindOnce(finish, std::move(done)));
+}
+
 std::vector<ToolDefinition> AskSession::Tools() const {
   std::vector<ToolDefinition> tools;
 
@@ -403,6 +546,44 @@ std::vector<ToolDefinition> AskSession::Tools() const {
   }
 
   {
+    ToolDefinition list;
+    list.name = "list_files";
+    list.description =
+        "List what is in one of the user's folders. You may only read inside "
+        "Documents, Downloads and Desktop - anything else is refused. Use "
+        "this to see what the user actually works with before proposing a "
+        "template or a workflow, rather than guessing.";
+    base::DictValue props;
+    props.Set("path", StringProp("Absolute path to a folder."));
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(props));
+    base::ListValue required;
+    required.Append("path");
+    schema.Set("required", std::move(required));
+    list.input_schema = std::move(schema);
+    tools.push_back(std::move(list));
+  }
+
+  {
+    ToolDefinition read;
+    read.name = "read_file";
+    read.description =
+        "Read a text file of the user's. Same three folders as list_files, "
+        "and read-only - nothing here can change or delete anything.";
+    base::DictValue props;
+    props.Set("path", StringProp("Absolute path to a file."));
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(props));
+    base::ListValue required;
+    required.Append("path");
+    schema.Set("required", std::move(required));
+    read.input_schema = std::move(schema);
+    tools.push_back(std::move(read));
+  }
+
+  {
     ToolDefinition ask;
     ask.name = "ask_user";
     ask.description =
@@ -465,6 +646,13 @@ std::string AskSession::SystemPrompt() const {
       "skills the user has adopted.\n"
       "- Approvals: a task declared read-only stops and waits before doing "
       "anything that writes or sends.\n"
+      "\n"
+      "You can look at what the user actually has, in Documents, Downloads "
+      "and Desktop only, with list_files and read_file. Nothing else on the "
+      "machine is reachable and nothing you do can change or delete a file. "
+      "Use it to ground a suggestion in their real work - a folder of "
+      "invoices is a better basis for a template than a guess - and say what "
+      "you looked at rather than presenting the conclusion on its own.\n"
       "\n"
       "Answer briefly and then act. If the user describes something they want "
       "to happen on a schedule, save it with save_workflow rather than "
