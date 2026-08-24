@@ -577,6 +577,16 @@ first run a matter of deleting the folder.
   Grain the meeting recorder. A confidently wrong logo is worse than a letter.
   A mark you hold the rights to goes in `branding/connectors/<id>.svg` and
   wins over all of it. Output is committed, so a build machine needs no npm.
+- `tools/oauth-registrations.py` - the checklist for giving a provider a
+  built-in app, derived from the definitions so it cannot drift. The split it
+  prints is the one that matters: **PKCE is the precondition, not a nicety.**
+  Flux's client secret ships in a downloadable binary, so everyone has it, and
+  PKCE is the only thing binding an authorization code to the client that
+  asked for it - without it an intercepted redirect is enough to take the
+  tokens. 7 of the 26 OAuth definitions set it today; the other 19 keep the
+  bring-your-own-app form until their provider's docs are read and it is
+  turned on deliberately. `check-connector-defs.py` refuses an `auth.client`
+  on a definition without pkce.
 - `data/connectors/*.json` - per-connector auth endpoints and operation maps.
   Every operation carries a `label` ("Create a to-do"), because the Connectors
   dialog lists them as the actions the agent will be able to take and a raw id

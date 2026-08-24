@@ -115,6 +115,43 @@ for f in defs:
                 f'actions by label, and an operation without one shows up as '
                 f'its raw id.')
 
+# A built-in OAuth app that is unsafe or half-written.
+#
+# auth.client is an app Flux registered with the provider, so the user does not
+# have to. That is only sound because the authorization code is bound to a
+# PKCE verifier: the "secret" ships inside a downloadable binary, so anyone has
+# it, and without PKCE an intercepted redirect is enough to exchange the code
+# for someone's tokens. With PKCE the secret stops being load-bearing, which is
+# exactly why Google's installed-app flow mandates it.
+#
+# So: shipping a client for a provider REQUIRES pkce on that definition. A
+# provider that does not support PKCE is not a candidate for a built-in app,
+# and the honest answer there is to leave the user registering their own.
+for f in defs:
+    d = json.loads(f.read_text(encoding='utf-8'))
+    cid = d.get('id', f.stem)
+    auth = d.get('auth') or {}
+    client = auth.get('client')
+    if not isinstance(client, dict):
+        continue
+    if not (client.get('id') or '').strip():
+        issues.append(
+            f'{cid}: auth.client has no "id". A half-written block reads as a '
+            f'registered app and connects with nothing.')
+    if not (client.get('secret') or '').strip():
+        issues.append(
+            f'{cid}: auth.client has no "secret". If the provider genuinely '
+            f'issues none, say so with "secret": "none" rather than omitting '
+            f'it, so the gap is a decision.')
+    if not auth.get('pkce'):
+        issues.append(
+            f'{cid}: ships auth.client but the definition does not set pkce. '
+            f'The secret is in a downloadable binary, so PKCE is the only '
+            f'thing binding the code to this client - without it an '
+            f'intercepted redirect is enough to take the tokens. Either turn '
+            f'pkce on, or drop the built-in app and let the user register '
+            f'their own.')
+
 for i in issues:
     print(i)
 if issues:

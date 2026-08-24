@@ -1929,6 +1929,20 @@ body.shell.collapsed .badge { display: none; }
   color: var(--fg-muted);
 }
 
+.connector-setup {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 12px;
+  gap: 10px;
+}
+
+.connector-setup .subtitle {
+  margin: 0;
+}
+
 .connector-dialog .dialog-actions {
   padding: 0 24px 22px;
 }

@@ -22,6 +22,11 @@ export interface Connector {
 // The plug on each action chip - the reference marks every action with one,
 // and it is what makes a dense two-column list read as a list of capabilities
 // rather than a wall of sentences.
+// Mirrors kDefaultRedirectUri in connector_service.cc. It does not have to
+// resolve to anything - the redirect is caught in the tab - but it does have
+// to match what was registered with the provider exactly.
+const kDefaultRedirectUri = 'http://127.0.0.1/flux/oauth';
+
 const kPlugPath = 'M6 2v5m8-5v5M4 7h12v3a6 6 0 0 1-12 0V7zm6 9v3';
 
 export const loadConnectors = once(
@@ -387,15 +392,13 @@ export class ConnectorsView {
     }
 
     // hasClient is true when the user registered an app OR when Flux ships one
-    // for this provider. Only the connectors with neither still need the
-    // registration form, and they say so instead of failing silently.
+    // for this provider. The ones with neither are handled inside this dialog
+    // rather than by closing it and revealing a form somewhere else on the
+    // page - a button that makes the thing you were looking at disappear is
+    // not an answer to "connect this".
     if (state && !state.hasClient) {
-      dialog.close();
-      const card = this.grid.querySelector<HTMLElement>(
-          `[data-connector="${CSS.escape(c.id)}"]`);
-      if (card) {
-        void this.showClientForm(card, c);
-      }
+      button.disabled = false;
+      this.revealClientFields(c, dialog, button, error);
       return;
     }
 
@@ -409,91 +412,82 @@ export class ConnectorsView {
 
 
   /**
-   * The OAuth app registration form, inline under the card.
+   * The fallback for a provider Flux has no registered app with.
    *
-   * Inline rather than a dialog because it is a step in connecting, not a
-   * separate task, and because the redirect URI has to be copied out of here
-   * and pasted into the provider's own form - which is easier next to the
-   * card it belongs to than in a modal over it.
+   * Shown inside the dialog, once, when Connect is pressed and there is
+   * nothing to connect with. It is deliberately the second thing the user
+   * sees rather than the first: for the providers Flux does ship an app for
+   * this panel never appears at all, and leading with it would make every
+   * connector look like it needs a developer.
    */
-  private async showClientForm(card: HTMLElement, c: Connector) {
-    const existing = card.parentElement?.querySelector('.connector-form');
-    if (existing) {
-      existing.remove();
+  private revealClientFields(
+      c: Connector, dialog: HTMLDialogElement, button: HTMLButtonElement,
+      error: HTMLElement) {
+    const body = dialog.querySelector('.connector-dialog-body');
+    if (!body || body.querySelector('.connector-setup')) {
+      return;
     }
 
-    const {clientId, redirectUri, hasSecret} =
-        await this.handler.getConnectorClient(c.id);
-
-    const form = document.createElement('form');
-    form.className = 'connector-form';
+    const panel = document.createElement('div');
+    panel.className = 'connector-setup';
 
     const intro = document.createElement('p');
+    intro.className = 'subtitle';
     intro.textContent =
-        `Register an OAuth app with ${c.name}, then paste its details here. ` +
-        'Flux ships no client secrets of its own - one inside a binary anyone ' +
-        'can download is not a secret - so the app is yours, not Flux\'s.';
+        `Flux has no registered app with ${c.name} yet, so this one needs ` +
+        `your own. Register an OAuth app with ${c.name}, then paste its ` +
+        `details here.`;
 
-    const idInput = field(form, 'Client ID', clientId, 'text');
-    // A stored secret is never sent back to the console, so the field starts
-    // empty with a placeholder saying one is already held. Leaving it empty
-    // keeps it.
-    const secretInput = field(
-        form, 'Client secret', '', 'password',
-        hasSecret ? 'Stored - leave blank to keep it' : '');
-    const redirectInput = field(
-        form, 'Redirect URI', redirectUri || 'http://127.0.0.1/flux/oauth',
-        'text');
-    redirectInput.readOnly = false;
+    const idInput = field(panel, 'Client ID', '', 'text');
+    const secretInput = field(panel, 'Client secret', '', 'password');
+    const redirectInput =
+        field(panel, 'Redirect URI', kDefaultRedirectUri, 'text');
 
     const hint = document.createElement('p');
-    hint.className = 'connector-form-hint';
+    hint.className = 'subtitle';
     hint.textContent =
         'The redirect URI must match what you registered exactly. Flux ' +
         'catches the redirect in the tab, so the address does not have to ' +
         'resolve to anything.';
 
-    const save = document.createElement('button');
-    save.type = 'submit';
-    save.textContent = 'Save and connect';
+    panel.prepend(intro);
+    panel.append(hint);
+    body.insertBefore(panel, error);
 
-    const cancel = document.createElement('button');
-    cancel.type = 'button';
-    cancel.className = 'outlined';
-    cancel.textContent = 'Cancel';
-    cancel.addEventListener('click', () => form.remove());
-
-    const row = document.createElement('div');
-    row.className = 'connector-form-actions';
-    row.append(save, cancel);
-
-    form.prepend(intro);
-    form.append(hint, row);
-
-    form.addEventListener('submit', async event => {
-      event.preventDefault();
-      const {stored, error} = await this.handler.setConnectorClient(
-          c.id, idInput.value.trim(), secretInput.value,
-          redirectInput.value.trim());
-      if (!stored) {
-        this.notice(error ?? 'The registration could not be saved.');
+    button.textContent = `Save and connect ${c.name}`;
+    button.addEventListener('click', async () => {
+      const id = idInput.value.trim();
+      if (!id || !secretInput.value.trim()) {
+        error.textContent = 'A client ID and secret are both required.';
+        error.hidden = false;
         return;
       }
-      form.remove();
-      await this.refreshStatus();
-      this.paint();
-      const result = await this.handler.beginConnect(c.id);
-      if (!result.started && result.error) {
-        this.notice(result.error);
+      button.disabled = true;
+      const {stored, error: why} = await this.handler.setConnectorClient(
+          c.id, id, secretInput.value.trim(), redirectInput.value.trim());
+      if (!stored) {
+        error.textContent = why || 'Those details were not accepted.';
+        error.hidden = false;
+        button.disabled = false;
+        return;
       }
+      const {started, error: startWhy} = await this.handler.beginConnect(c.id);
+      if (!started) {
+        error.textContent = startWhy || 'Could not start the connection.';
+        error.hidden = false;
+        button.disabled = false;
+        return;
+      }
+      dialog.close();
     });
-
-    card.after(form);
-    idInput.focus();
   }
+
 }
 
-function field(form: HTMLFormElement, label: string, value: string,
+// HTMLElement rather than HTMLFormElement: the same field is used inside the
+// connector dialog, which is a div, and the only thing this ever did with the
+// parent was append to it.
+function field(form: HTMLElement, label: string, value: string,
                type: string, placeholder = ''): HTMLInputElement {
   const wrap = document.createElement('label');
   wrap.className = 'connector-field';
