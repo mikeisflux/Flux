@@ -115,6 +115,10 @@ void FluxPageHandler::NewAskThread() {
     service_->ask()->Reset();
 }
 
+void FluxPageHandler::SetAskPanelOpen(bool open) {
+  profile_->GetPrefs()->SetBoolean(prefs::kAskPanelOpen, open);
+}
+
 void FluxPageHandler::AnswerAsk(
     std::vector<mojom::QuestionAnswerPtr> answers) {
   if (service_)

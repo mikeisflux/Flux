@@ -518,6 +518,11 @@ interface FluxPageHandler {
   // Forget the thread and start over. The pencil in the panel's header.
   NewAskThread();
 
+  // Open or close the panel. Both the pill in the titlebar and the panel's own
+  // close button end up here, because the pref is what the window layout
+  // reads - hiding the view without it would leave the reserved width behind.
+  SetAskPanelOpen(bool open);
+
   // The assistant asked something and is blocked until this returns, the same
   // way a run is.
   AnswerAsk(array<QuestionAnswer> answers);

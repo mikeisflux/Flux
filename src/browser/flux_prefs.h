@@ -40,6 +40,12 @@ inline constexpr char kUserSkills[] = "flux.user_skills";
 // restart.
 inline constexpr char kSidebarCollapsed[] = "flux.sidebar_collapsed";
 
+// Whether the Ask Flux panel is open beside the page. A pref rather than view
+// state for the same reason the sidebar's collapsed flag is one: the frame
+// owns the window's layout and the panel only draws inside what it is given,
+// both have to agree, and only one of them survives a restart.
+inline constexpr char kAskPanelOpen[] = "flux.ask_panel_open";
+
 // Encrypted secrets, each a dictionary of name -> base64 ciphertext.
 //
 // A dictionary rather than a pref per secret, and the reason is load-bearing:

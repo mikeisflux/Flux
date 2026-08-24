@@ -251,6 +251,7 @@ export declare class FluxPageHandlerRemote {
   sendAsk(message: string, model: string,
           attachments: AskAttachment[]): void;
   newAskThread(): void;
+  setAskPanelOpen(open: boolean): void;
   answerAsk(answers: QuestionAnswer[]): void;
   getRun(runId: string): Promise<{
     progress: RunProgress|null,

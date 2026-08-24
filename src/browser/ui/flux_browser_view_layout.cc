@@ -6,6 +6,8 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "chrome/browser/flux/ui/flux_ask_button.h"
+#include "chrome/browser/flux/ui/flux_ask_panel_view.h"
 #include "chrome/browser/flux/ui/flux_avatar_button.h"
 // For the complete type: BrowserViewLayoutViews only forward-declares
 // TabStripRegionView, and converting that pointer to views::View* to look its
@@ -14,6 +16,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 
 namespace flux {
 
@@ -52,6 +55,21 @@ int FluxBrowserViewLayout::AvatarSlot() const {
   return FluxAvatarButton::kSize + 2 * kAvatarGap;
 }
 
+bool FluxBrowserViewLayout::HasAskButton() const {
+  return IsParentedTo(views().flux_ask_button, views().browser_view);
+}
+
+int FluxBrowserViewLayout::AskButtonSlot() const {
+  return FluxAskButton::kWidth + kAvatarGap;
+}
+
+bool FluxBrowserViewLayout::IsAskPanelOpen() const {
+  const auto* panel =
+      views::AsViewClass<FluxAskPanelView>(views().flux_ask_panel);
+  return panel && IsParentedTo(views().flux_ask_panel, views().browser_view) &&
+         panel->IsOpen();
+}
+
 gfx::Size FluxBrowserViewLayout::GetMinimumSize(const views::View* host) const {
   gfx::Size size = BrowserViewTabbedLayoutImpl::GetMinimumSize(host);
   if (HasSidebar()) {
@@ -82,7 +100,8 @@ void FluxBrowserViewLayout::DoPreLayoutComputations(
     // band the caption buttons are in - insetting would pull the contents area
     // in for the whole height of the window.
     auto& trailing = inset.trailing_exclusion;
-    trailing.content.set_width(trailing.content.width() + AvatarSlot());
+    trailing.content.set_width(trailing.content.width() + AvatarSlot() +
+                               (HasAskButton() ? AskButtonSlot() : 0));
     trailing.content.set_height(
         std::max<float>(trailing.content.height(), FluxAvatarButton::kSize));
   }
@@ -154,6 +173,46 @@ auto FluxBrowserViewLayout::CalculateProposedLayout(
                          size, size);
     }
     layout.AddChild(views().flux_avatar, bounds, visible);
+
+    // The pill goes immediately inboard of the avatar, in the slot widened
+    // for it above. Measured from the avatar's own bounds rather than
+    // recomputed, so the two cannot disagree about where the band is.
+    if (views().flux_ask_button) {
+      gfx::Rect pill;
+      if (visible && HasAskButton()) {
+        pill = gfx::Rect(
+            bounds.x() - kAvatarGap - FluxAskButton::kWidth,
+            bounds.y() + (FluxAvatarButton::kSize - FluxAskButton::kHeight) / 2,
+            FluxAskButton::kWidth, FluxAskButton::kHeight);
+      }
+      layout.AddChild(views().flux_ask_button, pill,
+                      visible && HasAskButton());
+    }
+  }
+
+  // The panel takes its width off the contents area rather than off the
+  // window. Unlike the sidebar it sits beside the page only: the tab strip and
+  // the toolbar run the full width above it, which is what makes it read as a
+  // panel over the content rather than as a second column of chrome.
+  //
+  // Done by shrinking what the base already laid out, because the base is what
+  // knows where the contents area ends up once the toolbar, bookmarks bar and
+  // any side panel have had their say.
+  if (views().flux_ask_panel) {
+    const bool open = IsAskPanelOpen();
+    gfx::Rect bounds;
+    if (open) {
+      if (views::ChildLayout* contents =
+              layout.GetLayoutFor(views().contents_container)) {
+        const int width =
+            std::min(FluxAskPanelView::kWidth, contents->bounds.width());
+        bounds = contents->bounds;
+        bounds.set_x(contents->bounds.right() - width);
+        bounds.set_width(width);
+        contents->bounds.set_width(contents->bounds.width() - width);
+      }
+    }
+    layout.AddChild(views().flux_ask_panel, bounds, open && !bounds.IsEmpty());
   }
 
   return layout;

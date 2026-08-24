@@ -55,6 +55,7 @@ class FluxPageHandler : public mojom::FluxPageHandler,
                const std::string& model,
                std::vector<mojom::AskAttachmentPtr> attachments) override;
   void NewAskThread() override;
+  void SetAskPanelOpen(bool open) override;
   void AnswerAsk(std::vector<mojom::QuestionAnswerPtr> answers) override;
   void ResolveApproval(const std::string& run_id,
                        bool approved,

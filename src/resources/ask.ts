@@ -89,7 +89,10 @@ class AskPanel {
       this.setBusy(false);
     });
     document.getElementById('ask-close')!.addEventListener('click', () => {
-      this.handler.showScreen('ask-close');
+      // Through the pref, not by hiding anything: the window layout reserves
+      // the panel's width from that pref, so a view that hid itself would
+      // leave a gap where it used to be.
+      this.handler.setAskPanelOpen(false);
     });
 
     this.depthButton.textContent = this.depth.label;

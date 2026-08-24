@@ -1,0 +1,107 @@
+Add the Ask Flux pill and the panel it opens.
+
+A conversation about Flux, beside the page. The button goes in the titlebar
+band next to the avatar rather than in the toolbar row: the band is already
+laid out by FluxBrowserViewLayout, so it costs one slot in code this fork
+owns, where the toolbar would mean patching toolbar_view.cc - a file Chromium
+rewrites constantly - for a few pixels of position.
+
+The panel is laid out against the contents area, not the window. That is the
+difference between it and the sidebar: the sidebar is a column of chrome and
+the tab strip starts beside it, while this sits over the page with the tab
+strip and toolbar running full width above. FluxBrowserViewLayout does it by
+shrinking the contents bounds the base already computed, because the base is
+what knows where the contents area ends up after the toolbar, the bookmarks
+bar and any side panel have had their say.
+
+Both are built for every normal window. The panel starts closed and
+flux.ask_panel_open decides whether the layout reserves room for it, so the
+pill and the panel's own close button are two controls over one piece of
+state.
+
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -4370,6 +4370,10 @@
+     # browser_view.cc constructs FluxSidebarView, so a separate target would be
+     # a dependency cycle with this one.
+     sources += [
++      "//chrome/browser/flux/ui/flux_ask_button.cc",
++      "//chrome/browser/flux/ui/flux_ask_button.h",
++      "//chrome/browser/flux/ui/flux_ask_panel_view.cc",
++      "//chrome/browser/flux/ui/flux_ask_panel_view.h",
+       "//chrome/browser/flux/ui/flux_avatar_button.cc",
+       "//chrome/browser/flux/ui/flux_avatar_button.h",
+       "//chrome/browser/flux/ui/flux_browser_view_layout.cc",
+--- a/chrome/browser/ui/views/frame/browser_view.cc
++++ b/chrome/browser/ui/views/frame/browser_view.cc
+@@ -52,6 +52,8 @@
+ #include "chrome/browser/extensions/browser_extension_window_controller.h"
+ #include "chrome/browser/extensions/extension_util.h"
+ #include "chrome/browser/feature_engagement/tracker_factory.h"
++#include "chrome/browser/flux/ui/flux_ask_button.h"
++#include "chrome/browser/flux/ui/flux_ask_panel_view.h"
+ #include "chrome/browser/flux/ui/flux_avatar_button.h"
+ #include "chrome/browser/flux/ui/flux_sidebar_view.h"
+ #include "chrome/browser/glic/public/features.h"
+@@ -974,6 +976,13 @@
+         AddChildView(std::make_unique<flux::FluxSidebarView>(browser_.get()));
+     flux_avatar_ =
+         AddChildView(std::make_unique<flux::FluxAvatarButton>(browser_.get()));
++    // The panel is added before the button so it is behind it in paint order,
++    // and both are siblings of the contents rather than children of it - the
++    // panel has to survive switching tabs.
++    flux_ask_panel_ =
++        AddChildView(std::make_unique<flux::FluxAskPanelView>(browser_.get()));
++    flux_ask_button_ =
++        AddChildView(std::make_unique<flux::FluxAskButton>(browser_.get()));
+   }
+ 
+   // Tabstrip comes basically last because it should be before toolbar in the
+@@ -5089,6 +5098,8 @@
+   layout_views.side_panel = side_panel_;
+   layout_views.flux_sidebar = flux_sidebar_;
+   layout_views.flux_avatar = flux_avatar_;
++  layout_views.flux_ask_button = flux_ask_button_;
++  layout_views.flux_ask_panel = flux_ask_panel_;
+   layout_views.top_container_separator = top_container_separator_;
+   // LINT.ThenChange(//chrome/browser/ui/views/frame/layout/browser_view_layout.h:BrowserViewLayoutViews)
+ 
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -101,6 +101,8 @@
+ class WebAppFrameToolbarView;
+ 
+ namespace flux {
++class FluxAskButton;
++class FluxAskPanelView;
+ class FluxAvatarButton;
+ class FluxSidebarView;
+ }  // namespace flux
+@@ -1252,6 +1254,11 @@
+   // bookmarks, history, downloads, passwords, extensions - is behind it.
+   raw_ptr<flux::FluxAvatarButton> flux_avatar_ = nullptr;
+ 
++  // "Ask Flux" and the panel it opens. Built for every normal window; the
++  // panel starts closed and the pref decides whether the layout reserves room.
++  raw_ptr<flux::FluxAskButton> flux_ask_button_ = nullptr;
++  raw_ptr<flux::FluxAskPanelView> flux_ask_panel_ = nullptr;
++
+   // The handler responsible for showing autofill bubbles.
+   std::unique_ptr<autofill::AutofillBubbleHandler> autofill_bubble_handler_;
+ 
+--- a/chrome/browser/ui/views/frame/layout/browser_view_layout.h
++++ b/chrome/browser/ui/views/frame/layout/browser_view_layout.h
+@@ -88,6 +88,13 @@
+   // caption buttons.
+   raw_ptr<views::View> flux_avatar = nullptr;
+ 
++  // The Ask Flux pill, in the same band, immediately inboard of the avatar.
++  raw_ptr<views::View> flux_ask_button = nullptr;
++
++  // The Ask Flux conversation. Laid out against the contents area rather than
++  // the window, so the tab strip and toolbar run the full width above it.
++  raw_ptr<views::View> flux_ask_panel = nullptr;
++
+   // The contents separator used for when the top container is overlaid.
+   // Note: when `SideBySide` feature is disabled, this separator is also
+   // used when not overlaid. Once the feature is fully rolled out, we can
