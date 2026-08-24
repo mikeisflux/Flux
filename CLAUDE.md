@@ -566,6 +566,24 @@ not worth re-diagnosing:
   transform/clip/effect/scroll trees on every layout. The whole file is
   `#if DCHECK_IS_ON()`, so this exists **only** because `dev.gn` sets
   `dcheck_always_on = true`. Noise, not a signal.
+- `INFO:desktop_native_cursor_manager_win.cc:46` `Unable to get cursor info.
+  Error = 5` - repeats heavily. `GetCursorInfo` returns ACCESS_DENIED whenever
+  the process is not on the active desktop (lock screen, sleep, RDP, fast user
+  switching); the comment above the `PLOG(INFO)` says so and the code assumes
+  the cursor is visible and carries on.
+- `ERROR:usb_service_win.cc:76/108` `SetupDiGetDeviceProperty(...) failed:
+  Element not found` - a USB device that does not publish the queried
+  property. The accessor returns `std::nullopt` and enumeration continues.
+  Logged at ERROR by `USB_PLOG`, which is what makes it look like a fault.
+- `ERROR:egl_util.cc:92` `EGL Driver message (...) eglCreateContext` about a
+  requested GLES version exceeding the max - that text is written by the
+  **driver**, not by Chromium. `egl_util.cc` is 97 lines of error-code-to-
+  string plus one `EGL_KHR_debug` callback that relays whatever the driver
+  says at ERROR. A refused 3.1 context falls back to 3.0.
+- `gcm ... registration_request.cc` `DEPRECATED_ENDPOINT` - GCM registration
+  against an endpoint this fork has no keys for. Sync and push are inert here.
+- `bulk_leak_check_service` - the password leak check, which needs Google API
+  keys this fork does not ship.
 
 ### Running it, when it will not run
 
