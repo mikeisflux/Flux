@@ -1871,6 +1871,198 @@ body.shell.collapsed .badge { display: none; }
   margin: 0;
 }
 
+/* --- Ask Flux panel -------------------------------------------------------
+ *
+ * A column beside the page, in its own document. Same type and spacing as the
+ * console so the two do not read as different products, but narrower: the
+ * thread is prose and the panel is 380px, so everything here is one column.
+ */
+body.ask {
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ask-head {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+.ask-spacer { flex: 1; }
+
+.ask-thread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 4px 16px 16px;
+  overflow-y: auto;
+  gap: 18px;
+}
+
+.ask-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* The user's own turns sit right and boxed, the assistant's run full width as
+ * prose. Same asymmetry the run transcript uses. */
+.ask-user {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--bg-subtle, rgb(0 0 0 / 5%));
+}
+
+.ask-thought,
+.ask-text p:first-child { margin-top: 0; }
+
+.ask-thought {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.ask-step {
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.ask-step svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.75;
+}
+
+.ask-step[data-ok='false'] { border-color: var(--danger, #c0392b); }
+
+.ask-text { font-size: 14px; }
+
+.ask-text :last-child { margin-bottom: 0; }
+
+.ask-composer {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 16px;
+  gap: 10px;
+}
+
+.ask-input textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  resize: none;
+}
+
+.ask-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ask-files {
+  overflow: hidden;
+  color: var(--fg-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ask-depth { position: relative; }
+
+.ask-depth-menu {
+  position: absolute;
+  z-index: 5;
+  bottom: 54px;
+  left: 16px;
+  display: flex;
+  width: 250px;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 18%);
+}
+
+.ask-depth-row {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  gap: 2px;
+  text-align: left;
+}
+
+.ask-depth-row span {
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.ask-depth-row[aria-pressed='true'] {
+  background: var(--bg-subtle, rgb(0 0 0 / 5%));
+}
+
+/* A pickable answer. Lettered so the user can refer to one in the reply box
+ * instead of tapping, which is what the free-text field underneath is for. */
+.question-choice {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  gap: 10px;
+  text-align: left;
+}
+
+.question-letter {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--fg-muted);
+  font-size: 11px;
+  place-items: center;
+}
+
 /* --- Connector dialog -----------------------------------------------------
  *
  * The actions list is the substance here, so it gets the room: two columns,

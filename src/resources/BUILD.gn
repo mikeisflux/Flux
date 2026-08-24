@@ -7,6 +7,7 @@ build_webui("resources") {
   static_files = [
     "index.html",
     "sidebar.html",
+    "ask.html",
     "app.css",
     "flux-mark.svg",
 
@@ -26,6 +27,7 @@ build_webui("resources") {
   ts_files = [
     "app.ts",
     "sidebar.ts",
+    "ask.ts",
     "catalog.ts",
     "resource.ts",
     "icons.ts",

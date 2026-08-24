@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ask Flux</title>
+  <link rel="icon" href="flux-mark.svg">
+  <link rel="stylesheet" href="app.css">
+</head>
+<!-- The panel beside the page. Its own document, hosted by the browser frame
+     rather than a tab, for the same reason the sidebar is: it has to stay on
+     screen no matter what the tab is showing, and nothing a page does may
+     navigate or dismiss it. -->
+<body class="ask">
+  <div class="ask-head">
+    <button class="ghost-icon" id="ask-new" title="New conversation"
+            aria-label="New conversation">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5V17h1.5l9-9L12 6.5l-9 9zM16.7 5.3a1 1 0 0 0 0-1.4l-1.6-1.6a1 1 0 0 0-1.4 0L12.4 3.6 15.4 6.6l1.3-1.3z"/></svg>
+    </button>
+    <span class="ask-spacer"></span>
+    <button class="ghost-icon" id="ask-close" title="Close" aria-label="Close">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg>
+    </button>
+  </div>
+
+  <div class="ask-thread" id="ask-thread" role="log" aria-live="polite"></div>
+
+  <div class="ask-composer">
+    <div id="ask-questions"></div>
+    <label class="ask-input">
+      <span class="visually-hidden">Message</span>
+      <textarea id="ask-text" rows="2"
+                placeholder="Ask about Flux, or describe something to set up"></textarea>
+    </label>
+    <div class="ask-controls">
+      <button class="ghost ask-depth" id="ask-depth" aria-haspopup="true"
+              aria-expanded="false">Medium</button>
+      <span class="ask-spacer"></span>
+      <span class="ask-files" id="ask-files"></span>
+      <button class="ghost-icon" id="ask-attach" title="Attach a file"
+              aria-label="Attach a file">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 6.5l-5.7 5.7a2 2 0 0 0 2.8 2.8l6-6a3.5 3.5 0 0 0-5-5l-6 6a5 5 0 0 0 7 7l5-5"/></svg>
+      </button>
+      <input type="file" id="ask-file-input" multiple hidden>
+      <button class="send accent" id="ask-send" aria-label="Send">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4M5 9l5-5 5 5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="ask.js"></script>
+</body>
+</html>
