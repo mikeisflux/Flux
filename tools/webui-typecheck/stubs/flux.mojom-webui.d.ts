@@ -58,6 +58,15 @@ export interface ActionRecord {
   wasApproved: boolean;
 }
 
+export interface UserTemplate {
+  id: string;
+  title: string;
+  outcome: string;
+  category: string;
+  prompt: string;
+  writeScope: WriteScope;
+}
+
 export interface AskAttachment {
   name: string;
   mimeType: string;
@@ -252,6 +261,10 @@ export declare class FluxPageHandlerRemote {
           attachments: AskAttachment[]): void;
   newAskThread(): void;
   setAskPanelOpen(open: boolean): void;
+  listUserTemplates(): Promise<{templates: UserTemplate[]}>;
+  saveUserTemplate(item: UserTemplate):
+      Promise<{id: string|null, error: string|null}>;
+  deleteUserTemplate(id: string): void;
   answerAsk(answers: QuestionAnswer[]): void;
   getRun(runId: string): Promise<{
     progress: RunProgress|null,

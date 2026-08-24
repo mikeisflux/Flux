@@ -42,6 +42,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // not of the account.
   registry->RegisterBooleanPref(kSidebarCollapsed, false);
   registry->RegisterBooleanPref(kAskPanelOpen, false);
+  registry->RegisterDictionaryPref(kUserTemplates);
 
   // Encrypted secrets. Registered here and nowhere else - these three names
   // are the only pref paths SecretStore ever touches, which is what makes the

@@ -286,6 +286,19 @@ struct ConnectorStatus {
   string? detail;
 };
 
+// A template the user made, or the assistant made for them. The 250 shipped
+// ones are a packed catalogue with no write path; these are the writable half.
+struct UserTemplate {
+  string id;
+  string title;
+  // One line about what it produces, shown under the title on the card.
+  string outcome;
+  string category;
+  // What actually gets sent to the agent.
+  string prompt;
+  WriteScope write_scope;
+};
+
 // One file handed to the Ask panel with a message.
 struct AskAttachment {
   string name;
@@ -522,6 +535,13 @@ interface FluxPageHandler {
   // close button end up here, because the pref is what the window layout
   // reads - hiding the view without it would leave the reserved width behind.
   SetAskPanelOpen(bool open);
+
+  // --- Templates the user owns -----------------------------------------------
+
+  ListUserTemplates() => (array<UserTemplate> templates);
+  // An id already in use overwrites, which is what editing one looks like.
+  SaveUserTemplate(UserTemplate item) => (string? id, string? error);
+  DeleteUserTemplate(string id);
 
   // The assistant asked something and is blocked until this returns, the same
   // way a run is.

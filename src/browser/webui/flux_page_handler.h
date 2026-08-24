@@ -56,6 +56,10 @@ class FluxPageHandler : public mojom::FluxPageHandler,
                std::vector<mojom::AskAttachmentPtr> attachments) override;
   void NewAskThread() override;
   void SetAskPanelOpen(bool open) override;
+  void ListUserTemplates(ListUserTemplatesCallback callback) override;
+  void SaveUserTemplate(mojom::UserTemplatePtr item,
+                        SaveUserTemplateCallback callback) override;
+  void DeleteUserTemplate(const std::string& id) override;
   void AnswerAsk(std::vector<mojom::QuestionAnswerPtr> answers) override;
   void ResolveApproval(const std::string& run_id,
                        bool approved,

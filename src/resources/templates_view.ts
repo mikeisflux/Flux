@@ -11,7 +11,7 @@ import {loadSkills} from './skills.js';
 import {TemplateDialog} from './template_dialog.js';
 import {WorkflowDialog} from './workflow_dialog.js';
 import {WriteScope} from './flux.mojom-webui.js';
-import type {FluxPageHandlerRemote} from './flux.mojom-webui.js';
+import type {FluxPageHandlerRemote, UserTemplate} from './flux.mojom-webui.js';
 import type {Skill} from './skills.js';
 
 /**
@@ -26,6 +26,7 @@ export class TemplatesView {
   private detail: TemplateDialog;
   private workflowDialog: WorkflowDialog;
   private all: Template[] = [];
+  private mine: Template[] = [];
   private query = '';
   private category = 'All';
   private scheduledOnly = false;
@@ -41,7 +42,7 @@ export class TemplatesView {
   private skillSeeAll: string|null = null;
   private skillGrid!: HTMLElement;
 
-  constructor(handler: FluxPageHandlerRemote) {
+  constructor(private handler: FluxPageHandlerRemote) {
     this.workflowDialog = new WorkflowDialog(handler, () => {
       window.location.hash = '#workflows';
     });
@@ -84,6 +85,7 @@ export class TemplatesView {
 
   async render(root: HTMLElement, section: 'tasks'|'skills') {
     this.all = await loadTemplates();
+    await this.loadMine();
 
     root.replaceChildren();
     root.classList.add('two-column');
@@ -390,6 +392,27 @@ export class TemplatesView {
             (!this.scheduledOnly || t.schedule !== null));
   }
 
+  /**
+   * Templates the user or the assistant made, as cards beside the shipped 250.
+   *
+   * They come over mojo rather than out of the packed catalogue because they
+   * are the only mutable half - templates.json is a resource baked into the
+   * binary, so there has never been anywhere for a new one to go.
+   */
+  private async loadMine() {
+    const {templates} = await this.handler.listUserTemplates();
+    this.mine = templates.map((t: UserTemplate) => ({
+      id: t.id,
+      title: t.title,
+      outcome: t.outcome,
+      category: t.category,
+      connectors: [],
+      schedule: null,
+      writeScope: SCOPE_NAME[t.writeScope] ?? 'readonly',
+      prompt: t.prompt,
+    } as Template));
+  }
+
   private paint() {
     for (const pill of document.querySelectorAll<HTMLElement>('.pill')) {
       const active = pill.dataset['category'] === this.category;
@@ -421,6 +444,13 @@ export class TemplatesView {
       return;
     }
 
+    // Yours first. A template someone made for themselves outranks one that
+    // came in the box, and burying it under six categories of shipped ones is
+    // how a feature stops being used.
+    if (this.mine.length > 0) {
+      this.grid.append(
+          this.section('Yours', this.mine, /*truncate=*/false));
+    }
     this.grid.append(
         this.section('Featured', featured(this.all), /*truncate=*/false));
     for (const category of CATEGORIES) {
@@ -531,6 +561,14 @@ export class TemplatesView {
     return card;
   }
 }
+
+/** And back the other way, for templates that arrive over mojo. */
+const SCOPE_NAME: Record<number, Template['writeScope']> = {
+  [WriteScope.kReadOnly]: 'readonly',
+  [WriteScope.kDraft]: 'draft',
+  [WriteScope.kSend]: 'send',
+  [WriteScope.kPurchase]: 'purchase',
+};
 
 /** The console names scopes as strings; the mojom names them as an enum. */
 const SCOPE_BY_NAME: Record<Template['writeScope'], WriteScope> = {

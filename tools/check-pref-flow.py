@@ -87,12 +87,19 @@ def main() -> int:
             problems.append(
                 f'{pref}: written but never read. Whatever it configures does '
                 f'not consult it.')
-        elif not outside:
+        elif not outside and not {f for f in writes[pref]
+                                  if CONSOLE not in f.parents}:
+            # Console-only in BOTH directions. If something outside writes it -
+            # the agent saving a template the Templates screen then lists -
+            # then the console reading it back is a real flow, and reporting it
+            # would be a false positive with a confidently wrong explanation
+            # attached ("the screen that writes it"), which is worse than
+            # saying nothing.
             where = ', '.join(sorted(f.name for f in reads[pref]))
             problems.append(
-                f'{pref}: read only by the console ({where}). The screen that '
-                f'writes it is the only thing that reads it back, so setting '
-                f'it changes no behaviour anywhere.')
+                f'{pref}: written and read only by the console ({where}). '
+                f'Nothing outside the screens that edit it ever consults it, '
+                f'so setting it changes no behaviour anywhere.')
         elif not writes[pref]:
             problems.append(
                 f'{pref}: read but never written. It can only ever hold its '

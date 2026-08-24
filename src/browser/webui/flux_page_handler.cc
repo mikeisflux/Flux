@@ -119,6 +119,65 @@ void FluxPageHandler::SetAskPanelOpen(bool open) {
   profile_->GetPrefs()->SetBoolean(prefs::kAskPanelOpen, open);
 }
 
+void FluxPageHandler::ListUserTemplates(
+    ListUserTemplatesCallback callback) {
+  std::vector<mojom::UserTemplatePtr> out;
+  for (const auto [id, value] :
+       profile_->GetPrefs()->GetDict(prefs::kUserTemplates)) {
+    const base::DictValue* dict = value.GetIfDict();
+    if (!dict)
+      continue;
+    auto item = mojom::UserTemplate::New();
+    item->id = id;
+    if (const std::string* v = dict->FindString("title"))
+      item->title = *v;
+    if (const std::string* v = dict->FindString("outcome"))
+      item->outcome = *v;
+    if (const std::string* v = dict->FindString("category"))
+      item->category = *v;
+    if (const std::string* v = dict->FindString("prompt"))
+      item->prompt = *v;
+    item->write_scope = static_cast<mojom::WriteScope>(
+        dict->FindInt("write_scope")
+            .value_or(static_cast<int>(mojom::WriteScope::kReadOnly)));
+    out.push_back(std::move(item));
+  }
+  std::move(callback).Run(std::move(out));
+}
+
+void FluxPageHandler::SaveUserTemplate(mojom::UserTemplatePtr item,
+                                       SaveUserTemplateCallback callback) {
+  if (!item || item->title.empty() || item->prompt.empty()) {
+    std::move(callback).Run(std::nullopt,
+                            "A template needs a title and a prompt.");
+    return;
+  }
+  // The id is derived from the title when the caller does not supply one, so
+  // saving the same template twice edits it rather than making a duplicate.
+  std::string id = NormalizeCommand(item->id.empty() ? item->title : item->id);
+  if (id.empty()) {
+    std::move(callback).Run(std::nullopt,
+                            "That title has no characters an id can use.");
+    return;
+  }
+
+  base::DictValue entry;
+  entry.Set("title", item->title);
+  entry.Set("outcome", item->outcome);
+  entry.Set("category", item->category.empty() ? "Ops" : item->category);
+  entry.Set("prompt", item->prompt);
+  entry.Set("write_scope", static_cast<int>(item->write_scope));
+
+  ScopedDictPrefUpdate update(profile_->GetPrefs(), prefs::kUserTemplates);
+  update->Set(id, std::move(entry));
+  std::move(callback).Run(id, std::nullopt);
+}
+
+void FluxPageHandler::DeleteUserTemplate(const std::string& id) {
+  ScopedDictPrefUpdate update(profile_->GetPrefs(), prefs::kUserTemplates);
+  update->Remove(id);
+}
+
 void FluxPageHandler::AnswerAsk(
     std::vector<mojom::QuestionAnswerPtr> answers) {
   if (service_)

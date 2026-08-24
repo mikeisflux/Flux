@@ -9,12 +9,14 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/uuid.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/flux/flux_prefs.h"
 #include "chrome/browser/flux/providers/anthropic_provider.h"
 #include "chrome/browser/flux/providers/openai_provider.h"
 #include "chrome/browser/flux/scheduler/workflow_scheduler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace flux {
 namespace {
@@ -290,6 +292,47 @@ ToolResult AskSession::RunTool(const ToolCall& call) {
     return result;
   }
 
+  if (call.name == "save_template") {
+    const std::string* title = call.input.FindString("title");
+    const std::string* prompt = call.input.FindString("prompt");
+    if (!title || !prompt || !profile_) {
+      result.is_error = true;
+      result.content = "save_template needs a title and a prompt.";
+      return result;
+    }
+    // Id derived from the title, so saving the same template twice edits it
+    // rather than leaving two near-identical cards on the screen.
+    std::string id;
+    for (char c : *title) {
+      if (base::IsAsciiAlphaNumeric(c))
+        id += base::ToLowerASCII(c);
+      else if (!id.empty() && id.back() != '-')
+        id += '-';
+    }
+    while (!id.empty() && id.back() == '-')
+      id.pop_back();
+    if (id.empty()) {
+      result.is_error = true;
+      result.content = "That title has no characters an id can use.";
+      return result;
+    }
+
+    base::DictValue entry;
+    entry.Set("title", *title);
+    if (const std::string* outcome = call.input.FindString("outcome"))
+      entry.Set("outcome", *outcome);
+    const std::string* category = call.input.FindString("category");
+    entry.Set("category", category ? *category : "Ops");
+    entry.Set("prompt", *prompt);
+    entry.Set("write_scope",
+              static_cast<int>(mojom::WriteScope::kReadOnly));
+
+    ScopedDictPrefUpdate update(profile_->GetPrefs(), prefs::kUserTemplates);
+    update->Set(id, std::move(entry));
+    result.content = base::StrCat({"Saved the template \"", *title, "\""});
+    return result;
+  }
+
   result.is_error = true;
   result.content = base::StrCat({"No such tool: ", call.name});
   return result;
@@ -325,6 +368,34 @@ std::vector<ToolDefinition> AskSession::Tools() const {
     base::ListValue required;
     required.Append("command");
     required.Append("name");
+    required.Append("prompt");
+    schema.Set("required", std::move(required));
+    save.input_schema = std::move(schema);
+    tools.push_back(std::move(save));
+  }
+
+  {
+    ToolDefinition save;
+    save.name = "save_template";
+    save.description =
+        "Save a reusable task the user can start from later, shown on the "
+        "Templates screen beside the ones Flux ships. Use this for something "
+        "they will want to run again but not on a schedule - a workflow is "
+        "the one that runs itself.";
+    base::DictValue props;
+    props.Set("title", StringProp("A few words, how they will recognise it."));
+    props.Set("outcome", StringProp("One line about what it produces."));
+    props.Set("category", StringProp(
+        "One of Sales, Marketing, Ops, Engineering, Docs, Personal."));
+    props.Set("prompt", StringProp(
+        "The instruction the agent runs. Put anything the user must fill in "
+        "each time in [square brackets] - the composer shows those as blanks "
+        "and the agent asks about them rather than guessing."));
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(props));
+    base::ListValue required;
+    required.Append("title");
     required.Append("prompt");
     schema.Set("required", std::move(required));
     save.input_schema = std::move(schema);

@@ -40,6 +40,16 @@ inline constexpr char kUserSkills[] = "flux.user_skills";
 // restart.
 inline constexpr char kSidebarCollapsed[] = "flux.sidebar_collapsed";
 
+// Templates the user made, keyed by id, as
+// {title, outcome, category, prompt, write_scope}.
+//
+// The 250 shipped templates are a packed resource with no write path at all -
+// they are a catalogue, not a store - so anything the user or the assistant
+// creates has to live here instead. The Templates screen shows both, with
+// these first: a template someone made for themselves outranks one that came
+// in the box.
+inline constexpr char kUserTemplates[] = "flux.user_templates";
+
 // Whether the Ask Flux panel is open beside the page. A pref rather than view
 // state for the same reason the sidebar's collapsed flag is one: the frame
 // owns the window's layout and the panel only draws inside what it is given,
