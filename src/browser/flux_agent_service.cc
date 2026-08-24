@@ -534,6 +534,23 @@ void FluxAgentService::OnApprovalRequired(const mojom::ApprovalRequest& request)
     o.OnApprovalRequested(request);
 }
 
+AskSession* FluxAgentService::ask() {
+  if (!ask_) {
+    ask_ = std::make_unique<AskSession>(profile_, scheduler_.get(), this);
+  }
+  return ask_.get();
+}
+
+void FluxAgentService::OnAskTurn(const mojom::AskTurn& turn, bool busy) {
+  for (Observer& o : observers_)
+    o.OnAskTurn(turn, busy);
+}
+
+void FluxAgentService::OnAskQuestions(const mojom::QuestionRequest& request) {
+  for (Observer& o : observers_)
+    o.OnAskQuestions(request);
+}
+
 std::vector<mojom::ApprovalRequestPtr> FluxAgentService::PendingApprovals()
     const {
   std::vector<mojom::ApprovalRequestPtr> out;

@@ -58,10 +58,29 @@ export interface ActionRecord {
   wasApproved: boolean;
 }
 
+export interface AskAttachment {
+  name: string;
+  mimeType: string;
+  bytes: Uint8Array;
+}
+
+export interface AskStep {
+  label: string;
+  succeeded: boolean;
+}
+
+export interface AskTurn {
+  fromUser: boolean;
+  text: string;
+  steps: AskStep[];
+  thinkingMs: number;
+}
+
 export interface AgentQuestion {
   id: string;
   text: string;
   placeholder: string|null;
+  choices: string[];
 }
 
 export interface QuestionRequest {
@@ -228,6 +247,11 @@ export declare class FluxPageHandlerRemote {
   getSidebarCollapsed(): Promise<{collapsed: boolean}>;
   setSidebarCollapsed(collapsed: boolean): void;
   showScreen(screen: string): void;
+  getAskThread(): Promise<{turns: AskTurn[], busy: boolean}>;
+  sendAsk(message: string, model: string,
+          attachments: AskAttachment[]): void;
+  newAskThread(): void;
+  answerAsk(answers: QuestionAnswer[]): void;
   getRun(runId: string): Promise<{
     progress: RunProgress|null,
     actions: ActionRecord[],
@@ -257,6 +281,8 @@ export interface FluxPageHandlerObserverInterface {
   onRunProgress(progress: RunProgress): void;
   onAction(runId: string, action: ActionRecord): void;
   onQuestionsAsked(request: QuestionRequest): void;
+  onAskTurn(turn: AskTurn, busy: boolean): void;
+  onAskQuestions(request: QuestionRequest): void;
   onApprovalRequested(request: ApprovalRequest): void;
   onRunFinished(runId: string, finalState: RunState,
                 summary: string|null): void;

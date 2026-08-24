@@ -14,6 +14,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/flux/agent/agent_runner.h"
+#include "chrome/browser/flux/agent/ask_session.h"
 #include "chrome/browser/flux/agent/tool_registry.h"
 #include "chrome/browser/flux/connectors/connector_service.h"
 #include "chrome/browser/flux/providers/provider_keys.h"
@@ -35,7 +36,9 @@ class WorkflowScheduler;
 // memory") and so does this, but it also exposes the resolved number and the
 // queue depth, which the reference does not — a user whose task is sitting in
 // a queue has no way to tell that apart from a task that is running slowly.
-class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
+class FluxAgentService : public KeyedService,
+                        public AgentRunner::Delegate,
+                        public AskSession::Delegate {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -44,6 +47,8 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
                              const mojom::ActionRecord& action) {}
     virtual void OnApprovalRequested(const mojom::ApprovalRequest& request) {}
     virtual void OnQuestionsAsked(const mojom::QuestionRequest& request) {}
+    virtual void OnAskTurn(const mojom::AskTurn& turn, bool busy) {}
+    virtual void OnAskQuestions(const mojom::QuestionRequest& request) {}
     virtual void OnRunArtifact(const std::string& run_id,
                                const mojom::RunArtifact& artifact) {}
     virtual void OnRunFinished(const std::string& run_id,
@@ -172,6 +177,15 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
 
   // Everything currently blocked on this person, for a console that has just
   // connected and was not listening when it happened.
+  // The Ask Flux conversation, created on first use. It lives on the service
+  // rather than in the panel so that closing the panel, or reloading its
+  // WebUI, does not throw the thread away.
+  AskSession* ask();
+
+  // AskSession::Delegate:
+  void OnAskTurn(const mojom::AskTurn& turn, bool busy) override;
+  void OnAskQuestions(const mojom::QuestionRequest& request) override;
+
   std::vector<mojom::ApprovalRequestPtr> PendingApprovals() const;
   std::vector<mojom::QuestionRequestPtr> PendingQuestions() const;
   void OnFinished(const std::string& run_id,
@@ -218,6 +232,7 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   // to answer it, and nothing in the browser process that could be asked. That
   // is the state app.ts calls the worst this product has, and its own comment
   // promises the opposite ("reloading chrome://flux mid-run is harmless").
+  std::unique_ptr<AskSession> ask_;
   std::map<std::string, mojom::ApprovalRequestPtr> pending_approvals_;
   std::map<std::string, mojom::QuestionRequestPtr> pending_questions_;
   std::map<std::string, std::vector<mojom::ActionRecordPtr>> actions_;

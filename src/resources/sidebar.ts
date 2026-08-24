@@ -9,6 +9,7 @@ import {
 import type {
   ActionRecord,
   ApprovalRequest,
+  AskTurn,
   ConnectorStatus,
   QuestionRequest,
   RunArtifact,
@@ -205,6 +206,17 @@ class FluxSidebar {
     // the console at all.
     this.pendingApprovals.add(request.runId);
     this.syncApprovals();
+  }
+
+  onAskTurn(_turn: AskTurn, _busy: boolean) {
+    // The Ask panel is a separate document with its own thread. Nothing about
+    // it belongs in the run list: it is a conversation, not a run.
+  }
+
+  onAskQuestions(_request: QuestionRequest) {
+    // Deliberately not badged. The approvals badge means a *run* has stopped
+    // and is waiting; a question in a panel the user is looking at does not
+    // need chasing from the other side of the window.
   }
 
   onRunFinished(runId: string, state: RunState, summary: string|null) {

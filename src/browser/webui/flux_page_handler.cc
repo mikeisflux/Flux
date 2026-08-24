@@ -94,6 +94,33 @@ void FluxPageHandler::ListPending(ListPendingCallback callback) {
                           service_->PendingQuestions());
 }
 
+void FluxPageHandler::GetAskThread(GetAskThreadCallback callback) {
+  if (!service_) {
+    std::move(callback).Run({}, false);
+    return;
+  }
+  AskSession* ask = service_->ask();
+  std::move(callback).Run(ask->Thread(), ask->busy());
+}
+
+void FluxPageHandler::SendAsk(const std::string& message,
+                              const std::string& model,
+                              std::vector<mojom::AskAttachmentPtr> attachments) {
+  if (service_)
+    service_->ask()->Send(message, model, std::move(attachments));
+}
+
+void FluxPageHandler::NewAskThread() {
+  if (service_)
+    service_->ask()->Reset();
+}
+
+void FluxPageHandler::AnswerAsk(
+    std::vector<mojom::QuestionAnswerPtr> answers) {
+  if (service_)
+    service_->ask()->Answer(std::move(answers));
+}
+
 void FluxPageHandler::ResolveApproval(
     const std::string& run_id,
     bool approved,
@@ -809,6 +836,14 @@ void FluxPageHandler::SetSidebarCollapsed(bool collapsed) {
   // FluxSidebarView watches this and re-lays out the window; the page only
   // restyles itself for the narrower column.
   profile_->GetPrefs()->SetBoolean(prefs::kSidebarCollapsed, collapsed);
+}
+
+void FluxPageHandler::OnAskTurn(const mojom::AskTurn& turn, bool busy) {
+  observer_->OnAskTurn(turn.Clone(), busy);
+}
+
+void FluxPageHandler::OnAskQuestions(const mojom::QuestionRequest& request) {
+  observer_->OnAskQuestions(request.Clone());
 }
 
 void FluxPageHandler::OnRunProgress(const mojom::RunProgress& progress) {

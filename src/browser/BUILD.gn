@@ -39,6 +39,8 @@ source_set("flux") {
     "webui/flux_ui.h",
     "agent/agent_runner.cc",
     "agent/agent_runner.h",
+    "agent/ask_session.cc",
+    "agent/ask_session.h",
     "agent/agent_tab.cc",
     "agent/agent_tab.h",
     "agent/page_context.cc",

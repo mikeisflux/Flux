@@ -10,6 +10,7 @@ import type {
   ActionRecord,
   ApprovalRequest,
   ConnectorStatus,
+  AskTurn,
   QuestionRequest,
   RunArtifact,
   RunProgress,
@@ -272,6 +273,16 @@ class FluxApp {
     // The agent writing back into the Instructions buffer is shown with
     // provenance in the sidebar's run list rather than silently mutating what
     // the user wrote.
+  }
+
+  onAskTurn(_turn: AskTurn, _busy: boolean) {
+    // The Ask panel is its own document, hosted in the browser frame. Every
+    // observer receives every callback, so this is here to say the tab
+    // deliberately ignores it rather than to leave a hole in the interface.
+  }
+
+  onAskQuestions(_request: QuestionRequest) {
+    // As above - the panel draws its own questions.
   }
 
   onConnectorChanged(status: ConnectorStatus, error: string|null) {

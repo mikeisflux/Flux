@@ -50,6 +50,12 @@ class FluxPageHandler : public mojom::FluxPageHandler,
       const std::string& run_id,
       std::vector<mojom::QuestionAnswerPtr> answers) override;
   void ListPending(ListPendingCallback callback) override;
+  void GetAskThread(GetAskThreadCallback callback) override;
+  void SendAsk(const std::string& message,
+               const std::string& model,
+               std::vector<mojom::AskAttachmentPtr> attachments) override;
+  void NewAskThread() override;
+  void AnswerAsk(std::vector<mojom::QuestionAnswerPtr> answers) override;
   void ResolveApproval(const std::string& run_id,
                        bool approved,
                        const std::optional<std::string>& user_note) override;
@@ -125,6 +131,8 @@ class FluxPageHandler : public mojom::FluxPageHandler,
                    const mojom::ActionRecord& action) override;
   void OnApprovalRequested(const mojom::ApprovalRequest& request) override;
   void OnQuestionsAsked(const mojom::QuestionRequest& request) override;
+  void OnAskTurn(const mojom::AskTurn& turn, bool busy) override;
+  void OnAskQuestions(const mojom::QuestionRequest& request) override;
   void OnLearnedFact(const std::string& fact,
                      const std::string& source_run_id) override;
   void OnRunArtifact(const std::string& run_id,

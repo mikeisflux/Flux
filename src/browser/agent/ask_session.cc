@@ -1,0 +1,425 @@
+// Copyright 2026 Flux. Based on Chromium, Copyright The Chromium Authors.
+
+#include "chrome/browser/flux/agent/ask_session.h"
+
+#include <utility>
+
+#include "base/functional/bind.h"
+#include "base/json/json_writer.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/uuid.h"
+#include "chrome/browser/flux/flux_prefs.h"
+#include "chrome/browser/flux/providers/anthropic_provider.h"
+#include "chrome/browser/flux/providers/openai_provider.h"
+#include "chrome/browser/flux/scheduler/workflow_scheduler.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
+
+namespace flux {
+namespace {
+
+// A conversation is cheap next to a run, but not free, and it has no credit
+// ceiling of its own because it is not a task the user budgeted. This is the
+// backstop against a thread that grows until every turn re-sends an hour of
+// history.
+constexpr size_t kMaxTurns = 60;
+
+// What an attachment may contribute. The bytes are inlined into the prompt, so
+// this is a prompt-size limit rather than a file-size one.
+constexpr size_t kMaxAttachmentChars = 20000;
+
+base::DictValue StringProp(const std::string& description) {
+  base::DictValue prop;
+  prop.Set("type", "string");
+  prop.Set("description", description);
+  return prop;
+}
+
+}  // namespace
+
+AskSession::AskSession(Profile* profile,
+                       WorkflowScheduler* scheduler,
+                       Delegate* delegate)
+    : profile_(profile), scheduler_(scheduler), delegate_(delegate) {}
+
+AskSession::~AskSession() = default;
+
+std::vector<mojom::AskTurnPtr> AskSession::Thread() const {
+  std::vector<mojom::AskTurnPtr> out;
+  for (const mojom::AskTurnPtr& turn : turns_)
+    out.push_back(turn->Clone());
+  return out;
+}
+
+void AskSession::Reset() {
+  history_.clear();
+  turns_.clear();
+  pending_question_call_id_.clear();
+  busy_ = false;
+  provider_.reset();
+}
+
+void AskSession::Send(const std::string& message,
+                      const std::string& model,
+                      std::vector<mojom::AskAttachmentPtr> attachments) {
+  if (busy_ || message.empty())
+    return;
+
+  std::string text = message;
+  // Inlined rather than uploaded: neither provider is given a file endpoint
+  // here, and a pasted spreadsheet is the case this exists for. Anything that
+  // is not text is named and its size reported, because "I attached a PDF" is
+  // still worth the model knowing even when it cannot read the bytes.
+  for (const mojom::AskAttachmentPtr& file : attachments) {
+    if (!file)
+      continue;
+    const bool textual = file->mime_type.starts_with("text/") ||
+                         file->mime_type == "application/json" ||
+                         file->mime_type == "text/csv";
+    if (textual) {
+      std::string body(reinterpret_cast<const char*>(file->bytes.data()),
+                       file->bytes.size());
+      if (body.size() > kMaxAttachmentChars)
+        body = body.substr(0, kMaxAttachmentChars) + "\n[truncated]";
+      base::StrAppend(&text, {"\n\n--- ", file->name, " ---\n", body});
+    } else {
+      base::StrAppend(&text,
+                      {"\n\n[attached ", file->name, ", ", file->mime_type,
+                       ", ", base::NumberToString(file->bytes.size()),
+                       " bytes - not readable as text]"});
+    }
+  }
+
+  model_ = model;
+
+  Message turn;
+  turn.role = Message::Role::kUser;
+  turn.text = text;
+  history_.push_back(std::move(turn));
+
+  auto shown = mojom::AskTurn::New();
+  shown->from_user = true;
+  shown->text = message;
+  turns_.push_back(shown->Clone());
+  Emit(*shown);
+
+  busy_ = true;
+  Step();
+}
+
+void AskSession::Step() {
+  if (history_.size() > kMaxTurns) {
+    history_.erase(history_.begin(), history_.begin() + 2);
+  }
+
+  if (!provider_) {
+    // Whichever key is configured, rather than a setting the user has to find.
+    // With both, the model string decides - the panel's intelligence selector
+    // names a model, and a Claude model name is not something OpenAI answers.
+    const bool anthropic = model_.starts_with("claude");
+    provider_ = anthropic
+                    ? std::unique_ptr<LLMProvider>(
+                          std::make_unique<AnthropicProvider>(profile_))
+                    : std::unique_ptr<LLMProvider>(
+                          std::make_unique<OpenAIProvider>(profile_));
+  }
+
+  CompletionRequest request;
+  request.model = model_;
+  request.max_output_tokens = 4096;
+  request.messages = CloneMessages(history_);
+  request.tools = Tools();
+  request.system_prompt = SystemPrompt();
+
+  turn_started_at_ = base::TimeTicks::Now();
+  provider_->Complete(std::move(request),
+                      base::BindOnce(&AskSession::OnCompletion,
+                                     weak_factory_.GetWeakPtr()));
+}
+
+void AskSession::OnCompletion(CompletionResponse response) {
+  auto turn = mojom::AskTurn::New();
+  turn->from_user = false;
+  turn->thinking_ms = static_cast<uint32_t>(
+      (base::TimeTicks::Now() - turn_started_at_).InMilliseconds());
+
+  if (!response.error.empty()) {
+    turn->text = response.error;
+    turns_.push_back(turn->Clone());
+    busy_ = false;
+    Emit(*turn);
+    return;
+  }
+
+  turn->text = response.text;
+
+  Message assistant;
+  assistant.role = Message::Role::kAssistant;
+  assistant.text = response.text;
+  assistant.tool_calls = CloneToolCalls(response.tool_calls);
+  history_.push_back(std::move(assistant));
+
+  if (response.tool_calls.empty()) {
+    turns_.push_back(turn->Clone());
+    busy_ = false;
+    Emit(*turn);
+    return;
+  }
+
+  Message results;
+  results.role = Message::Role::kUser;
+  for (const ToolCall& call : response.tool_calls) {
+    // ask_user stops the loop rather than returning: the answer comes from a
+    // person, so there is nothing to hand back until they give it.
+    if (call.name == "ask_user") {
+      pending_question_call_id_ = call.id;
+      auto request = mojom::QuestionRequest::New();
+      request->run_id = "ask";
+      if (const std::string* preamble = call.input.FindString("preamble"))
+        request->preamble = *preamble;
+      if (const base::ListValue* items = call.input.FindList("questions")) {
+        for (const base::Value& item : *items) {
+          const base::DictValue* dict = item.GetIfDict();
+          if (!dict)
+            continue;
+          const std::string* text = dict->FindString("text");
+          if (!text)
+            continue;
+          auto question = mojom::AgentQuestion::New();
+          question->id = base::Uuid::GenerateRandomV4().AsLowercaseString();
+          question->text = *text;
+          if (const std::string* hint = dict->FindString("placeholder"))
+            question->placeholder = *hint;
+          if (const base::ListValue* choices = dict->FindList("choices")) {
+            for (const base::Value& choice : *choices) {
+              if (choice.is_string())
+                question->choices.push_back(choice.GetString());
+            }
+          }
+          request->questions.push_back(std::move(question));
+        }
+      }
+      turns_.push_back(turn->Clone());
+      Emit(*turn);
+      if (delegate_)
+        delegate_->OnAskQuestions(*request);
+      return;
+    }
+
+    ToolResult result = RunTool(call);
+    result.tool_call_id = call.id;
+    auto step = mojom::AskStep::New();
+    step->label = result.content;
+    step->succeeded = !result.is_error;
+    turn->steps.push_back(std::move(step));
+    results.tool_results.push_back(std::move(result));
+  }
+
+  history_.push_back(std::move(results));
+  turns_.push_back(turn->Clone());
+  Emit(*turn);
+  Step();
+}
+
+void AskSession::Answer(std::vector<mojom::QuestionAnswerPtr> answers) {
+  if (pending_question_call_id_.empty())
+    return;
+
+  std::string joined;
+  for (const mojom::QuestionAnswerPtr& answer : answers) {
+    if (!answer)
+      continue;
+    base::StrAppend(&joined, {answer->text, "\n"});
+  }
+
+  ToolResult result;
+  result.tool_call_id = pending_question_call_id_;
+  result.content = joined.empty() ? "(skipped)" : joined;
+  pending_question_call_id_.clear();
+
+  Message message;
+  message.role = Message::Role::kUser;
+  message.tool_results.push_back(std::move(result));
+  history_.push_back(std::move(message));
+
+  busy_ = true;
+  Step();
+}
+
+ToolResult AskSession::RunTool(const ToolCall& call) {
+  ToolResult result;
+  if (call.name == "save_workflow") {
+    const std::string* command = call.input.FindString("command");
+    const std::string* name = call.input.FindString("name");
+    const std::string* prompt = call.input.FindString("prompt");
+    if (!command || !name || !prompt || !scheduler_) {
+      result.is_error = true;
+      result.content = "save_workflow needs command, name and prompt.";
+      return result;
+    }
+    Workflow workflow;
+    workflow.command = *command;
+    workflow.name = *name;
+    if (const std::string* about = call.input.FindString("description"))
+      workflow.description = *about;
+    if (const std::string* cron = call.input.FindString("cron"))
+      workflow.cron = *cron;
+    if (const std::string* shown = call.input.FindString("schedule_display"))
+      workflow.schedule_display = *shown;
+
+    auto spec = mojom::TaskSpec::New();
+    spec->prompt = *prompt;
+    spec->write_scope = mojom::WriteScope::kDraft;
+    spec->credit_budget = 100000;
+    auto model = mojom::ModelConfig::New();
+    model->provider = mojom::Provider::kAnthropic;
+    model->model = "claude-sonnet-5";
+    model->max_output_tokens = 8192;
+    model->allow_failover = true;
+    spec->model = std::move(model);
+    workflow.spec = std::move(spec);
+
+    const std::string id = scheduler_->Add(std::move(workflow));
+    if (id.empty()) {
+      result.is_error = true;
+      result.content = base::StrCat({"Could not save /", *command, "."});
+      return result;
+    }
+    result.content = base::StrCat({"Saved /", *command});
+    return result;
+  }
+
+  result.is_error = true;
+  result.content = base::StrCat({"No such tool: ", call.name});
+  return result;
+}
+
+std::vector<ToolDefinition> AskSession::Tools() const {
+  std::vector<ToolDefinition> tools;
+
+  {
+    ToolDefinition save;
+    save.name = "save_workflow";
+    save.description =
+        "Save a scheduled workflow for the user. Use this once you know what "
+        "the task should do and when it should run - do not describe how to "
+        "save one, save it. The user sees it on the Workflows screen and can "
+        "edit or delete it there.";
+    base::DictValue props;
+    props.Set("command", StringProp(
+        "Short slash command it runs by, lowercase and hyphenated, no slash."));
+    props.Set("name", StringProp("Human name, a few words."));
+    props.Set("description", StringProp("One line about what it produces."));
+    props.Set("prompt", StringProp(
+        "The full instruction the agent runs each time it fires. Write it as "
+        "if handing the task to someone who has not read this conversation."));
+    props.Set("cron", StringProp(
+        "5-field cron in local time, e.g. '0 9,18 * * *' for 9am and 6pm "
+        "daily. Omit for a workflow that only runs on demand."));
+    props.Set("schedule_display", StringProp(
+        "The schedule in words, e.g. 'Twice a day at 9am and 6pm'."));
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(props));
+    base::ListValue required;
+    required.Append("command");
+    required.Append("name");
+    required.Append("prompt");
+    schema.Set("required", std::move(required));
+    save.input_schema = std::move(schema);
+    tools.push_back(std::move(save));
+  }
+
+  {
+    ToolDefinition ask;
+    ask.name = "ask_user";
+    ask.description =
+        "Ask the user something you cannot work out yourself. Ask everything "
+        "you need in one call rather than one question per turn. Offer "
+        "choices whenever the sensible answers are a short list - the user "
+        "taps one instead of typing.";
+    base::DictValue question;
+    question.Set("type", "object");
+    base::DictValue qprops;
+    qprops.Set("text", StringProp("The question."));
+    qprops.Set("placeholder", StringProp("Hint shown in the empty field."));
+    base::DictValue choices;
+    choices.Set("type", "array");
+    base::DictValue choice_items;
+    choice_items.Set("type", "string");
+    choices.Set("items", std::move(choice_items));
+    choices.Set("description",
+                "Pickable answers. Omit for a free-text question.");
+    qprops.Set("choices", std::move(choices));
+    question.Set("properties", std::move(qprops));
+
+    base::DictValue list;
+    list.Set("type", "array");
+    list.Set("items", std::move(question));
+
+    base::DictValue props;
+    props.Set("preamble", StringProp("What you have worked out so far."));
+    props.Set("questions", std::move(list));
+    base::DictValue schema;
+    schema.Set("type", "object");
+    schema.Set("properties", std::move(props));
+    base::ListValue required;
+    required.Append("questions");
+    schema.Set("required", std::move(required));
+    ask.input_schema = std::move(schema);
+    tools.push_back(std::move(ask));
+  }
+
+  return tools;
+}
+
+std::string AskSession::SystemPrompt() const {
+  std::string prompt =
+      "You are Flux's built-in assistant, answering in a panel beside the "
+      "user's browser.\n"
+      "\n"
+      "Flux is a web browser with an agent in it. The agent runs tasks in a "
+      "real tab, signed in as the user already is, which is why it can do "
+      "things a hosted tool cannot. What the user can do with it:\n"
+      "- New task: describe something in plain words and the agent does it, "
+      "browsing and using connectors as needed.\n"
+      "- Templates: 250 ready-made tasks to start from.\n"
+      "- Workflows: a saved task that re-runs on a schedule, reachable as a "
+      "slash command.\n"
+      "- Connectors: a direct API line into a service - faster and more "
+      "reliable than clicking the site, but never required, because the "
+      "browser is always the fallback.\n"
+      "- Customize: standing instructions applied to every task, plus the "
+      "skills the user has adopted.\n"
+      "- Approvals: a task declared read-only stops and waits before doing "
+      "anything that writes or sends.\n"
+      "\n"
+      "Answer briefly and then act. If the user describes something they want "
+      "to happen on a schedule, save it with save_workflow rather than "
+      "explaining how they could save it themselves. Ask with ask_user when "
+      "you are missing something only they know - a recipient, a link, which "
+      "account - and offer choices when the answers are a short list. Never "
+      "invent one of those values.\n"
+      "\n"
+      "Your replies are rendered as markdown.";
+
+  // The user's own standing instructions apply here too. They wrote them for
+  // the product, not for one screen of it.
+  if (profile_) {
+    const std::string& instructions =
+        profile_->GetPrefs()->GetString(prefs::kInstructions);
+    if (!instructions.empty()) {
+      base::StrAppend(&prompt, {"\n\nStanding instructions from the user:\n",
+                                instructions});
+    }
+  }
+  return prompt;
+}
+
+void AskSession::Emit(const mojom::AskTurn& turn) {
+  if (delegate_)
+    delegate_->OnAskTurn(turn, busy_);
+}
+
+}  // namespace flux

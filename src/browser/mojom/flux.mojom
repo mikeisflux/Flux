@@ -95,6 +95,11 @@ struct AgentQuestion {
   string text;
   // Shown in the empty field. "Paste the link", not "Answer".
   string? placeholder;
+  // Offered as pickable answers, lettered A, B, C. Empty means the question is
+  // free text. A question with an obvious short list of answers - "a Page, a
+  // profile, or a group?" - is one tap when it offers them and a sentence the
+  // user has to compose when it does not.
+  array<string> choices;
 };
 
 struct QuestionRequest {
@@ -281,6 +286,31 @@ struct ConnectorStatus {
   string? detail;
 };
 
+// One file handed to the Ask panel with a message.
+struct AskAttachment {
+  string name;
+  string mime_type;
+  array<uint8> bytes;
+};
+
+// Something the assistant did on the way to answering, shown as a chip under
+// the reply - "Loaded the Flux system skill", "Saved /morning-brief".
+struct AskStep {
+  string label;
+  bool succeeded;
+};
+
+// One turn of the Ask conversation.
+struct AskTurn {
+  bool from_user;
+  // Markdown for an assistant turn, plain text for the user's.
+  string text;
+  array<AskStep> steps;
+  // How long the model took, rendered as "Thought for 2s". Zero for a user
+  // turn and for one restored from history.
+  uint32 thinking_ms;
+};
+
 interface FluxPageHandlerObserver {
   OnRunProgress(RunProgress progress);
   OnAction(string run_id, ActionRecord action);
@@ -295,6 +325,15 @@ interface FluxPageHandlerObserver {
   // Emitted when the agent writes back to the Instructions buffer, so the UI
   // can show provenance rather than silently mutating what the user wrote.
   OnLearnedFact(string fact, string source_run_id);
+
+  // The Ask thread moved on: a turn was appended, a step was recorded, or the
+  // reply finished. The whole turn is sent rather than a delta - it is one
+  // short message and the panel redrawing from it cannot drift out of step
+  // with the browser process, which a delta stream can.
+  OnAskTurn(AskTurn turn, bool busy);
+  // The assistant asked the user something. Same shape as a run's questions,
+  // so the panel and the run view draw the same panel.
+  OnAskQuestions(QuestionRequest request);
 
   // A connector connected, disconnected, or failed to connect. Carries the
   // whole row rather than an id, so the console never has to re-query to
@@ -456,6 +495,32 @@ interface FluxPageHandler {
   // nav row highlighted and the tab never moved. This says what it means
   // instead, over the pipe the shell already holds.
   ShowScreen(string screen);
+
+  // --- Ask Flux ---------------------------------------------------------------
+  //
+  // A conversation about Flux itself, in the panel beside the page: how to do
+  // a thing, and then doing it - saving the workflow rather than describing
+  // how to save one. It is not a run. There is no page, no browsing, no row in
+  // the run list and no artifacts; what it has instead is history, which lives
+  // here rather than in the panel so that closing the panel or reloading it
+  // does not lose the conversation.
+
+  // Restores the thread into a panel that has just opened. `busy` is true when
+  // a reply is already in flight, so a reopened panel shows the spinner rather
+  // than an idle composer over a question that is still being answered.
+  GetAskThread() => (array<AskTurn> turns, bool busy);
+
+  // Answers arrive on the observer rather than here: a reply is streamed, and
+  // a request that resolves once cannot carry the thinking, the steps and the
+  // text as they happen.
+  SendAsk(string message, string model, array<AskAttachment> attachments);
+
+  // Forget the thread and start over. The pencil in the panel's header.
+  NewAskThread();
+
+  // The assistant asked something and is blocked until this returns, the same
+  // way a run is.
+  AnswerAsk(array<QuestionAnswer> answers);
 };
 
 // What the console is allowed to know about a stored key. Deliberately never
