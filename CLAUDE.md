@@ -135,6 +135,13 @@ each broken a real build once, as greps over `src/browser`:
   - or added to a Chromium target by the patch series, as the views subclasses
   under `ui/` are. A file that is in neither compiles nowhere, and the error is
   an undefined symbol at LINK, at the very end of the build.
+- A **virtual method with a non-empty body declared inline in a header** is
+  rejected by chromium-style's `find-bad-constructs` plugin, and `/WX` makes
+  it an error. `virtual bool NeedsPage() const { return false; }` failed seven
+  translation units at once, nine minutes in. It is ordinary C++ and reads
+  like nothing at all. The same shape inside a `.cc` is accepted, which is why
+  all seven `override { return true; }` compiled while the one declaration in
+  the header did not - declare it in the header, define it in the `.cc`.
 - `SimpleURLLoader::DownloadToString` DCHECKs `max_body_size <=
   kMaxBoundedStringDownloadSize` (5 MiB). It is a ceiling, not a clamp. Both
   providers passed 10 MiB, so the browser died on the first request it ever

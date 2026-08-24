@@ -26,6 +26,10 @@ int ScopeRank(mojom::WriteScope scope) {
 
 }  // namespace
 
+bool Tool::NeedsPage() const {
+  return false;
+}
+
 ToolRegistry::ToolRegistry() = default;
 ToolRegistry::~ToolRegistry() = default;
 

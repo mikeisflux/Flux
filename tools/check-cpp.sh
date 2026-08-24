@@ -383,5 +383,36 @@ for c in sorted(ROOT.rglob('*.cc')):
 raise SystemExit(1 if bad else 0)
 REORDERPY
 
+# A virtual method with a non-empty body defined inline in a header.
+#
+# chromium-style's find-bad-constructs plugin rejects these, and /WX makes it
+# an error rather than a warning - so `virtual bool NeedsPage() const { return
+# false; }` failed seven translation units at once, nine minutes into a build.
+# It is idiomatic C++ and reads like nothing at all, which is exactly why the
+# compiler is the only thing that had ever objected to it.
+#
+# Only headers: the same shape inside a .cc is accepted, which is why all seven
+# `override { return true; }` in browser_tools.cc compiled while the one
+# declaration in the header did not.
+python3 - <<'VIRTPY' || status=1
+import pathlib, re, sys
+root = pathlib.Path('src/browser')
+bad = 0
+for h in sorted(root.rglob('*.h')):
+    for i, line in enumerate(h.read_text(encoding='utf-8').splitlines()):
+        if 'virtual' not in line:
+            continue
+        # A body on the same line with something between the braces. `= 0;`,
+        # `= default;`, `{}` and a bare declaration are all fine.
+        m = re.search(r'\bvirtual\b[^;{]*\{\s*(\S[^}]*)\}', line)
+        if m and m.group(1).strip():
+            print(f'{h}:{i + 1}: virtual method with a non-empty inline body')
+            print(f'    {line.strip()}')
+            print('    chromium-style rejects this in a header and /WX makes '
+                  'it an error - declare it here, define it in the .cc')
+            bad += 1
+sys.exit(1 if bad else 0)
+VIRTPY
+
 [ $status -eq 0 ] && echo "C++ rules OK"
 exit $status

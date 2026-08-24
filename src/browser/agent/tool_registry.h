@@ -62,7 +62,10 @@ class Tool {
   // or write a file, and including one that ended immediately without ever
   // browsing. A tab is something the user notices, so it should appear when the
   // agent actually has somewhere to go.
-  virtual bool NeedsPage() const { return false; }
+  // Defined out of line: chromium-style's find-bad-constructs plugin rejects a
+  // virtual method with a non-empty body declared inline in a header, and it
+  // is an error under /WX. `{ return false; }` is non-empty.
+  virtual bool NeedsPage() const;
 
   virtual void Run(const ToolContext& context,
                    base::DictValue input,
