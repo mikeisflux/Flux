@@ -49,6 +49,7 @@ class FluxPageHandler : public mojom::FluxPageHandler,
   void AnswerQuestions(
       const std::string& run_id,
       std::vector<mojom::QuestionAnswerPtr> answers) override;
+  void ListPending(ListPendingCallback callback) override;
   void ResolveApproval(const std::string& run_id,
                        bool approved,
                        const std::optional<std::string>& user_note) override;

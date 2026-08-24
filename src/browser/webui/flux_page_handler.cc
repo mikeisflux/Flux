@@ -85,6 +85,15 @@ void FluxPageHandler::AnswerQuestions(
     service_->AnswerQuestions(run_id, std::move(answers));
 }
 
+void FluxPageHandler::ListPending(ListPendingCallback callback) {
+  if (!service_) {
+    std::move(callback).Run({}, {});
+    return;
+  }
+  std::move(callback).Run(service_->PendingApprovals(),
+                          service_->PendingQuestions());
+}
+
 void FluxPageHandler::ResolveApproval(
     const std::string& run_id,
     bool approved,

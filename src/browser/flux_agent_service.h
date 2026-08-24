@@ -169,6 +169,11 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
                 const mojom::ActionRecord& action) override;
   void OnApprovalRequired(const mojom::ApprovalRequest& request) override;
   void OnQuestionsAsked(const mojom::QuestionRequest& request) override;
+
+  // Everything currently blocked on this person, for a console that has just
+  // connected and was not listening when it happened.
+  std::vector<mojom::ApprovalRequestPtr> PendingApprovals() const;
+  std::vector<mojom::QuestionRequestPtr> PendingQuestions() const;
   void OnFinished(const std::string& run_id,
                   mojom::RunState state,
                   const std::string& summary) override;
@@ -203,6 +208,18 @@ class FluxAgentService : public KeyedService, public AgentRunner::Delegate {
   };
   base::circular_deque<QueuedRun> queue_;
   std::map<std::string, mojom::RunProgressPtr> progress_;
+
+  // What each blocked run is waiting for, kept rather than only announced.
+  //
+  // Both used to be fired at the observers and forgotten. The runner sat in
+  // kAwaitingApproval or kAwaitingInput holding its pending call, and the only
+  // record of what it wanted lived in the console's memory - so reloading
+  // chrome://flux stranded that run permanently: no dialog, no badge, no way
+  // to answer it, and nothing in the browser process that could be asked. That
+  // is the state app.ts calls the worst this product has, and its own comment
+  // promises the opposite ("reloading chrome://flux mid-run is harmless").
+  std::map<std::string, mojom::ApprovalRequestPtr> pending_approvals_;
+  std::map<std::string, mojom::QuestionRequestPtr> pending_questions_;
   std::map<std::string, std::vector<mojom::ActionRecordPtr>> actions_;
   // The closing summary, kept per run. It arrives once, on OnFinished, and
   // was previously forwarded to whoever happened to be listening and then

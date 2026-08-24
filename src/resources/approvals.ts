@@ -39,6 +39,112 @@ export class ApprovalQueue {
     this.nav?.addEventListener('click', () => this.showNext());
   }
 
+  /**
+   * The Approvals screen: everything blocked on this person, in one place.
+   *
+   * The modal is the primary surface and it is the right one - an approval is
+   * urgent and interrupting is the point. This is the recovery path for when
+   * that modal was missed: the console was on another screen, the tab was
+   * closed, or chrome://flux was reloaded. Without it the nav row led to a
+   * heading and an empty page, which is what the badge had been pointing at.
+   */
+  async renderScreen(root: HTMLElement) {
+    root.replaceChildren();
+    const screen = document.createElement('div');
+    screen.className = 'screen';
+
+    const h1 = document.createElement('h1');
+    h1.textContent = 'Approvals';
+    const subtitle = document.createElement('p');
+    subtitle.className = 'subtitle';
+    subtitle.textContent =
+        'Runs that have stopped and are waiting on you. Nothing happens on ' +
+        'these until you answer.';
+    screen.append(h1, subtitle);
+
+    const {approvals, questions} = await this.handler.listPending();
+
+    if (approvals.length === 0 && questions.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'subtitle';
+      empty.textContent = 'Nothing is waiting on you.';
+      screen.append(empty);
+      root.append(screen);
+      return;
+    }
+
+    for (const request of approvals) {
+      screen.append(this.approvalCard(request, root));
+    }
+
+    for (const request of questions) {
+      const card = document.createElement('div');
+      card.className = 'approval-card';
+      const what = document.createElement('strong');
+      what.textContent = request.preamble || 'The task asked you something.';
+      const detail = document.createElement('p');
+      detail.className = 'subtitle';
+      detail.textContent = request.questions.length === 1 ?
+          request.questions[0]!.text :
+          `${request.questions.length} questions`;
+      // Answering needs the fields, which live in the run view - so this is a
+      // way through to them rather than a second copy of the panel.
+      const open = document.createElement('button');
+      open.className = 'primary';
+      open.textContent = 'Answer';
+      open.addEventListener('click', () => {
+        window.location.hash = `#run/${request.runId}`;
+      });
+      card.append(what, detail, open);
+      screen.append(card);
+    }
+
+    root.append(screen);
+  }
+
+  /** One blocked tool call, with the same two answers the dialog offers. */
+  private approvalCard(request: ApprovalRequest, root: HTMLElement):
+      HTMLElement {
+    const card = document.createElement('div');
+    card.className = 'approval-card';
+
+    const what = document.createElement('strong');
+    what.textContent = request.effectSummary || request.toolName;
+    const why = document.createElement('p');
+    why.className = 'subtitle';
+    why.textContent = request.rationale || '';
+    why.hidden = !request.rationale;
+    card.append(what, why);
+
+    if (request.payloadPreview) {
+      const pre = document.createElement('pre');
+      pre.className = 'approval-payload';
+      pre.textContent = request.payloadPreview;
+      card.append(pre);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'dialog-actions';
+    const deny = document.createElement('button');
+    deny.className = 'ghost';
+    deny.textContent = "Don't do it";
+    const allow = document.createElement('button');
+    allow.className = 'primary';
+    allow.textContent = 'Approve';
+    for (const [button, approved] of
+             [[deny, false], [allow, true]] as Array<[HTMLButtonElement,
+                                                      boolean]>) {
+      button.addEventListener('click', () => {
+        this.handler.resolveApproval(request.runId, approved, null);
+        this.dismissFor(request.runId);
+        void this.renderScreen(root);
+      });
+    }
+    row.append(deny, allow);
+    card.append(row);
+    return card;
+  }
+
   enqueue(request: ApprovalRequest) {
     this.pending.push(request);
     this.syncBadge();

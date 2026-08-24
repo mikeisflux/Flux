@@ -198,6 +198,7 @@ void FluxAgentService::ResumeRun(const std::string& run_id) {
 void FluxAgentService::ResolveApproval(const std::string& run_id,
                                        bool approved,
                                        const std::string& user_note) {
+  pending_approvals_.erase(run_id);
   auto it = runs_.find(run_id);
   if (it != runs_.end())
     it->second->ResolveApproval(approved, user_note);
@@ -528,12 +529,30 @@ void FluxAgentService::OnAction(const std::string& run_id,
 }
 
 void FluxAgentService::OnApprovalRequired(const mojom::ApprovalRequest& request) {
+  pending_approvals_[request.run_id] = request.Clone();
   for (Observer& o : observers_)
     o.OnApprovalRequested(request);
 }
 
+std::vector<mojom::ApprovalRequestPtr> FluxAgentService::PendingApprovals()
+    const {
+  std::vector<mojom::ApprovalRequestPtr> out;
+  for (const auto& [run_id, request] : pending_approvals_)
+    out.push_back(request->Clone());
+  return out;
+}
+
+std::vector<mojom::QuestionRequestPtr> FluxAgentService::PendingQuestions()
+    const {
+  std::vector<mojom::QuestionRequestPtr> out;
+  for (const auto& [run_id, request] : pending_questions_)
+    out.push_back(request->Clone());
+  return out;
+}
+
 void FluxAgentService::OnQuestionsAsked(
     const mojom::QuestionRequest& request) {
+  pending_questions_[request.run_id] = request.Clone();
   // The run's own state changed to kAwaitingInput before this fired, so the
   // console's run list shows it as waiting on the user rather than as running
   // with nothing happening.
@@ -561,6 +580,7 @@ void FluxAgentService::AskUser(const std::string& run_id,
 void FluxAgentService::AnswerQuestions(
     const std::string& run_id,
     std::vector<mojom::QuestionAnswerPtr> answers) {
+  pending_questions_.erase(run_id);
   auto it = runs_.find(run_id);
   if (it == runs_.end() || !it->second)
     return;
@@ -572,6 +592,12 @@ void FluxAgentService::OnFinished(const std::string& finished_id,
                                   const std::string& summary) {
   if (auto it = progress_.find(finished_id); it != progress_.end())
     it->second->state = state;
+
+  // A run that ended is no longer waiting on anyone, however it ended -
+  // cancelled and failed runs leave a pending request behind just as readily
+  // as answered ones.
+  pending_approvals_.erase(finished_id);
+  pending_questions_.erase(finished_id);
 
   // Kept, not just forwarded. The summary is the answer the user asked for,
   // and it arrives exactly once - a console opened after the run ended, or

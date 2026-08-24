@@ -61,6 +61,7 @@ class FluxSidebar {
     this.markCurrentOnClick();
     void this.bindCollapse();
     void this.refresh();
+    void this.seedApprovals();
   }
 
   /**
@@ -140,6 +141,26 @@ class FluxSidebar {
     const {runs} = await this.handler.listRuns();
     this.runs.replaceAll(runs);
     await this.runs.refreshConcurrency();
+  }
+
+  /**
+   * Seeds the badge from whatever was already blocked before this document
+   * existed.
+   *
+   * The observer callbacks only reach a console that was listening when the
+   * run stopped. A reload, or a window opened afterwards, saw a count of zero
+   * over runs that were still waiting - and the run itself is stopped in the
+   * browser process, so nothing else would ever have surfaced them.
+   */
+  private async seedApprovals() {
+    const {approvals, questions} = await this.handler.listPending();
+    for (const request of approvals) {
+      this.pendingApprovals.add(request.runId);
+    }
+    for (const request of questions) {
+      this.pendingApprovals.add(request.runId);
+    }
+    this.syncApprovals();
   }
 
   private syncApprovals() {

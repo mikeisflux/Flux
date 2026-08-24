@@ -188,6 +188,10 @@ export declare class FluxPageHandlerRemote {
   pauseRun(runId: string): void;
   resumeRun(runId: string): void;
   answerQuestions(runId: string, answers: QuestionAnswer[]): void;
+  listPending(): Promise<{
+    approvals: ApprovalRequest[],
+    questions: QuestionRequest[],
+  }>;
   resolveApproval(runId: string, approved: boolean, userNote: string|null):
       void;
   listRuns(): Promise<{runs: RunProgress[]}>;

@@ -1857,6 +1857,20 @@ body.shell.collapsed .badge { display: none; }
   gap: 10px;
 }
 
+.approval-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 16px 0;
+  gap: 10px;
+}
+
+.approval-card .subtitle {
+  margin: 0;
+}
+
 /* --- Connector dialog -----------------------------------------------------
  *
  * The actions list is the substance here, so it gets the room: two columns,

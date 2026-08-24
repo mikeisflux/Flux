@@ -311,6 +311,13 @@ interface FluxPageHandler {
 
   ResolveApproval(string run_id, bool approved, string? user_note);
 
+  // Everything currently blocked on the user, for a console that has just
+  // loaded. The observer callbacks only reach a console that was already
+  // listening, so without this a reload mid-run left an approval unanswerable
+  // and the run stopped for good.
+  ListPending() => (array<ApprovalRequest> approvals,
+                    array<QuestionRequest> questions);
+
   // Answers to a QuestionRequest. Answering none of them is a valid reply -
   // the agent is told they were all skipped and decides what to do with that,
   // rather than the run hanging on an unanswered panel.

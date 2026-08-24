@@ -196,6 +196,12 @@ class FluxApp {
             content,
             this.customize.render(
                 content, sub === 'skills' ? 'skills' : 'instructions'));
+      case 'approvals':
+        // The nav row has always linked here; until now it fell through to the
+        // default branch below, which draws the view's name as a heading and
+        // nothing else. A badge that says one thing is waiting, pointing at a
+        // blank page, is worse than no badge.
+        return settle(content, this.approvals.renderScreen(content));
       case 'connectors':
         return settle(content, this.connectors.render(content));
       case 'templates':
